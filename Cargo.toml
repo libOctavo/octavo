@@ -1,0 +1,14 @@
+[package]
+name = "octavo"
+version = "0.1.0"
+authors = ["Łukasz Niemier <lukasz@niemier.pl>"]
+
+[dependencies]
+byteorder = "*"
+bytes = "*"
+
+[features]
+default = ["full-sha3"]
+
+full-sha3 = []
+nightly = ["default"]
