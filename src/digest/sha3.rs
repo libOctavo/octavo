@@ -1,5 +1,4 @@
-use super::Digest;
-use super::digest;
+use digest;
 use utils::buffer;
 
 use byteorder::{
@@ -8,16 +7,14 @@ use byteorder::{
     LittleEndian,
 };
 
-use std::io::{
-    Read,
-};
+use std::io::Read;
+use std::hash::Hasher;
 
-pub struct SHA3 {
+struct SHA3State {
     hash: [u64; 25],
     message: [u8; 144],
     rest: usize,
     block_size: usize,
-    state: digest::State
 }
 
 const ROUND_CONSTS: [u64; 24] = [
@@ -37,24 +34,17 @@ const SHIFTS: [u32; 25] = [
     18,  2,   61,  56,  14,
 ];
 
-impl SHA3 {
+impl SHA3State {
     fn init(bits: usize) -> Self {
         let rate = 1600 - bits * 2;
         assert!(rate <= 1600 && (rate % 64) == 0);
-        SHA3 {
+        SHA3State {
             hash: [0; 25],
             message: [0; 144],
             rest: 0,
             block_size: rate / 8,
-            state: digest::State::Ready
         }
     }
-
-    #[cfg(feature = "full-sha3")]
-    pub fn new_224() -> Self { Self::init(224) }
-    pub fn new_256() -> Self { Self::init(256) }
-    pub fn new_384() -> Self { Self::init(384) }
-    pub fn new_512() -> Self { Self::init(512) }
 
     #[inline(always)]
     fn theta(&mut self) {
@@ -148,7 +138,7 @@ impl SHA3 {
     }
 
     #[inline(always)]
-    fn update(&mut self, mut data: &[u8]) {
+    fn process(&mut self, mut data: &[u8]) {
         for i in 0..9 {
             self.hash[i] ^= data.read_u64::<LittleEndian>().unwrap();
         }
@@ -165,20 +155,11 @@ impl SHA3 {
         if self.block_size > 138 {
             self.hash[17] ^= data.read_u64::<LittleEndian>().unwrap();
         }
-        if self.block_size > 144 {
-            for i in 18..25 {
-                self.hash[i] ^= data.read_u64::<LittleEndian>().unwrap();
-            }
-        }
 
         self.permutation();
     }
-}
 
-impl Digest for SHA3 {
-    fn input<T>(&mut self, data: T) where T: AsRef<[u8]> {
-        assert!(self.state != digest::State::Finished);
-        let mut data = data.as_ref();
+    fn update(&mut self, mut data: &[u8]) {
         while let Ok(len) = data.read(&mut self.message[self.rest..self.block_size]) {
             if len + self.rest < self.block_size {
                 self.rest = len;
@@ -186,63 +167,94 @@ impl Digest for SHA3 {
             }
             assert!(len + self.rest == self.block_size);
             let message = self.message;
-            self.update(&message[..]);
+            self.process(&message[..]);
             self.rest = 0;
         }
     }
 
-    fn state(&self) -> digest::State {
-        self.state
+    fn finish(&mut self) {
+        buffer::zero(&mut self.message[self.rest..self.block_size]);
+        self.message[self.rest] |= 0x06;
+        self.message[self.block_size - 1] |= 0x80;
+
+        let message = self.message;
+        self.process(&message[..]);
     }
+}
 
-    fn reset(&mut self) {
-        self.hash       = [0; 25];
-        self.message    = [0; 144];
-        self.rest       = 0;
-        self.state      = digest::State::Ready;
-    }
-
-    fn output_bits(&self) -> usize { 800 - 4 * self.block_size }
-    fn block_size(&self) -> usize { self.block_size * 8 }
-
-    fn result<T>(&mut self, mut out: T) where T: AsMut<[u8]> {
-        if self.state != digest::State::Finished {
-            buffer::zero(&mut self.message[self.rest..self.block_size]);
-            self.message[self.rest] |= 0x06;
-            self.message[self.block_size - 1] |= 0x80;
-
-            let message = self.message;
-            self.update(&message[..]);
+macro_rules! sha3_impl {
+    ($name:ident -> $size:expr) => {
+        pub struct $name {
+            state: SHA3State
         }
 
-        let mut ret = out.as_mut();
-        assert!(ret.len() >= self.output_bytes());
-        let mut tmp = [0u8; 200];
-        {
-            let mut p = &mut tmp[..];
-
-            for i in 0..25 {
-                p.write_u64::<LittleEndian>(self.hash[i]).unwrap();
+        impl Default for $name {
+            fn default() -> Self {
+                $name { state: SHA3State::init($size) }
             }
         }
 
-        for i in 0..(self.output_bytes()) {
-            ret[i] = tmp[i];
+        impl digest::Digest for $name {
+            fn update<T>(&mut self, data: T) where T: AsRef<[u8]> {
+                self.state.update(data.as_ref());
+            }
+
+            fn output_bits() -> usize { $size }
+            fn block_size() -> usize { 1600 - (2 * $size) }
+
+            fn result<T>(mut self, mut out: T) where T: AsMut<[u8]> {
+                let mut ret = out.as_mut();
+                assert!(ret.len() >= Self::output_bytes());
+
+                self.state.finish();
+
+                let mut tmp = [0u8; 200];
+                {
+                    let mut p = &mut tmp[..];
+
+                    for i in 0..25 {
+                        p.write_u64::<LittleEndian>(self.state.hash[i]).unwrap();
+                    }
+                }
+
+                for i in 0..(Self::output_bytes()) {
+                    ret[i] = tmp[i];
+                }
+            }
         }
     }
 }
+
+sha3_impl!(SHA3224 -> 224);
+sha3_impl!(SHA3256 -> 256);
+sha3_impl!(SHA3384 -> 384);
+sha3_impl!(SHA3512 -> 512);
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use digest::Digest;
+    use test::Test;
 
-    struct Test {
-        input: &'static str,
-        output: &'static str
+    const SHA3_224_TESTS: [Test<'static>; 8] = [
+        Test { input: "", output: "6b4e03423667dbb73b6e15454f0eb1abd4597f9a1b078e3f5b5a6bc7" },
+        Test { input: "a", output: "9e86ff69557ca95f405f081269685b38e3a819b309ee942f482b6a8b" },
+        Test { input: "abc", output: "e642824c3f8cf24ad09234ee7d3c766fc9a3a5168d0c94ad73b46fdf" },
+        Test { input: "message digest", output: "18768bb4c48eb7fc88e5ddb17efcf2964abd7798a39d86a4b4a1e4c8" },
+        Test { input: "abcdefghijklmnopqrstuvwxyz", output: "5cdeca81e123f87cad96b9cba999f16f6d41549608d4e0f4681b8239" },
+        Test { input: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789", output: "a67c289b8250a6f437a20137985d605589a8c163d45261b15419556e" },
+        Test { input: "12345678901234567890123456789012345678901234567890123456789012345678901234567890", output: "0526898e185869f91b3e2a76dd72a15dc6940a67c8164a044cd25cc8" },
+        Test { input: "The quick brown fox jumps over the lazy dog", output: "d15dadceaa4d5d7bb3b48f446421d542e08ad8887305e28d58335795" },
+    ];
+
+    #[test]
+    fn test_sha3_224() {
+        for test in &SHA3_224_TESTS {
+            test.test(SHA3224::new());
+        }
     }
 
-    static SHA3_256_TESTS: [Test; 8] = [
+    const SHA3_256_TESTS: [Test<'static>; 8] = [
         Test { input: "", output: "a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a" },
         Test { input: "a", output: "80084bf2fba02475726feb2cab2d8215eab14bc6bdd8bfb2c8151257032ecd8b" },
         Test { input: "abc", output: "3a985da74fe225b2045c172d6bd390bd855f086e3e9d525b46bfe24511431532" },
@@ -255,15 +267,12 @@ mod tests {
 
     #[test]
     fn test_sha3_256() {
-        let mut digest = SHA3::new_256();
         for test in &SHA3_256_TESTS {
-            digest.reset();
-            digest.input(test.input);
-            assert_eq!(test.output, digest.hex_result());
+            test.test(SHA3256::new());
         }
     }
 
-    static SHA3_384_TESTS: [Test; 8] = [
+    const SHA3_384_TESTS: [Test<'static>; 8] = [
         Test { input: "", output: "0c63a75b845e4f7d01107d852e4c2485c51a50aaaa94fc61995e71bbee983a2ac3713831264adb47fb6bd1e058d5f004" },
         Test { input: "a", output: "1815f774f320491b48569efec794d249eeb59aae46d22bf77dafe25c5edc28d7ea44f93ee1234aa88f61c91912a4ccd9" },
         Test { input: "abc", output: "ec01498288516fc926459f58e2c6ad8df9b473cb0fc08c2596da7cf0e49be4b298d88cea927ac7f539f1edf228376d25" },
@@ -276,15 +285,12 @@ mod tests {
 
     #[test]
     fn test_sha3_384() {
-        let mut digest = SHA3::new_384();
         for test in &SHA3_384_TESTS {
-            digest.reset();
-            digest.input(test.input);
-            assert_eq!(test.output, digest.hex_result());
+            test.test(SHA3384::new());
         }
     }
 
-    static SHA3_512_TESTS: [Test; 8] = [
+    const SHA3_512_TESTS: [Test<'static>; 8] = [
         Test { input: "", output: "a69f73cca23a9ac5c8b567dc185a756e97c982164fe25859e0d1dcc1475c80a615b2123af1f5f94c11e3e9402c3ac558f500199d95b6d3e301758586281dcd26" },
         Test { input: "a", output: "697f2d856172cb8309d6b8b97dac4de344b549d4dee61edfb4962d8698b7fa803f4f93ff24393586e28b5b957ac3d1d369420ce53332712f997bd336d09ab02a" },
         Test { input: "abc", output: "b751850b1a57168a5693cd924b6b096e08f621827444f70d884f5d0240d2712e10e116e9192af3c91a7ec57647e3934057340b4cf408d5a56592f8274eec53f0" },
@@ -298,11 +304,8 @@ mod tests {
 
     #[test]
     fn test_sha3_512() {
-        let mut digest = SHA3::new_512();
         for test in &SHA3_512_TESTS {
-            digest.reset();
-            digest.input(test.input);
-            assert_eq!(test.output, digest.hex_result());
+            test.test(SHA3512::new());
         }
     }
 }

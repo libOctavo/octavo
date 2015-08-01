@@ -1,5 +1,4 @@
-use super::Digest;
-use super::digest;
+use digest::Digest;
 use utils::buffer::{
     FixedBuffer64,
     FixedBuffer,
@@ -27,13 +26,6 @@ impl MD5State {
             s2: 0x98badcfe,
             s3: 0x10325476
         }
-    }
-
-    fn reset(&mut self) {
-        self.s0 = 0x67452301;
-        self.s1 = 0xefcdab89;
-        self.s2 = 0x98badcfe;
-        self.s3 = 0x10325476;
     }
 
     fn process_block(&mut self, mut input: &[u8]) {
@@ -77,7 +69,6 @@ impl MD5State {
         let mut i = 0;
         let mut data = [0u32; 16];
 
-        // read_u32v_le(&mut data, input);
         while let Ok(val) = input.read_u32::<LittleEndian>() {
             data[i] = val;
             i += 1;
@@ -157,122 +148,73 @@ static C4: [u32; 16] = [
 ];
 
 pub struct MD5 {
-    data: MD5State,
+    state: MD5State,
     length: u64,
     buffer: FixedBuffer64,
-    state: digest::State
 }
 
-impl MD5 {
-    pub fn new() -> Self {
+impl Default for MD5 {
+    fn default() -> Self {
         MD5 {
-            data: MD5State::new(),
+            state: MD5State::new(),
             length: 0,
             buffer: FixedBuffer64::new(),
-            state: digest::State::Ready
         }
     }
 }
 
 impl Digest for MD5 {
-    fn input<T>(&mut self, input: T) where T: AsRef<[u8]> {
+    fn update<T>(&mut self, input: T) where T: AsRef<[u8]> {
         let input = input.as_ref();
         self.length += input.len() as u64;
-        let self_state = &mut self.data;
-        self.buffer.input(&input[..], |d| self_state.process_block(d));
+
+        let state = &mut self.state;
+        self.buffer.input(&input[..], |d| state.process_block(d));
     }
 
-    fn state(&self) -> digest::State {
-        self.state
-    }
+    fn output_bits() -> usize { 128 }
+    fn block_size() -> usize { 64 }
 
-    fn reset(&mut self) {
-        self.length = 0;
-        self.state  = digest::State::Ready;
-        self.data.reset();
-    }
+    fn result<T: AsMut<[u8]>>(mut self, mut out: T) {
+        let state = &mut self.state;
 
-    fn output_bits(&self) -> usize { 128 }
-    fn block_size(&self) -> usize { 64 }
-
-    fn result<T: AsMut<[u8]>>(&mut self, mut out: T) {
-        let data = &mut self.data;
-
-        if self.state != digest::State::Finished {
-            self.buffer.standard_padding(8, |d| data.process_block(d));
-            self.buffer.next(4).write_u32::<LittleEndian>((self.length << 3) as u32).unwrap();
-            self.buffer.next(4).write_u32::<LittleEndian>((self.length >> 29) as u32).unwrap();
-            data.process_block(self.buffer.full_buffer());
-        }
+        self.buffer.standard_padding(8, |d| state.process_block(d));
+        self.buffer.next(4).write_u32::<LittleEndian>((self.length << 3) as u32).unwrap();
+        self.buffer.next(4).write_u32::<LittleEndian>((self.length >> 29) as u32).unwrap();
+        state.process_block(self.buffer.full_buffer());
 
         let mut out = out.as_mut();
-        out.write_u32::<LittleEndian>(data.s0).unwrap();
-        out.write_u32::<LittleEndian>(data.s1).unwrap();
-        out.write_u32::<LittleEndian>(data.s2).unwrap();
-        out.write_u32::<LittleEndian>(data.s3).unwrap();
+        assert!(out.len() >= Self::output_bytes());
+        out.write_u32::<LittleEndian>(state.s0).unwrap();
+        out.write_u32::<LittleEndian>(state.s1).unwrap();
+        out.write_u32::<LittleEndian>(state.s2).unwrap();
+        out.write_u32::<LittleEndian>(state.s3).unwrap();
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::super::Digest;
+    use digest::Digest;
+    use test::Test;
     use super::MD5;
 
-    struct Test {
-        input: &'static str,
-        output_str: &'static str,
-    }
-
-    fn test_hash<D: Digest>(sh: &mut D, tests: &[Test]) {
-        // Test that it works when accepting the message all at once
-        for t in tests.iter() {
-            sh.input(t.input);
-
-            let out_str = sh.hex_result();
-            assert_eq!(out_str, t.output_str);
-
-            sh.reset();
-        }
-
-        // Test that it works when accepting the message in pieces
-        for t in tests.iter() {
-            let len = t.input.len();
-            let mut left = len;
-            while left > 0 {
-                let take = (left + 1) / 2;
-                sh.input(&t.input[len - left..take + len - left]);
-                left = left - take;
-            }
-
-            let out_str = sh.hex_result();
-            assert_eq!(out_str, t.output_str);
-
-            sh.reset();
-        }
-    }
+    const TESTS: [Test<'static>; 7] = [
+        Test { input: "", output: "d41d8cd98f00b204e9800998ecf8427e" },
+        Test { input: "a", output: "0cc175b9c0f1b6a831c399e269772661" },
+        Test { input: "abc", output: "900150983cd24fb0d6963f7d28e17f72" },
+        Test { input: "message digest", output: "f96b697d7cb7938d525a2f31aaf161d0" },
+        Test { input: "abcdefghijklmnopqrstuvwxyz", output: "c3fcd3d76192e4007dfb496cca67e13b" },
+        Test { input: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789", output: "d174ab98d277d9f5a5611c2c9f419d9f" },
+        Test { input: "12345678901234567890123456789012345678901234567890123456789012345678901234567890", output: "57edf4a22be3c955ac49da2e2107b67a" },
+    ];
 
     #[test]
     fn test_md5() {
         // Examples from wikipedia
-        let wikipedia_tests = vec![
-            Test {
-                input: "",
-                output_str: "d41d8cd98f00b204e9800998ecf8427e"
-            },
-            Test {
-                input: "The quick brown fox jumps over the lazy dog",
-                output_str: "9e107d9d372bb6826bd81d3542a419d6"
-            },
-            Test {
-                input: "The quick brown fox jumps over the lazy dog.",
-                output_str: "e4d909c290d0fb1ca068ffaddf22cbd0"
-            },
-        ];
 
-        let tests = wikipedia_tests;
-
-        let mut sh = MD5::new();
-
-        test_hash(&mut sh, &tests[..]);
+        // Test that it works when accepting the message all at once
+        for test in &TESTS {
+            test.test(MD5::new());
+        }
     }
 }

@@ -1,8 +1,6 @@
 use std::ptr;
 use std::io::Read;
 
-use bytes::MutBuf;
-
 /// A FixedBuffer, likes its name implies, is a fixed size buffer. When the buffer becomes full, it
 /// must be processed. The input() method takes care of processing and then clearing the buffer
 /// automatically. However, other methods do not and require the caller to process the buffer. Any
@@ -102,11 +100,16 @@ macro_rules! impl_fixed_buffer( ($name:ident, $size:expr) => (
 ));
 
 /// A fixed size buffer of 64 bytes useful for cryptographic operations.
+impl_fixed_buffer!(FixedBuffer32, 32);
+
+/// A fixed size buffer of 64 bytes useful for cryptographic operations.
 impl_fixed_buffer!(FixedBuffer64, 64);
 
 /// A fixed size buffer of 128 bytes useful for cryptographic operations.
 impl_fixed_buffer!(FixedBuffer128, 128);
 
+/// A fixed size buffer of 128 bytes useful for cryptographic operations.
+impl_fixed_buffer!(FixedBuffer256, 256);
 
 /// The StandardPadding trait adds a method useful for various hash algorithms to a FixedBuffer
 /// struct.
@@ -122,7 +125,7 @@ impl <T: FixedBuffer> StandardPadding for T {
     fn standard_padding<F: FnMut(&[u8])>(&mut self, rem: usize, mut func: F) {
         let size = Self::size();
 
-        self.next(1)[0] = 128;
+        self.next(1)[0] = 0b10000000u8;
 
         if self.remaining() < rem {
             self.zero_until(size);

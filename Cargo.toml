@@ -5,10 +5,69 @@ authors = ["Łukasz Niemier <lukasz@niemier.pl>"]
 
 [dependencies]
 byteorder = "*"
-bytes = "*"
+
+[dependencies.num]
+version = "*"
+optional = true
 
 [features]
-default = ["full-sha3"]
-
-full-sha3 = []
+default = [
+  "digest",
+  "crypto",
+  "ssl"
+]
 nightly = ["default"]
+
+digest = [
+  "adler32",
+  "crc32",
+  "md4",
+  "md5",
+  "sha3"
+]
+adler32 = []
+aich = []
+crc32 = []
+edonr = []
+gost = []
+md4 = []
+md5 = []
+ripemd = []
+sha1 = []
+sha2 = []
+sha3 = []
+snefru = []
+tiger = []
+tth = []
+whirlpool = []
+
+crypto = [
+  "symmetric",
+  "public-key"
+]
+
+symmetric = [
+  "blowfish"
+]
+aes = []
+blowfish = []
+des = []
+serpent = []
+triple-des = []
+twofish = []
+idea = []
+
+rc4 = []
+rabbit = []
+salsa20 = []
+chacha = []
+hc-256 = []
+
+public-key = []
+dh = ["diffie-hellman"]
+diffie-hellman = []
+ecc = []
+elgamal = []
+rsa = ["num"]
+
+ssl = []

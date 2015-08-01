@@ -1,1 +1,2 @@
-pub mod sym;
+pub mod symmetric;
+pub mod traits;
