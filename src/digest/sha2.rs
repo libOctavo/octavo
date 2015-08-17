@@ -256,7 +256,7 @@ macro_rules! impl_sha(
         }
 
         fn output_bits() -> usize { $bits }
-        fn block_size() -> usize { 64 }
+        fn block_size() -> usize { 128 }
 
         fn result<T: AsMut<[u8]>>(mut self, mut out: T) {
             let state = &mut self.state;
