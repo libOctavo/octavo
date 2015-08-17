@@ -32,9 +32,12 @@
 //!
 //! ### Considered safe
 //!
-//! - `SHA1` - deprecated in favour of `SHA2` family
 //! - `SHA2` family
 //! - `SHA3` family
+//!
+//! ### Deprecated in favour of stronger functions
+//!
+//! - `SHA1` - deprecated in favour of `SHA2` family
 //!
 //! ### Broken or easy breakable on modern hardware
 //!
