@@ -3,6 +3,10 @@ name = "octavo"
 version = "0.1.0"
 authors = ["Łukasz Niemier <lukasz@niemier.pl>"]
 
+description = "Highly modular crypto & hash library written in pure Rust"
+license = "MIT"
+repository = "https://github.com/hauleth/octavo"
+
 [dependencies]
 byteorder = "*"
 
@@ -47,6 +51,10 @@ md5 = []
 sha1 = []
 sha2 = []
 sha3 = []
+# xxhash = []
+# whirlpool = []
+# tiger = []
+# ripemd = []
 
 crypto = [
   "symmetric",
@@ -56,27 +64,33 @@ crypto = [
 symmetric = [
   "blowfish"
 ]
-aes = []
+# aes = []
 blowfish = []
-des = []
-serpent = []
-triple-des = []
-twofish = []
-idea = []
+# des = []
+# serpent = []
+# triple-des = []
+# twofish = []
+# idea = []
 
-rc2 = []
-rc3 = []
-rc4 = []
-rabbit = []
-salsa20 = []
-chacha = []
-hc-256 = []
+# block = []
+# rc2 = []
+# rc3 = []
+# rc4 = []
+# rabbit = []
+# salsa20 = []
+# chacha = []
+# hc-256 = []
 
-public-key = []
-dh = ["diffie-hellman"]
-diffie-hellman = []
-ecc = []
-elgamal = []
-rsa = ["num"]
+# public-key = []
+# dh = ["diffie-hellman"]
+# diffie-hellman = []
+# ecc = []
+# elgamal = []
+# rsa = ["num"]
 
-ssl = []
+mac = [
+  "hmac"
+]
+hmac = []
+
+# ssl = []
