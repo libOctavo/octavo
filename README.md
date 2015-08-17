@@ -1,5 +1,7 @@
 # Octavo
 
+[![Build Status](https://travis-ci.org/hauleth/octavo.svg)](https://travis-ci.org/hauleth/octavo)
+
 Highly modular & configurable hash & crypto library written in pure Rust.
 
 ## Installation
