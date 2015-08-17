@@ -20,7 +20,7 @@ default = [
   "crypto",
   "ssl"
 ]
-nightly = ["default"]
+unstable = ["default"]
 
 digest = [
   "digest-fast",
