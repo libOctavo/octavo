@@ -100,16 +100,7 @@ macro_rules! impl_fixed_buffer( ($name:ident, $size:expr) => (
 ));
 
 /// A fixed size buffer of 64 bytes useful for cryptographic operations.
-impl_fixed_buffer!(FixedBuffer32, 32);
-
-/// A fixed size buffer of 64 bytes useful for cryptographic operations.
 impl_fixed_buffer!(FixedBuffer64, 64);
-
-/// A fixed size buffer of 128 bytes useful for cryptographic operations.
-impl_fixed_buffer!(FixedBuffer128, 128);
-
-/// A fixed size buffer of 128 bytes useful for cryptographic operations.
-impl_fixed_buffer!(FixedBuffer256, 256);
 
 /// The StandardPadding trait adds a method useful for various hash algorithms to a FixedBuffer
 /// struct.
@@ -125,7 +116,7 @@ impl <T: FixedBuffer> StandardPadding for T {
     fn standard_padding<F: FnMut(&[u8])>(&mut self, rem: usize, mut func: F) {
         let size = Self::size();
 
-        self.next(1)[0] = 0b10000000u8;
+        self.next(1)[0] = 0b10000000;
 
         if self.remaining() < rem {
             self.zero_until(size);

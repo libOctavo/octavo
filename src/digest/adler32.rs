@@ -5,6 +5,8 @@ use byteorder::{
     BigEndian
 };
 
+const MOD: u32 = 65521;
+
 pub struct Adler32{
     a: u16,
     b: u16,
@@ -19,8 +21,8 @@ impl Default for Adler32 {
 impl Digest for Adler32 {
     fn update<T: AsRef<[u8]>>(&mut self, update: T) {
         for byte in update.as_ref() {
-            self.a = self.a.wrapping_add(*byte as u16);
-            self.b = self.b.wrapping_add(self.a);
+            self.a = (self.a.wrapping_add(*byte as u16) as u32 % MOD) as u16;
+            self.b = (self.b.wrapping_add(self.a) as u32 % MOD) as u16;
         }
     }
 
@@ -40,7 +42,7 @@ impl Digest for Adler32 {
 mod tests {
     use super::*;
     use digest::Digest;
-    use test::Test;
+    use digest::test::Test;
 
     const TESTS: [Test<'static>; 1] = [
         Test { input: "Wikipedia", output: "11e60398" }

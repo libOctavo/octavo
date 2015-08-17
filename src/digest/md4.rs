@@ -162,7 +162,7 @@ impl digest::Digest for MD4 {
 #[cfg(test)]
 mod tests {
     use digest::Digest;
-    use test::Test;
+    use digest::test::Test;
     use super::MD4;
 
     const TESTS: [Test<'static>; 7] = [

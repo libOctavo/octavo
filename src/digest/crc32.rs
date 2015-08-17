@@ -82,7 +82,7 @@ impl digest::Digest for CRC32 {
 mod tests {
     use super::*;
     use digest::Digest;
-    use test::Test;
+    use digest::test::Test;
 
     const TESTS: [Test<'static>; 8] = [
         Test { input: "", output: "00000000" },

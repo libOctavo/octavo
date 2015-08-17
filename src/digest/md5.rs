@@ -195,7 +195,7 @@ impl Digest for MD5 {
 #[cfg(test)]
 mod tests {
     use digest::Digest;
-    use test::Test;
+    use digest::test::Test;
     use super::MD5;
 
     const TESTS: [Test<'static>; 7] = [

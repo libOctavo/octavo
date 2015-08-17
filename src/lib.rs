@@ -21,7 +21,6 @@ extern crate byteorder;
 
 pub mod crypto;
 pub mod digest;
-pub mod utils;
 pub mod mac;
 
-#[cfg(test)] pub mod test;
+mod utils;

@@ -234,7 +234,7 @@ sha3_impl!(SHA3512 -> 512);
 mod tests {
     use super::*;
     use digest::Digest;
-    use test::Test;
+    use digest::test::Test;
 
     const SHA3_224_TESTS: [Test<'static>; 8] = [
         Test { input: "", output: "6b4e03423667dbb73b6e15454f0eb1abd4597f9a1b078e3f5b5a6bc7" },

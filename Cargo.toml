@@ -19,27 +19,34 @@ default = [
 nightly = ["default"]
 
 digest = [
+  "digest-fast",
+  "digest-deprecated",
+  "digest-safe"
+]
+
+# Fast algorithms that aren't safe in any way.
+digest-fast = [
   "adler32",
-  "crc32",
+  "crc32"
+]
+# Deprecated algorithms that are not considered safe enough to use in secure
+# manner.
+digest-deprecated = [
   "md4",
-  "md5",
+  "md5"
+]
+digest-safe = [
+  "sha1",
+  "sha2",
   "sha3"
 ]
 adler32 = []
-aich = []
 crc32 = []
-edonr = []
-gost = []
 md4 = []
 md5 = []
-ripemd = []
 sha1 = []
 sha2 = []
 sha3 = []
-snefru = []
-tiger = []
-tth = []
-whirlpool = []
 
 crypto = [
   "symmetric",
@@ -57,6 +64,8 @@ triple-des = []
 twofish = []
 idea = []
 
+rc2 = []
+rc3 = []
 rc4 = []
 rabbit = []
 salsa20 = []
