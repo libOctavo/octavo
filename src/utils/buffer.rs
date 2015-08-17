@@ -102,6 +102,9 @@ macro_rules! impl_fixed_buffer( ($name:ident, $size:expr) => (
 /// A fixed size buffer of 64 bytes useful for cryptographic operations.
 impl_fixed_buffer!(FixedBuffer64, 64);
 
+/// A fixed size buffer of 64 bytes useful for cryptographic operations.
+impl_fixed_buffer!(FixedBuffer128, 128);
+
 /// The StandardPadding trait adds a method useful for various hash algorithms to a FixedBuffer
 /// struct.
 pub trait StandardPadding {
