@@ -81,7 +81,7 @@ blowfish = []
 # chacha = []
 # hc-256 = []
 
-# public-key = []
+public-key = []
 # dh = ["diffie-hellman"]
 # diffie-hellman = []
 # ecc = []
@@ -93,4 +93,4 @@ mac = [
 ]
 hmac = []
 
-# ssl = []
+ssl = []
