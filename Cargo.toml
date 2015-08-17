@@ -37,12 +37,12 @@ digest-fast = [
 # manner.
 digest-deprecated = [
   "md4",
-  "md5"
+  "md5",
+  "sha1",
 ]
 digest-safe = [
-  "sha1",
   "sha2",
-  "sha3"
+  "sha3",
 ]
 adler32 = []
 crc32 = []
