@@ -38,6 +38,7 @@ digest-fast = [
 digest-deprecated = [
   "md4",
   "md5",
+  "ripemd",
   "sha1",
 ]
 digest-safe = [
@@ -48,13 +49,13 @@ adler32 = []
 crc32 = []
 md4 = []
 md5 = []
+ripemd = []
 sha1 = []
 sha2 = []
 sha3 = []
 # xxhash = []
 # whirlpool = []
 # tiger = []
-# ripemd = []
 
 crypto = [
   "symmetric",

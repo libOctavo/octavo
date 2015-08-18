@@ -12,21 +12,13 @@ use utils::buffer::{
 };
 
 struct SHA1State {
-    h0: u32,
-    h1: u32,
-    h2: u32,
-    h3: u32,
-    h4: u32
+    state: [u32; 5]
 }
 
 impl SHA1State {
     fn new() -> Self {
         SHA1State {
-            h0: 0x67452301,
-            h1: 0xefcdab89,
-            h2: 0x98badcfe,
-            h3: 0x10325476,
-            h4: 0xc3d2e1f0
+            state: [ 0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476, 0xc3d2e1f0 ]
         }
     }
 
@@ -47,34 +39,33 @@ impl SHA1State {
             words[i] = (words[i - 3] ^ words[i - 8] ^ words[i - 14] ^ words[i - 16]).rotate_left(1);
         }
 
-        let (mut a, mut b, mut c, mut d, mut e) = (self.h0, self.h1, self.h2, self.h3, self.h4);
+        // let (mut a, mut b, mut c, mut d, mut e) = (self.h0, self.h1, self.h2, self.h3, self.h4);
+        let mut state = self.state.clone();
 
         for (i, &word) in words.iter().enumerate() {
             let (f, k) = match i {
-                0 ... 19 => (ff(b, c, d), 0x5a827999),
-                20 ... 39 => (gg(b, c, d), 0x6ed9eba1),
-                40 ... 59 => (hh(b, c, d), 0x8f1bbcdc),
-                60 ... 79 => (ii(b, c, d), 0xca62c1d6),
+                0 ... 19 =>  (ff(state[1], state[2], state[3]), 0x5a827999),
+                20 ... 39 => (gg(state[1], state[2], state[3]), 0x6ed9eba1),
+                40 ... 59 => (hh(state[1], state[2], state[3]), 0x8f1bbcdc),
+                60 ... 79 => (ii(state[1], state[2], state[3]), 0xca62c1d6),
                 _ => unreachable!(),
             };
 
-            let tmp = a.rotate_left(5)
+            let tmp = state[0].rotate_left(5)
                 .wrapping_add(f)
-                .wrapping_add(e)
+                .wrapping_add(state[4])
                 .wrapping_add(k)
                 .wrapping_add(word);
-            e = d;
-            d = c;
-            c = b.rotate_left(30);
-            b = a;
-            a = tmp;
+            state[4] = state[3];
+            state[3] = state[2];
+            state[2] = state[1].rotate_left(30);
+            state[1] = state[0];
+            state[0] = tmp;
         }
 
-        self.h0 = self.h0.wrapping_add(a);
-        self.h1 = self.h1.wrapping_add(b);
-        self.h2 = self.h2.wrapping_add(c);
-        self.h3 = self.h3.wrapping_add(d);
-        self.h4 = self.h4.wrapping_add(e);
+        for i in 0..5 {
+            self.state[i] = self.state[i].wrapping_add(state[i]);
+        }
     }
 }
 
@@ -115,11 +106,9 @@ impl Digest for SHA1 {
 
         let mut out = out.as_mut();
         assert!(out.len() >= Self::output_bytes());
-        out.write_u32::<BigEndian>(state.h0).unwrap();
-        out.write_u32::<BigEndian>(state.h1).unwrap();
-        out.write_u32::<BigEndian>(state.h2).unwrap();
-        out.write_u32::<BigEndian>(state.h3).unwrap();
-        out.write_u32::<BigEndian>(state.h4).unwrap();
+        for &val in &state.state {
+            out.write_u32::<BigEndian>(val).unwrap();
+        }
     }
 }
 
