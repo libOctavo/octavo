@@ -1,7 +1,7 @@
 //! Fancy pure Rust crypto and hash library.
-//! 
+//!
 //! The main reason this exists is so I can learn about cryptography.
-//! 
+//!
 //! If you're asking "We have rust-crypto, why the hell do we need a new
 //! library?"), `rust-crypto` was (at the time of Octavio's creation) big pile of… mess. To be honest
 //! I doesn't hate `rust-crypto` but I wanted something that will be organized in fancy way, not

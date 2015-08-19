@@ -18,7 +18,7 @@ struct SHA1State {
 impl SHA1State {
     fn new() -> Self {
         SHA1State {
-            state: [ 0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476, 0xc3d2e1f0 ]
+            state: [0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476, 0xc3d2e1f0]
         }
     }
 
