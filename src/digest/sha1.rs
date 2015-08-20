@@ -131,7 +131,7 @@ mod tests {
     #[test]
     fn test_sha1() {
         for test in &TESTS {
-            test.test(SHA1::new());
+            test.test(SHA1::default());
         }
     }
 }

@@ -250,7 +250,7 @@ mod tests {
     #[test]
     fn test_sha3_224() {
         for test in &SHA3_224_TESTS {
-            test.test(SHA3224::new());
+            test.test(SHA3224::default());
         }
     }
 
@@ -268,7 +268,7 @@ mod tests {
     #[test]
     fn test_sha3_256() {
         for test in &SHA3_256_TESTS {
-            test.test(SHA3256::new());
+            test.test(SHA3256::default());
         }
     }
 
@@ -286,7 +286,7 @@ mod tests {
     #[test]
     fn test_sha3_384() {
         for test in &SHA3_384_TESTS {
-            test.test(SHA3384::new());
+            test.test(SHA3384::default());
         }
     }
 
@@ -305,7 +305,7 @@ mod tests {
     #[test]
     fn test_sha3_512() {
         for test in &SHA3_512_TESTS {
-            test.test(SHA3512::new());
+            test.test(SHA3512::default());
         }
     }
 }

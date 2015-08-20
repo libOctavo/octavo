@@ -178,7 +178,7 @@ mod tests {
     #[test]
     fn test_ripemd160() {
         for test in &TESTS {
-            test.test(RIPEMD160::new());
+            test.test(RIPEMD160::default());
         }
     }
 }

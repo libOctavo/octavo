@@ -214,7 +214,7 @@ mod tests {
 
         // Test that it works when accepting the message all at once
         for test in &TESTS {
-            test.test(MD5::new());
+            test.test(MD5::default());
         }
     }
 }
