@@ -3,8 +3,6 @@ use std::io::Write;
 pub mod hmac;
 
 pub trait MAC: Sized {
-    fn new<K: AsRef<[u8]>>(key: K) -> Self;
-
     fn update<D: AsRef<[u8]>>(&mut self, data: D);
 
     /// Output size in bits

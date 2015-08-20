@@ -98,7 +98,7 @@ mod tests {
     #[test]
     fn test_crc32() {
         for test in &TESTS {
-            test.test(CRC32::new());
+            test.test(CRC32::default());
         }
     }
 }

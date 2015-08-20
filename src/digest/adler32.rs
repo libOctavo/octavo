@@ -51,7 +51,7 @@ mod tests {
     #[test]
     fn test_adler32() {
         for test in &TESTS {
-            test.test(Adler32::new());
+            test.test(Adler32::default());
         }
     }
 }

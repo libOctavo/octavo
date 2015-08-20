@@ -46,10 +46,7 @@
 
 use std::io::Write;
 
-pub trait Digest: Default + Sized {
-    /// Creates new instance
-    fn new() -> Self { Default::default() }
-
+pub trait Digest: Sized {
     /// Update digest with data.
     fn update<T>(&mut self, input: T) where T: AsRef<[u8]>;
 
