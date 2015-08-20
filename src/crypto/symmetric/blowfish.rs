@@ -205,9 +205,9 @@ impl Blowfish {
     }
 
     fn expand_key(self, key: &[u8]) -> Self {
+        let key = key.iter().cycle();
         for i in 0..18 {
-            let mut key = &key[(4 * i % key.len())..];
-            self.p[i] ^= key.read_u32::<BigEndian>().unwrap();
+            self.p[i] ^= next_u32(&mut key);
         }
 
         let mut tmp = (0, 0);
