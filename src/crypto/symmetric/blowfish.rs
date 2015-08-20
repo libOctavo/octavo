@@ -9,10 +9,6 @@ use byteorder::{
 use crypto::traits::*;
 
 fn next_u32<'a, T: Iterator<Item=&'a u8>>(iter: &mut T) -> u32 {
-    // let mut v = 0;
-    // for _ in 0..4 {
-    //     v = (v << 8) | *iter.next().unwrap() as u32;
-    // }
     (0..4).fold(0, |v, _| { (v << 8) | *iter.next().unwrap() as u32 })
 }
 
@@ -209,32 +205,31 @@ impl Blowfish {
     }
 
     fn expand_key(self, key: &[u8]) -> Self {
-        // for i in 0..18 {
-        //     let mut key = &key[(4 * i % key.len())..];
-        //     self.p[i] ^= key.read_u32::<BigEndian>().unwrap();
-        // }
+        for i in 0..18 {
+            let mut key = &key[(4 * i % key.len())..];
+            self.p[i] ^= key.read_u32::<BigEndian>().unwrap();
+        }
 
-        // let mut tmp = (0, 0);
+        let mut tmp = (0, 0);
 
-        // for i in 0..9 {
-        //     let i = i * 2;
-        //     tmp = self.encrypt_round(tmp);
+        for i in 0..9 {
+            let i = i * 2;
+            tmp = self.encrypt_round(tmp);
 
-        //     self.p[i] = tmp.0;
-        //     self.p[i + 1] = tmp.1;
-        // }
-        // for i in 0..4 {
-        //     for j in 0..128 {
-        //         let j = j * 2;
-        //         tmp = self.encrypt_round(tmp);
+            self.p[i] = tmp.0;
+            self.p[i + 1] = tmp.1;
+        }
+        for i in 0..4 {
+            for j in 0..128 {
+                let j = j * 2;
+                tmp = self.encrypt_round(tmp);
 
-        //         self.s[i][j] = tmp.0;
-        //         self.s[i][j + 1] = tmp.1;
-        //     }
-        // }
+                self.s[i][j] = tmp.0;
+                self.s[i][j + 1] = tmp.1;
+            }
+        }
 
-        // self
-        self.salted_expand_key(&[0; 16][..], key)
+        self
     }
 
     fn salted_expand_key(mut self, salt: &[u8], key: &[u8]) -> Self {
