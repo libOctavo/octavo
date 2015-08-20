@@ -204,8 +204,8 @@ impl Blowfish {
         }
     }
 
-    fn expand_key(self, key: &[u8]) -> Self {
-        let key = key.iter().cycle();
+    fn expand_key(mut self, key: &[u8]) -> Self {
+        let mut key = key.iter().cycle();
         for i in 0..18 {
             self.p[i] ^= next_u32(&mut key);
         }
