@@ -23,16 +23,10 @@ default = [
 unstable = ["default"]
 
 digest = [
-  "digest-fast",
   "digest-deprecated",
   "digest-safe"
 ]
 
-# Fast algorithms that aren't safe in any way.
-digest-fast = [
-  "adler32",
-  "crc32"
-]
 # Deprecated algorithms that are not considered safe enough to use in secure
 # manner.
 digest-deprecated = [
@@ -45,15 +39,12 @@ digest-safe = [
   "sha2",
   "sha3",
 ]
-adler32 = []
-crc32 = []
 md4 = []
 md5 = []
 ripemd = []
 sha1 = []
 sha2 = []
 sha3 = []
-# xxhash = []
 # whirlpool = []
 # tiger = []
 

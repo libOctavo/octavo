@@ -7,18 +7,6 @@
 //! **WARNING**: If you want to use one of this functions as password hash then you are evil human
 //! being and I really hope that I'm not using any of your services.
 //!
-//! ## General use hash functions
-//!
-//! These are hash functions that can be use to check message integrity against random
-//! unintentional changes, i.e. damaged source or cosmic rays. They are meant to be fast and simple.
-//!
-//! **DO NOT** use this functions if you want to check against intentional changes that may
-//! be caused by 3rd-party! If that is your purpose then check cryptographic hash functions section
-//! below.
-//!
-//! - `Adler32`
-//! - `CRC32`
-//!
 //! ## Cryptographic hash functions
 //!
 //! Via [Wikipedia](https://en.wikipedia.org/wiki/Cryptographic_hash_function):
@@ -58,6 +46,8 @@ pub trait Digest: Sized {
     }
     fn block_size() -> usize;
 
+    fn reset() -> Self;
+
     /// Write resulting hash into `output`.
     ///
     /// `output` should be big enough to contain whole output.
@@ -81,8 +71,6 @@ pub trait Digest: Sized {
     }
 }
 
-#[cfg(feature = "adler32")] pub mod adler32;
-#[cfg(feature = "crc32")] pub mod crc32;
 #[cfg(feature = "md4")] pub mod md4;
 #[cfg(feature = "md5")] pub mod md5;
 #[cfg(feature = "ripemd")] pub mod ripemd;
