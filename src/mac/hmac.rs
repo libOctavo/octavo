@@ -9,7 +9,7 @@ pub struct HMAC<T: Digest + Default> {
 }
 
 impl<T: Digest + Default> HMAC<T> {
-    fn new<K: AsRef<[u8]>>(key: K) -> Self {
+    pub fn new<K: AsRef<[u8]>>(key: K) -> Self {
         Self::with_digest(key.as_ref(), Default::default())
     }
 
