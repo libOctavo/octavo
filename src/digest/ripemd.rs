@@ -161,7 +161,6 @@ impl Digest for RIPEMD160 {
 
 #[cfg(test)]
 mod tests {
-    use digest::Digest;
     use digest::test::Test;
     use super::*;
 

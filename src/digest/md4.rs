@@ -161,7 +161,6 @@ impl digest::Digest for MD4 {
 
 #[cfg(test)]
 mod tests {
-    use digest::Digest;
     use digest::test::Test;
     use super::MD4;
 

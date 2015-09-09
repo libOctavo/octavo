@@ -114,7 +114,6 @@ impl Digest for SHA1 {
 
 #[cfg(test)]
 mod tests {
-    use digest::Digest;
     use digest::test::Test;
     use super::SHA1;
 

@@ -282,7 +282,6 @@ impl_sha!(high SHA512, SHA512_INIT, 512);
 
 #[cfg(test)]
 mod tests {
-    use digest::Digest;
     use digest::test::Test;
     use super::*;
 

@@ -233,7 +233,6 @@ sha3_impl!(SHA3512 -> 512);
 #[cfg(test)]
 mod tests {
     use super::*;
-    use digest::Digest;
     use digest::test::Test;
 
     const SHA3_224_TESTS: [Test<'static>; 8] = [
