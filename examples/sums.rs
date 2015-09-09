@@ -1,8 +1,6 @@
 extern crate octavo;
 
 use octavo::digest::Digest;
-use octavo::digest::adler32::*;
-use octavo::digest::crc32::CRC32;
 use octavo::digest::md5::MD5;
 use octavo::digest::md4::MD4;
 use octavo::digest::ripemd::RIPEMD160;
@@ -21,8 +19,6 @@ fn main() {
 
     println!("Data: {:?}\n", data);
 
-    println!("Adler32:   {}", hex(&data, Adler32::default()));
-    println!("CRC32:     {}", hex(&data, CRC32::default()));
     println!("MD4:       {}", hex(&data, MD4::default()));
     println!("MD5:       {}", hex(&data, MD5::default()));
     println!("RIPEMD160: {}", hex(&data, RIPEMD160::default()));

@@ -46,7 +46,7 @@ pub trait Digest: Sized {
     }
     fn block_size() -> usize;
 
-    fn reset() -> Self;
+    // fn reset() -> Self;
 
     /// Write resulting hash into `output`.
     ///
