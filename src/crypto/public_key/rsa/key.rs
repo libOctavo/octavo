@@ -2,7 +2,7 @@ use num::bigint::{
     BigInt,
     RandBigInt
 };
-use num::One;
+use num::{One, Zero};
 use rand::Rng;
 
 pub struct SecretKeyExtra {
@@ -14,7 +14,7 @@ pub struct SecretKeyExtra {
 }
 
 pub enum Key {
-     Public {
+    Public {
         n: BigInt,
         e: BigInt,
     },
@@ -27,18 +27,38 @@ pub enum Key {
 
 type KeyPair = (Key, Key);
 
-impl KeyData {
-    pub fn keypair_from_primes<T: Into<BigInt>>(p: T, q: T) -> () {
-        let (p, q) = (p.into(), q.into());
+// fn inverse(a: BigInt, n: BigInt) -> Option<BigInt> {
+//     let mut t = Zero::zero();
+//     let mut r = n.clone();
+//     let mut newt = One::one();
+//     let mut newr = a;
+
+//     while !newr.is_zero() {
+//         let quo = &r / &newr;
+//         let t = newt;
+
+//     }
+
+//     Some(One::one())
+// }
+
+impl Key {
+    pub fn keypair_from_primes<T: Into<BigInt>>(p: T, q: T, e: T) -> () {
+        let (p, q, e) = (p.into(), q.into(), e.into());
 
         let n = &p * &q;
         let fin = &n - (&p + &q - BigInt::one());
+
+        assert!(&fin % &e == BigInt::one());
+
+        let public = Key::Public { n: n.clone(), e: e.clone() };
     }
 
-    pub fn generate_keypair<G: Rng + RandBigInt>(mut rng: G, bits: usize) -> () {
-        let p = rng.gen_bigint(bits);
-        let q = rng.gen_bigint(bits);
+    pub fn generate_keypair<G, T>(mut rng: G, e: T, bits: usize) -> ()
+        where G: RandBigInt, T: Into<BigInt> {
+            let p = rng.gen_bigint(bits);
+            let q = rng.gen_bigint(bits);
 
-        keypair_from_primes(p, q);
-    }
+            Self::keypair_from_primes(p, q, e.into())
+        }
 }
