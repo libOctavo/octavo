@@ -5,6 +5,8 @@
 [![Build Status](https://travis-ci.org/hauleth/octavo.svg)](https://travis-ci.org/hauleth/octavo)
 [![Coverage Status](https://coveralls.io/repos/hauleth/octavo/badge.svg?branch=master&service=github)](https://coveralls.io/github/hauleth/octavo?branch=master)
 
+<center>![Octavo's logo](docs/logo.png)</center>
+
 Highly modular & configurable hash & crypto library written in pure Rust.
 
 ## Installation
