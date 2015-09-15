@@ -1,69 +1,82 @@
 use num::bigint::{
-    BigInt,
+    BigUint,
     RandBigInt
 };
-use num::{One, Zero};
+use num::One;
+
 use rand::Rng;
 
+use utils::modular::Inverse;
+use utils::primes::generate_prime;
+
 pub struct SecretKeyExtra {
-    p: BigInt,
-    q: BigInt,
-    dmp1: BigInt,
-    dmq1: BigInt,
-    qinv: BigInt
+    p: BigUint,
+    q: BigUint,
+    dmp1: BigUint,
+    dmq1: BigUint,
+    qinv: BigUint
 }
 
 pub enum Key {
     Public {
         /// Modulus
-        n: BigInt,
+        n: BigUint,
         /// Exponent
-        e: BigInt,
+        e: BigUint,
     },
     Private {
         /// Modulus
-        n: BigInt,
+        n: BigUint,
         /// Exponent
-        d: BigInt,
+        d: BigUint,
         extra: Option<SecretKeyExtra>,
     }
 }
 
-type KeyPair = (Key, Key);
-
-// fn inverse(a: BigInt, n: BigInt) -> Option<BigInt> {
-//     let mut t = Zero::zero();
-//     let mut r = n.clone();
-//     let mut newt = One::one();
-//     let mut newr = a;
-
-//     while !newr.is_zero() {
-//         let quo = &r / &newr;
-//         let t = newt;
-
-//     }
-
-//     Some(One::one())
-// }
+pub type KeyPair = (Key, Key);
 
 impl Key {
-    pub fn keypair_from_primes<P, Q, E>(p: P, q: Q, e: E) -> ()
-        where P: Into<BigInt>, Q: Into<BigInt>, E: Into<BigInt> {
+    pub fn keypair_from_primes<P, Q, E>(p: P, q: Q, e: E) -> KeyPair
+        where P: Into<BigUint>, Q: Into<BigUint>, E: Into<BigUint> {
             let (p, q, e) = (p.into(), q.into(), e.into());
 
             let n = &p * &q;
-            let fin = &n - (&p + &q - BigInt::one());
+            let fin = &n - (&p + &q - BigUint::one());
 
-            assert!(&fin % &e == BigInt::one());
+            let d = e.inverse(&fin).expect("Something gone wrong");
 
-            let public = Key::Public { n: n.clone(), e: e.clone() };
+            let public = Key::Public { n: n.clone(), e: e };
+            let extra = SecretKeyExtra {
+                dmp1: &d % (&p - BigUint::one()),
+                dmq1: &d % (&q - BigUint::one()),
+                qinv: q.inverse(&p).unwrap(),
+                p: p,
+                q: q,
+            };
+            let private = Key::Private { n: n, d: d, extra: Some(extra)};
+
+            (public, private)
         }
 
-    pub fn generate_keypair<G, T>(mut rng: G, e: T, bits: usize) -> ()
-        where G: RandBigInt, T: Into<BigInt> {
-            let p = rng.gen_bigint(bits);
-            let q = rng.gen_bigint(bits);
+    pub fn generate_keypair<G, T>(mut rng: G, e: T, bits: usize) -> KeyPair
+        where G: Rng + RandBigInt, T: Into<BigUint> {
+            let p = generate_prime(&mut rng, bits);
+            let q = generate_prime(&mut rng, bits);
 
             Self::keypair_from_primes(p, q, e)
         }
+
+    pub fn is_public(&self) -> bool {
+        match self {
+            &Key::Public { .. } => true,
+            _ => false
+        }
+    }
+
+    pub fn is_private(&self) -> bool {
+        match self {
+            &Key::Private { .. } => true,
+            _ => false
+        }
+    }
 }
