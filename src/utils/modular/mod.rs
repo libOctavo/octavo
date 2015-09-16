@@ -23,18 +23,18 @@ impl<'a> Inverse for &'a BigInt {
     type Output = BigInt;
 
     fn inverse(self, modulo: Self) -> Option<Self::Output> {
-        let (mut t, mut newt): (BigInt, BigInt) = (Zero::zero(), One::one());
-        let (mut r, mut newr): (BigInt, BigInt) = (self.clone(), modulo.clone());
+        let (mut t, mut new_t): (BigInt, BigInt) = (Zero::zero(), One::one());
+        let (mut r, mut new_r): (BigInt, BigInt) = (modulo.clone(), self.clone());
 
-        while !newr.is_zero() {
-            let quo = &r / &newr;
-            let tmp = &r - &quo * &newr;
-            r = newr; newr = tmp;
-            let tmp = &t - &quo * &newt;
-            t = newt; newt = tmp;
+        while !new_r.is_zero() {
+            let quo = &r / &new_r;
+            let tmp = &r - &quo * &new_r;
+            r = new_r; new_r = tmp;
+            let tmp = &t - &quo * &new_t;
+            t = new_t; new_t = tmp;
         }
 
-        if r > One::one() { return None }
+        if r != One::one() { return None }
         if t.is_negative() {
             Some(t + modulo)
         } else {

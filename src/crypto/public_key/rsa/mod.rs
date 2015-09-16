@@ -1,5 +1,6 @@
 use num::bigint::{
     BigUint,
+    ToBigUint,
     RandBigInt
 };
 use num::One;
@@ -16,6 +17,18 @@ pub struct SecretKeyExtra {
     dmp1: BigUint,
     dmq1: BigUint,
     qinv: BigUint
+}
+
+impl SecretKeyExtra {
+    fn from_primes(p: BigUint, q: BigUint, d: &BigUint) -> Self {
+        SecretKeyExtra {
+            dmp1: d % (&p - BigUint::one()),
+            dmq1: d % (&q - BigUint::one()),
+            qinv: q.inverse(&p).unwrap(),
+            p: p,
+            q: q,
+        }
+    }
 }
 
 pub enum RSA {
@@ -42,19 +55,19 @@ impl RSA {
             let (p, q, e) = (p.into(), q.into(), e.into());
 
             let n = &p * &q;
-            let fin = &n - (&p + &q - BigUint::one());
+            let phi_n = &n - (&p + &q - BigUint::one());
 
-            let d = e.inverse(&fin).expect("e is irreversible in ring phi(pq) - error");
+            let d = e.inverse(&phi_n).expect("e is irreversible in ring phi(pq) - error");
 
-            let public = RSA::Public { n: n.clone(), e: e };
-            let extra = SecretKeyExtra {
-                dmp1: &d % (&p - BigUint::one()),
-                dmq1: &d % (&q - BigUint::one()),
-                qinv: q.inverse(&p).unwrap(),
-                p: p,
-                q: q,
+            let public = RSA::Public {
+                n: n.clone(),
+                e: e
             };
-            let private = RSA::Private { n: n, d: d, extra: Some(extra)};
+            let private = RSA::Private {
+                n: n,
+                extra: Some(SecretKeyExtra::from_primes(p, q, &d)),
+                d: d,
+            };
 
             (public, private)
         }
@@ -98,25 +111,25 @@ impl RSA {
 }
 
 fn crypt(msg: &BigUint,
-                 n: &BigUint,
-                 d: &BigUint,
-                 extra: Option<&SecretKeyExtra>) -> BigUint {
+         modulus: &BigUint,
+         exp: &BigUint,
+         extra: Option<&SecretKeyExtra>) -> BigUint {
     if let Some(ref extra) = extra {
         chinese_reminders_power(msg, extra)
     } else {
-        msg.pow_mod(d, n)
+        msg.pow_mod(exp, modulus)
     }
 }
 
-fn chinese_reminders_power(msg: &BigUint, extra: &SecretKeyExtra) -> BigUint {
-    let mut m1 = msg.pow_mod(&extra.dmp1, &extra.p);
-    let m2 = msg.pow_mod(&extra.dmq1, &extra.q);
+fn chinese_reminders_power(c: &BigUint, extra: &SecretKeyExtra) -> BigUint {
+    let mut m1 = c.pow_mod(&extra.dmp1, &extra.p);
+    let m2 = c.pow_mod(&extra.dmq1, &extra.q);
 
     while m1 < m2 {
         m1 = m1 + &extra.p;
     }
 
-    let h = &extra.qinv * (m1 - &m2);
+    let h = (&extra.qinv * (m1 - &m2)) % &extra.p;
 
     m2 + h * &extra.q
 }
@@ -125,7 +138,7 @@ fn chinese_reminders_power(msg: &BigUint, extra: &SecretKeyExtra) -> BigUint {
 mod tests {
     use super::RSA;
 
-    use num::bigint::{BigUint, ToBigUint};
+    use num::bigint::{ToBigUint};
 
     fn keys() -> (RSA, RSA) {
         RSA::keypair_from_primes(
@@ -134,14 +147,19 @@ mod tests {
             17.to_biguint().unwrap())
     }
 
-    fn message() -> BigUint { 65.to_biguint().unwrap() }
-
     #[test]
     fn test_encryption() {
         let (public, _) = keys();
-
-        let c = public.crypt(&message());
+        let c = public.crypt(&65.to_biguint().unwrap());
 
         assert_eq!(c, 2790.to_biguint().unwrap())
+    }
+
+    #[test]
+    fn test_decryption() {
+        let (_, private) = keys();
+        let m = private.crypt(&2790.to_biguint().unwrap());
+
+        assert_eq!(m, 65.to_biguint().unwrap())
     }
 }
