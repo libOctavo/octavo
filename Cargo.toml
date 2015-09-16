@@ -9,8 +9,13 @@ repository = "https://github.com/hauleth/octavo"
 
 [dependencies]
 byteorder = "*"
+rustc-serialize = "*"
 
 [dependencies.num]
+version = "*"
+optional = true
+
+[dependencies.rand]
 version = "*"
 optional = true
 
@@ -54,6 +59,10 @@ crypto = [
 ]
 
 symmetric = [
+  "block"
+]
+
+block = [
   "blowfish"
 ]
 # aes = []
@@ -64,7 +73,6 @@ blowfish = []
 # twofish = []
 # idea = []
 
-# block = []
 # rc2 = []
 # rc3 = []
 # rc4 = []
@@ -73,12 +81,14 @@ blowfish = []
 # chacha = []
 # hc-256 = []
 
-public-key = []
+public-key = [
+  "rsa"
+]
 # dh = ["diffie-hellman"]
-# diffie-hellman = []
-# ecc = []
-# elgamal = []
-# rsa = ["num"]
+# diffie-hellman = ["rand"]
+# ecc = ["rand"]
+# elgamal = ["rand"]
+rsa = ["num", "rand"]
 
 mac = [
   "hmac"

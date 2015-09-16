@@ -20,7 +20,8 @@
 //!
 
 extern crate byteorder;
-#[cfg(feaure = "num")] extern crate num;
+#[cfg(feature = "num")] extern crate num;
+#[cfg(feature = "rand")] extern crate rand;
 
 pub mod crypto;
 pub mod digest;

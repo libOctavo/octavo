@@ -70,7 +70,7 @@ mod tests {
     use digest::md5::MD5;
 
     #[test]
-    fn test_empty_strings() {
+    fn test_empty_string() {
         let mut hmac_md5 = HMAC::<MD5>::new("");
         hmac_md5.update("");
 
