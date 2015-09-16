@@ -1,14 +1,10 @@
-use num::bigint::{
-    BigUint,
-    ToBigUint,
-    RandBigInt
-};
+use num::bigint::{BigUint, RandBigInt};
 use num::One;
 
 use rand::Rng;
 
 use utils::modular::Inverse;
-use utils::modular::power::Power;
+use utils::modular::Power;
 use utils::primes::generate_prime;
 
 pub struct SecretKeyExtra {
