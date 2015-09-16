@@ -1,4 +1,5 @@
-use num::{Zero, One, BigUint};
+use num::{Zero, One, Signed, BigUint, BigInt};
+use num::bigint::Sign;
 
 pub mod power;
 
@@ -12,8 +13,18 @@ impl<'a> Inverse for &'a BigUint {
     type Output = BigUint;
 
     fn inverse(self, modulo: Self) -> Option<Self::Output> {
-        let (mut t, mut newt): (BigUint, BigUint) = (Zero::zero(), One::one());
-        let (mut r, mut newr) = (self.clone(), modulo.clone());
+        BigInt::from_biguint(Sign::Plus, self.clone())
+            .inverse(&BigInt::from_biguint(Sign::Plus, modulo.clone()))
+            .and_then(|n| n.to_biguint())
+    }
+}
+
+impl<'a> Inverse for &'a BigInt {
+    type Output = BigInt;
+
+    fn inverse(self, modulo: Self) -> Option<Self::Output> {
+        let (mut t, mut newt): (BigInt, BigInt) = (Zero::zero(), One::one());
+        let (mut r, mut newr): (BigInt, BigInt) = (self.clone(), modulo.clone());
 
         while !newr.is_zero() {
             let quo = &r / &newr;
@@ -24,7 +35,10 @@ impl<'a> Inverse for &'a BigUint {
         }
 
         if r > One::one() { return None }
-
-        Some(t)
+        if t.is_negative() {
+            Some(t + modulo)
+        } else {
+            Some(t)
+        }
     }
 }
