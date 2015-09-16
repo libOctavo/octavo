@@ -60,8 +60,8 @@ impl Key {
 
     pub fn generate_keypair<G, T>(mut rng: G, e: T, bits: usize) -> KeyPair
         where G: Rng + RandBigInt, T: Into<BigUint> {
-            let p = generate_prime(&mut rng, bits);
-            let q = generate_prime(&mut rng, bits);
+            let p = generate_prime(&mut rng, bits).expect("Cannot generate safe prime");
+            let q = generate_prime(&mut rng, bits).expect("Cannot generate safe prime");
 
             Self::keypair_from_primes(p, q, e)
         }
