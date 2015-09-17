@@ -19,6 +19,9 @@
 //!
 //!
 
+#![deny(trivial_casts, unreachable_code, while_true)]
+#![warn(unused_qualifications)]
+
 extern crate byteorder;
 #[cfg(feature = "num")] extern crate num;
 #[cfg(feature = "rand")] extern crate rand;
