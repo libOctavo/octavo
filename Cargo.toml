@@ -19,13 +19,18 @@ optional = true
 version = "*"
 optional = true
 
+[dependencies.clippy]
+version = "*"
+optional = true
+
 [features]
 default = [
   "digest",
   "crypto",
   "ssl"
 ]
-unstable = ["default"]
+unstable = ["default", "lints"]
+lints = ["clippy"]
 
 digest = [
   "digest-deprecated",
