@@ -29,6 +29,13 @@ You can help with this project in 3 ways:
 2. Audit code or use it. If you find bug just fill the issue, it is great help also.
 3. [![Support via Gratipay](https://cdn.rawgit.com/gratipay/gratipay-badge/2.3.0/dist/gratipay.svg)](https://gratipay.com/hauleth/)
 
+## Full disclosure
+
+If you find security bug then contact me via mail <lukasz@niemier.pl> using
+mine [PGP key][pgp]
+
 ## Licence
 
 Check [LICENSE](LICENSE) file.
+
+[pgp]: docs/hauleth.asc
