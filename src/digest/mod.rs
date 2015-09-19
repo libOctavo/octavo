@@ -64,8 +64,8 @@ pub trait Digest: Sized {
         unsafe { buf.set_len(size); }
         self.result(&mut buf[..]);
 
-        for i in 0..size {
-            write!(hex, "{:02x}", buf[i]).unwrap();
+        for b in buf {
+            write!(hex, "{:02x}", b).unwrap();
         }
         String::from_utf8(hex).unwrap()
     }

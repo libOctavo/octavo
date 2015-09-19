@@ -667,7 +667,7 @@ mod test {
         fn test_openwall_test_vectors() {
             let tests = openwall_test_vectors();
             let mut output = [0u8; 24];
-            for test in tests.iter() {
+            for test in &tests {
                 bcrypt(test.cost, &test.salt[..], &test.input[..], &mut output[..]);
                 assert_eq!(&output[0..23], &test.output[..]);
             }

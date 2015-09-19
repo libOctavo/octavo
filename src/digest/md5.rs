@@ -28,6 +28,7 @@ impl MD5State {
         }
     }
 
+    #[allow(needless_range_loop)]
     fn process_block(&mut self, mut input: &[u8]) {
         fn f(u: u32, v: u32, w: u32) -> u32 {
             (u & v) | (!u & w)

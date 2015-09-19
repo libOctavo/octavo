@@ -46,7 +46,7 @@ impl SHA3State {
         }
     }
 
-    #[inline(always)]
+    #[allow(needless_range_loop)]
     fn theta(&mut self) {
         let mut a = [0u64; 5];
         let mut b = [0u64; 5];
@@ -72,14 +72,12 @@ impl SHA3State {
         }
     }
 
-    #[inline(always)]
     fn rho(&mut self) {
         for (i, shift) in SHIFTS.iter().enumerate() {
             self.hash[i] = self.hash[i].rotate_left(*shift);
         }
     }
 
-    #[inline(always)]
     fn pi(&mut self) {
         let tmp       = self.hash[ 1];
         self.hash[ 1] = self.hash[ 6];
@@ -109,7 +107,6 @@ impl SHA3State {
         // NOTE: self.hash[0] is left untouched
     }
 
-    #[inline(always)]
     fn chi(&mut self) {
         for i in 0..5 {
             let i = i * 5;
@@ -124,7 +121,6 @@ impl SHA3State {
         }
     }
 
-    #[inline(always)]
     fn permutation(&mut self) {
         for round in &ROUND_CONSTS {
             self.theta();
@@ -137,7 +133,6 @@ impl SHA3State {
         }
     }
 
-    #[inline(always)]
     fn process(&mut self, mut data: &[u8]) {
         for i in 0..9 {
             self.hash[i] ^= data.read_u64::<LittleEndian>().unwrap();

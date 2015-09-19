@@ -21,6 +21,7 @@
 
 #![cfg_attr(feature = "clippy", feature(plugin))]
 #![cfg_attr(feature = "clippy", plugin(clippy))]
+#![cfg_attr(not(feature = "lints"), allow(unknown_lints))]
 
 #![deny(trivial_casts, unreachable_code, while_true)]
 #![warn(unused_qualifications)]

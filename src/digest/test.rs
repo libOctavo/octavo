@@ -12,11 +12,11 @@ impl<'a> Test<'a> {
 }
 
 pub trait Testable: Sized {
-    fn test<'a>(self, &Test<'a>);
+    fn test(self, &Test);
 }
 
 impl<T> Testable for T where T: Digest + Sized {
-    fn test<'a>(mut self, test: &Test<'a>) {
+    fn test(mut self, test: &Test) {
         self.update(test.input);
         let hex = self.hex_result();
         assert!(test.output == hex, "Input: {:?}\nExpected: {}\nGot: {}", test.input, test.output, hex);
