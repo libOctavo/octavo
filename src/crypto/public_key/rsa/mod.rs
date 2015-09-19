@@ -85,23 +85,23 @@ impl RSA {
         }
 
     pub fn is_public(&self) -> bool {
-        match self {
-            &RSA::Public { .. } => true,
+        match *self {
+            RSA::Public { .. } => true,
             _ => false
         }
     }
 
     pub fn is_private(&self) -> bool {
-        match self {
-            &RSA::Private { .. } => true,
+        match *self {
+            RSA::Private { .. } => true,
             _ => false
         }
     }
 
     pub fn crypt(&self, msg: &BigUint) -> BigUint {
-        match self {
-            &RSA::Private { ref n, ref d, ref extra } => crypt(msg, n, d, extra.as_ref()),
-            &RSA::Public { ref n, ref e } => crypt(msg, n, e, None),
+        match *self {
+            RSA::Private { ref n, ref d, ref extra } => crypt(msg, n, d, extra.as_ref()),
+            RSA::Public { ref n, ref e } => crypt(msg, n, e, None),
         }
     }
 }

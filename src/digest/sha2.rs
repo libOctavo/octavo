@@ -63,6 +63,7 @@ struct SHAState<T> {
 }
 
 impl SHAState<u32> {
+    #[allow(needless_range_loop)]
     fn process_block(&mut self, mut data: &[u8]) {
         assert_eq!(data.len(), 64);
 
@@ -71,7 +72,6 @@ impl SHAState<u32> {
         for i in 0..16 {
             words[i] = data.read_u32::<BigEndian>().unwrap();
         }
-
         for i in 16..64 {
             let s0 = words[i - 15].rotate_right(7)
                 ^ words[i - 15].rotate_right(18)
@@ -124,6 +124,7 @@ impl SHAState<u32> {
 }
 
 impl SHAState<u64> {
+    #[allow(needless_range_loop)]
     fn process_block(&mut self, mut data: &[u8]) {
         assert_eq!(data.len(), 128);
 
@@ -229,50 +230,50 @@ macro_rules! impl_sha(
             }
         }
     };
-(high $name:ident, $init:ident, $bits:expr) => {
-    pub struct $name {
-        state: SHAState<u64>,
-        buffer: FixedBuffer128,
-        length: u64
-    }
+    (high $name:ident, $init:ident, $bits:expr) => {
+        pub struct $name {
+            state: SHAState<u64>,
+            buffer: FixedBuffer128,
+            length: u64
+        }
 
-    impl Default for $name {
-        fn default() -> Self {
-            $name {
-                state: SHAState { state: $init },
-                buffer: FixedBuffer128::new(),
-                length: 0
+        impl Default for $name {
+            fn default() -> Self {
+                $name {
+                    state: SHAState { state: $init },
+                    buffer: FixedBuffer128::new(),
+                    length: 0
+                }
+            }
+        }
+
+        impl Digest for $name {
+            fn update<T: AsRef<[u8]>>(&mut self, data: T) {
+                let data = data.as_ref();
+                self.length += data.len() as u64;
+
+                let state = &mut self.state;
+                self.buffer.input(data, |d| state.process_block(d));
+            }
+
+            fn output_bits() -> usize { $bits }
+            fn block_size() -> usize { 128 }
+
+            fn result<T: AsMut<[u8]>>(mut self, mut out: T) {
+                let state = &mut self.state;
+
+                self.buffer.standard_padding(8, |d| state.process_block(d));
+                self.buffer.next(8).write_u64::<BigEndian>(self.length * 8).unwrap();
+                state.process_block(self.buffer.full_buffer());
+
+                let mut out = out.as_mut();
+                assert!(out.len() >= Self::output_bytes());
+                for i in 0..($bits / 64) {
+                    out.write_u64::<BigEndian>(state.state[i]).unwrap();
+                }
             }
         }
     }
-
-    impl Digest for $name {
-        fn update<T: AsRef<[u8]>>(&mut self, data: T) {
-            let data = data.as_ref();
-            self.length += data.len() as u64;
-
-            let state = &mut self.state;
-            self.buffer.input(data, |d| state.process_block(d));
-        }
-
-        fn output_bits() -> usize { $bits }
-        fn block_size() -> usize { 128 }
-
-        fn result<T: AsMut<[u8]>>(mut self, mut out: T) {
-            let state = &mut self.state;
-
-            self.buffer.standard_padding(8, |d| state.process_block(d));
-            self.buffer.next(8).write_u64::<BigEndian>(self.length * 8).unwrap();
-            state.process_block(self.buffer.full_buffer());
-
-            let mut out = out.as_mut();
-            assert!(out.len() >= Self::output_bytes());
-            for i in 0..($bits / 64) {
-                out.write_u64::<BigEndian>(state.state[i]).unwrap();
-            }
-        }
-    }
-}
 );
 
 impl_sha!(low SHA224, SHA224_INIT, 224);

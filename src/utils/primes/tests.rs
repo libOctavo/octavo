@@ -12,8 +12,8 @@ pub enum Result {
 
 impl Result {
     pub fn is_composite(&self) -> bool {
-        match self {
-            &Result::Composite => true,
+        match *self {
+            Result::Composite => true,
             _ => false
         }
     }

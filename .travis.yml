@@ -16,11 +16,11 @@ script:
   - |
       travis-cargo build &&
       travis-cargo test &&
-      travis-cargo bench &&
+      travis-cargo --only nightly bench &&
       travis-cargo --only stable doc
 after_success:
   - travis-cargo --only stable doc-upload
-  - travis-cargo coveralls --no-sudo
+  - travis-cargo --only stable coveralls --no-sudo
 notifications:
   webhooks:
     urls:

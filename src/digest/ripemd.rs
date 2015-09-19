@@ -58,6 +58,7 @@ impl State {
             state: [0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476, 0xc3d2e1f0]
         }
     }
+
     fn process_block(&mut self, mut block: &[u8]) {
         assert_eq!(block.len(), 64);
 
@@ -86,8 +87,8 @@ impl State {
 
         let mut data = [0u32; 16];
 
-        for i in 0..16 {
-            data[i] = block.read_u32::<LittleEndian>().unwrap();
+        for byte in &mut data {
+            *byte = block.read_u32::<LittleEndian>().unwrap();
         }
 
         let mut left = self.state.clone();

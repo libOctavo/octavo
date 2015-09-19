@@ -22,6 +22,7 @@ impl SHA1State {
         }
     }
 
+    #[allow(needless_range_loop)]
     fn process_block(&mut self, mut data: &[u8]) {
         assert_eq!(data.len(), 64);
 
@@ -63,8 +64,8 @@ impl SHA1State {
             state[0] = tmp;
         }
 
-        for i in 0..5 {
-            self.state[i] = self.state[i].wrapping_add(state[i]);
+        for (i, byte) in self.state.iter_mut().enumerate() {
+            *byte = byte.wrapping_add(state[i]);
         }
     }
 }
