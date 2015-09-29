@@ -6,7 +6,7 @@ use byteorder::{
     BigEndian
 };
 
-use crypto::traits::*;
+use super::{BlockEncrypt, BlockDecrypt};
 
 fn next_u32<'a, T: Iterator<Item=&'a u8>>(iter: &mut T) -> u32 {
     (0..4).fold(0, |v, _| { (v << 8) | *iter.next().unwrap() as u32 })
@@ -369,7 +369,7 @@ pub fn bcrypt<I: AsRef<[u8]>, O: AsMut<[u8]>>(cost: usize, salt: I, input: I, mu
 #[cfg(test)]
 mod test {
     use super::*;
-    use crypto::traits::*;
+    use crypto::block::{BlockEncrypt, BlockDecrypt};
 
     struct Test {
         key: [u8; 8],
