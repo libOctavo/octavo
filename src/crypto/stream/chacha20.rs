@@ -120,6 +120,8 @@ impl StreamEncrypt for ChaCha20 {
     fn encrypt_stream<I, O>(&mut self, input: I, mut output: O)
         where I: AsRef<[u8]>,
               O: AsMut<[u8]> {
+                  assert_eq!(input.as_ref().len(), output.as_mut().len());
+
                   let input = input.as_ref().chunks(STATE_BYTES);
                   let output = output.as_mut().chunks_mut(STATE_BYTES);
                   for (i, o) in input.zip(output) {
@@ -132,6 +134,8 @@ impl StreamDecrypt for ChaCha20 {
     fn decrypt_stream<I, O>(&mut self, input: I, mut output: O)
         where I: AsRef<[u8]>,
               O: AsMut<[u8]> {
+                  assert_eq!(input.as_ref().len(), output.as_mut().len());
+
                   let input = input.as_ref().chunks(STATE_BYTES);
                   let output = output.as_mut().chunks_mut(STATE_BYTES);
                   for (i, o) in input.zip(output) {
@@ -143,7 +147,7 @@ impl StreamDecrypt for ChaCha20 {
 #[cfg(test)]
 mod test {
     use super::ChaCha20;
-    use crypto::stream::{StreamEncrypt, StreamDecrypt};
+    use crypto::stream::StreamEncrypt;
 
     struct Test<'a> {
         key: [u8; 32],
@@ -204,7 +208,7 @@ mod test {
     fn encryption() {
         for test in &TESTS {
             let mut cipher = ChaCha20::init(&test.key[..], &test.nonce[..], test.position);
-            let mut buf = vec![0; 64];
+            let mut buf = vec![0; test.plaintext.len()];
 
             cipher.encrypt_stream(test.plaintext, &mut buf[..]);
             assert_eq!(test.ciphertext, &buf[..]);
@@ -215,10 +219,10 @@ mod test {
     fn decryption() {
         for test in &TESTS {
             let mut cipher = ChaCha20::init(&test.key[..], &test.nonce[..], test.position);
-            let mut buf = vec![0; 64];
+            let mut buf = vec![0; test.plaintext.len()];
 
-            cipher.decrypt_stream(test.ciphertext, &mut buf[..]);
-            assert_eq!(test.plaintext, &buf[..]);
+            cipher.encrypt_stream(test.plaintext, &mut buf[..]);
+            assert_eq!(test.ciphertext, &buf[..]);
         }
     }
 }

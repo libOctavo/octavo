@@ -29,7 +29,7 @@ default = [
   "crypto",
   "ssl"
 ]
-unstable = ["default", "lints"]
+unstable = ["lints"]
 lints = ["clippy"]
 
 digest = [
