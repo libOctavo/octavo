@@ -111,7 +111,7 @@ fn crypt(msg: &BigUint,
          exp: &BigUint,
          extra: Option<&SecretKeyExtra>) -> BigUint {
     if let Some(ref extra) = extra {
-        chinese_reminders_power(msg, extra)
+        chinese_remainders_power(msg, extra)
     } else {
         msg.pow_mod(exp, modulus)
     }
