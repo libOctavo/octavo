@@ -74,6 +74,10 @@ mod tests {
         let mut hmac_md5 = HMAC::<MD5>::new("");
         hmac_md5.update("");
 
-        assert_eq!("74e6f7298a9c2d168935f58c001bad88", hmac_md5.hex_result());
+        let mut output = [0; 16];
+
+        hmac_md5.result(&mut output);
+
+        assert_eq!([0x74, 0xe6, 0xf7, 0x29, 0x8a, 0x9c, 0x2d, 0x16, 0x89, 0x35, 0xf5, 0x8c, 0x00, 0x1b, 0xad, 0x88], output);
     }
 }
