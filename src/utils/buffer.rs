@@ -1,4 +1,3 @@
-use std::ptr;
 use std::io::Read;
 
 /// A FixedBuffer, likes its name implies, is a fixed size buffer. When the buffer becomes full, it
@@ -133,7 +132,5 @@ impl <T: FixedBuffer> StandardPadding for T {
 /// Zero all bytes in dst
 #[inline]
 pub fn zero(dst: &mut [u8]) {
-    unsafe {
-        ptr::write_bytes(dst.as_mut_ptr(), 0, dst.len());
-    }
+    for byte in dst { *byte = 0 }
 }
