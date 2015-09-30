@@ -1,4 +1,4 @@
-use std::mem;
+use std::slice;
 
 use super::{StreamEncrypt, StreamDecrypt};
 
@@ -96,7 +96,9 @@ impl ChaCha20 {
         }
 
     fn update(&mut self) {
-        let mut arr: &mut [u32] = unsafe { mem::transmute(&mut self.buffer[..]) };
+        let mut arr: &mut [u32] = unsafe {
+            slice::from_raw_parts_mut(self.buffer.as_mut_ptr() as *mut u32, STATE_WORDS)
+        };
 
         self.state.update(arr);
 
