@@ -32,8 +32,6 @@
 //! - `MD4`
 //! - `MD5`
 
-use std::io::Write;
-
 pub trait Digest: Sized {
     /// Update digest with data.
     fn update<T>(&mut self, input: T) where T: AsRef<[u8]>;
@@ -54,19 +52,6 @@ pub trait Digest: Sized {
     ///
     /// If output length is less than `Digest::output_bytes`.
     fn result<T>(self, output: T) where T: AsMut<[u8]>;
-    /// Returns hash as lowercase hexadecimal string
-    fn hex_result(self) -> String {
-        let size = Self::output_bytes();
-        let mut hex = Vec::with_capacity(size * 2);
-        let mut buf = Vec::with_capacity(size);
-        unsafe { buf.set_len(size); }
-        self.result(&mut buf[..]);
-
-        for b in buf {
-            write!(hex, "{:02x}", b).unwrap();
-        }
-        String::from_utf8(hex).unwrap()
-    }
 }
 
 #[cfg(feature = "md4")] pub mod md4;

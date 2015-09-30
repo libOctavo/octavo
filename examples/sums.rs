@@ -1,5 +1,7 @@
 extern crate octavo;
 
+use std::io::Write;
+
 use octavo::digest::Digest;
 use octavo::digest::md5::MD5;
 use octavo::digest::md4::MD4;
@@ -11,7 +13,17 @@ use octavo::digest::sha3::*;
 fn hex<T: AsRef<[u8]>, D: Digest>(data: T, mut digest: D) -> String {
     digest.update(data);
 
-    digest.hex_result()
+    let mut result = vec![0; D::output_bytes()];
+
+    digest.result(&mut result[..]);
+
+    let mut out = vec![0; D::output_bytes() * 2];
+
+    for byte in result {
+        write!(&mut out, "{:02x}", byte).unwrap();
+    }
+
+    String::from_utf8(out).unwrap()
 }
 
 fn main() {

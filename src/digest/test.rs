@@ -1,8 +1,8 @@
 use digest::Digest;
 
 pub struct Test<'a> {
-    pub input: &'a str,
-    pub output: &'a str
+    pub input: &'a [u8],
+    pub output: &'a [u8]
 }
 
 impl<'a> Test<'a> {
@@ -18,7 +18,10 @@ pub trait Testable: Sized {
 impl<T> Testable for T where T: Digest + Sized {
     fn test(mut self, test: &Test) {
         self.update(test.input);
-        let hex = self.hex_result();
-        assert!(test.output == hex, "Input: {:?}\nExpected: {}\nGot: {}", test.input, test.output, hex);
+        let mut output = vec![0; T::output_bytes()];
+
+        self.result(&mut output[..]);
+        assert!(test.output == &output[..],
+                "Input: {:?}\nExpected: {:?}\nGot: {:?}", test.input, test.output, output);
     }
 }
