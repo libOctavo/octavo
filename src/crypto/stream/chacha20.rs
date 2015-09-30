@@ -1,4 +1,4 @@
-use std::mem;
+use std::slice;
 
 use super::{StreamEncrypt, StreamDecrypt};
 
@@ -77,7 +77,7 @@ impl State {
 
 pub struct ChaCha20 {
     state: State,
-    buffer: [u8; STATE_BYTES],
+    buffer: [u32; STATE_WORDS],
     index: usize
 }
 
@@ -85,7 +85,7 @@ impl ChaCha20 {
     pub fn init(key: &[u8], nonce: &[u8], position: u32) -> Self {
         ChaCha20 {
             state: State::expand(key.as_ref(), nonce.as_ref(), position),
-            buffer: [0; STATE_BYTES],
+            buffer: [0; STATE_WORDS],
             index: STATE_BYTES
         }
     }
@@ -96,9 +96,7 @@ impl ChaCha20 {
         }
 
     fn update(&mut self) {
-        let mut arr: &mut [u32] = unsafe { mem::transmute(&mut self.buffer[..]) };
-
-        self.state.update(arr);
+        self.state.update(&mut self.buffer[..]);
 
         self.index = 0;
     }
@@ -108,8 +106,12 @@ impl ChaCha20 {
 
         if self.index == STATE_BYTES { self.update() }
 
+        let buffer = unsafe {
+            slice::from_raw_parts(self.buffer.as_ptr() as *const u8, STATE_BYTES)
+        };
+
         for i in self.index..input.len() {
-            output[i] = input[i] ^ self.buffer[i];
+            output[i] = input[i] ^ buffer[i];
         }
 
         self.index = input.len();
