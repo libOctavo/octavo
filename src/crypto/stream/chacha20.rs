@@ -147,7 +147,7 @@ impl StreamDecrypt for ChaCha20 {
 #[cfg(test)]
 mod test {
     use super::ChaCha20;
-    use crypto::stream::StreamEncrypt;
+    use crypto::stream::{StreamEncrypt, StreamDecrypt};
 
     struct Test<'a> {
         key: [u8; 32],
@@ -221,8 +221,8 @@ mod test {
             let mut cipher = ChaCha20::init(&test.key[..], &test.nonce[..], test.position);
             let mut buf = vec![0; test.plaintext.len()];
 
-            cipher.encrypt_stream(test.plaintext, &mut buf[..]);
-            assert_eq!(test.ciphertext, &buf[..]);
+            cipher.decrypt_stream(test.ciphertext, &mut buf[..]);
+            assert_eq!(test.plaintext, &buf[..]);
         }
     }
 }
