@@ -21,12 +21,12 @@ pub trait MAC: Sized {
     ///
     /// If output length is less than `Digest::output_bytes`.
     fn result<T>(self, output: T) where T: AsMut<[u8]>;
+
     /// Returns hash as lowercase hexadecimal string
     fn hex_result(self) -> String {
         let size = Self::output_bytes();
         let mut hex = Vec::with_capacity(size * 2);
-        let mut buf = Vec::with_capacity(size);
-        unsafe { buf.set_len(size); }
+        let mut buf = vec![0u8; size];
         self.result(&mut buf[..]);
 
         for b in buf {
