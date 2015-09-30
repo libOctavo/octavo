@@ -117,7 +117,7 @@ fn crypt(msg: &BigUint,
     }
 }
 
-fn chinese_reminders_power(c: &BigUint, extra: &SecretKeyExtra) -> BigUint {
+fn chinese_remainders_power(c: &BigUint, extra: &SecretKeyExtra) -> BigUint {
     let mut m1 = c.pow_mod(&extra.dmp1, &extra.p);
     let m2 = c.pow_mod(&extra.dmq1, &extra.q);
 
