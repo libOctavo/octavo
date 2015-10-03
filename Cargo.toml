@@ -11,6 +11,10 @@ repository = "https://github.com/hauleth/octavo"
 byteorder = "*"
 rustc-serialize = "*"
 
+[dependencies.clap]
+version = "1.4"
+optional = true
+
 [dependencies.num]
 version = "*"
 optional = true
@@ -23,9 +27,12 @@ optional = true
 default = [
   "digest",
   "crypto",
-  "ssl"
+  "ssl",
+  "tools"
 ]
 unstable = []
+
+tools = ["clap"]
 
 digest = [
   "digest-deprecated",
