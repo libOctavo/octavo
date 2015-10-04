@@ -38,4 +38,4 @@ mine [PGP key][pgp]
 
 Check [LICENSE](LICENSE) file.
 
-[pgp]: docs/hauleth.asc
+[pgp]: docs/keys/hauleth.asc
