@@ -32,7 +32,7 @@
 //! - `MD4`
 //! - `MD5`
 
-pub trait Digest: Sized {
+pub trait Digest {
     /// Update digest with data.
     fn update<T>(&mut self, input: T) where T: AsRef<[u8]>;
 
