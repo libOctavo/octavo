@@ -5,43 +5,43 @@ use rand::Rng;
 use utils::modular::power::Power;
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
-pub enum Result {
+pub enum Type {
     PropablyPrime,
     Composite,
 }
 
-impl Result {
+impl Type {
     pub fn is_composite(&self) -> bool {
         match *self {
-            Result::Composite => true,
+            Type::Composite => true,
             _ => false
         }
     }
 }
 
 pub trait PrimeTest {
-    fn test(&mut self, num: &BigUint) -> Result;
+    fn test(&mut self, num: &BigUint) -> Type;
 
-    fn test_loop(&mut self, num: &BigUint, times: usize) -> Result {
+    fn test_loop(&mut self, num: &BigUint, times: usize) -> Type {
         for _ in 0..times {
-            if self.test(&num).is_composite() { return Result::Composite }
+            if self.test(&num).is_composite() { return Type::Composite }
         }
 
-        Result::PropablyPrime
+        Type::PropablyPrime
     }
 }
 
 pub struct Fermat<'a, T: Rng + 'a>(pub &'a mut T);
 
 impl<'a, T: Rng + 'a> PrimeTest for Fermat<'a, T> {
-    fn test(&mut self, num: &BigUint) -> Result {
+    fn test(&mut self, num: &BigUint) -> Type {
         let base = self.0.next_u64().to_biguint().unwrap();
         let num_1 = num - BigUint::one();
 
         if (&base).pow_mod(&num_1, num) != one() {
-            Result::Composite
+            Type::Composite
         } else {
-            Result::PropablyPrime
+            Type::PropablyPrime
         }
     }
 }
@@ -60,24 +60,24 @@ impl<'a, T: Rng + 'a> MillerRabin<'a, T> {
         (s, num)
     }
 
-    fn witness(num: &BigUint, a: BigUint, d: &BigUint, s: usize) -> Result {
+    fn witness(num: &BigUint, a: BigUint, d: &BigUint, s: usize) -> Type {
         let mut x = (&a).pow_mod(d, num);
         let num_1 = num - BigUint::one();
 
-        if x == one() || x == num_1 { return Result::PropablyPrime }
+        if x == one() || x == num_1 { return Type::PropablyPrime }
 
         for _ in 0..s {
             x = (&x * &x) % num;
-            if x == one() { return Result::Composite }
-            if x == num_1 { return Result::PropablyPrime }
+            if x == one() { return Type::Composite }
+            if x == num_1 { return Type::PropablyPrime }
         }
 
-        Result::Composite
+        Type::Composite
     }
 }
 
 impl<'a, T: Rng + 'a> PrimeTest for MillerRabin<'a, T> {
-    fn test(&mut self, num: &BigUint) -> Result {
+    fn test(&mut self, num: &BigUint) -> Type {
         let a = self.0.next_u64().to_biguint().unwrap();
         let (s, d) = Self::greatest_2_divisor(&num);
 
@@ -87,10 +87,7 @@ impl<'a, T: Rng + 'a> PrimeTest for MillerRabin<'a, T> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     use rand::{StdRng, SeedableRng};
-    use num::bigint::ToBigUint;
 
     const SEED: [usize; 1] = [0x00];
 
@@ -98,39 +95,53 @@ mod tests {
         StdRng::from_seed(&SEED[..])
     }
 
-    #[test]
-    fn test_fermat_prime() {
-        let mut rng = rng();
-        let mut fermat = Fermat(&mut rng);
-        let res = fermat.test_loop(&4393139u64.to_biguint().unwrap(), 20);
+    mod fermat {
+        use num::bigint::ToBigUint;
 
-        assert_eq!(res, Result::PropablyPrime);
+        use super::rng;
+        use super::super::{PrimeTest, Type, Fermat};
+
+        #[test]
+        fn prime() {
+            let mut rng = rng();
+            let mut fermat = Fermat(&mut rng);
+            let res = fermat.test_loop(&4393139u64.to_biguint().unwrap(), 20);
+
+            assert_eq!(res, Type::PropablyPrime);
+        }
+
+        #[test]
+        fn composite() {
+            let mut rng = rng();
+            let mut fermat = Fermat(&mut rng);
+            let res = fermat.test_loop(&4393137u64.to_biguint().unwrap(), 20);
+
+            assert_eq!(res, Type::Composite);
+        }
     }
 
-    #[test]
-    fn test_fermat_composite() {
-        let mut rng = rng();
-        let mut fermat = Fermat(&mut rng);
-        let res = fermat.test_loop(&4393137u64.to_biguint().unwrap(), 20);
+    mod miller_rabin {
+        use num::bigint::ToBigUint;
 
-        assert_eq!(res, Result::Composite);
-    }
+        use super::rng;
+        use super::super::{PrimeTest, Type, MillerRabin};
 
-    #[test]
-    fn test_miller_rabin_prime() {
-        let mut rng = rng();
-        let mut miller_rabin = MillerRabin(&mut rng);
-        let res = miller_rabin.test_loop(&4393139u64.to_biguint().unwrap(), 20);
+        #[test]
+        fn prime() {
+            let mut rng = rng();
+            let mut miller_rabin = MillerRabin(&mut rng);
+            let res = miller_rabin.test_loop(&4393139u64.to_biguint().unwrap(), 20);
 
-        assert_eq!(res, Result::PropablyPrime);
-    }
+            assert_eq!(res, Type::PropablyPrime);
+        }
 
-    #[test]
-    fn test_miller_rabin_composite() {
-        let mut rng = rng();
-        let mut miller_rabin = MillerRabin(&mut rng);
-        let res = miller_rabin.test_loop(&4393137u64.to_biguint().unwrap(), 20);
+        #[test]
+        fn composite() {
+            let mut rng = rng();
+            let mut miller_rabin = MillerRabin(&mut rng);
+            let res = miller_rabin.test_loop(&4393137u64.to_biguint().unwrap(), 20);
 
-        assert_eq!(res, Result::Composite);
+            assert_eq!(res, Type::Composite);
+        }
     }
 }
