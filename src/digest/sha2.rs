@@ -58,11 +58,11 @@ const U64_ROUNDS: [u64; 80] = [
     0x431d67c49c100d4c, 0x4cc5d4becb3e42b6, 0x597f299cfc657e2a, 0x5fcb6fab3ad6faec, 0x6c44198c4a475817
 ];
 
-struct SHAState<T> {
+struct State<T> {
     state: [T; 8]
 }
 
-impl SHAState<u32> {
+impl State<u32> {
     #[allow(needless_range_loop)]
     fn process_block(&mut self, mut data: &[u8]) {
         assert_eq!(data.len(), 64);
@@ -123,7 +123,7 @@ impl SHAState<u32> {
     }
 }
 
-impl SHAState<u64> {
+impl State<u64> {
     #[allow(needless_range_loop)]
     fn process_block(&mut self, mut data: &[u8]) {
         assert_eq!(data.len(), 128);
@@ -188,7 +188,7 @@ impl SHAState<u64> {
 macro_rules! impl_sha(
     (low $name:ident, $init:ident, $bits:expr) => {
         pub struct $name {
-            state: SHAState<u32>,
+            state: State<u32>,
             buffer: FixedBuffer64,
             length: u64
         }
@@ -196,7 +196,7 @@ macro_rules! impl_sha(
         impl Default for $name {
             fn default() -> Self {
                 $name {
-                    state: SHAState { state: $init },
+                    state: State { state: $init },
                     buffer: FixedBuffer64::new(),
                     length: 0
                 }
@@ -232,7 +232,7 @@ macro_rules! impl_sha(
     };
     (high $name:ident, $init:ident, $bits:expr) => {
         pub struct $name {
-            state: SHAState<u64>,
+            state: State<u64>,
             buffer: FixedBuffer128,
             length: u64
         }
@@ -240,7 +240,7 @@ macro_rules! impl_sha(
         impl Default for $name {
             fn default() -> Self {
                 $name {
-                    state: SHAState { state: $init },
+                    state: State { state: $init },
                     buffer: FixedBuffer128::new(),
                     length: 0
                 }
@@ -276,10 +276,10 @@ macro_rules! impl_sha(
     }
 );
 
-impl_sha!(low SHA224, SHA224_INIT, 224);
-impl_sha!(low SHA256, SHA256_INIT, 256);
-impl_sha!(high SHA384, SHA384_INIT, 384);
-impl_sha!(high SHA512, SHA512_INIT, 512);
+impl_sha!(low  Sha224, SHA224_INIT, 224);
+impl_sha!(low  Sha256, SHA256_INIT, 256);
+impl_sha!(high Sha384, SHA384_INIT, 384);
+impl_sha!(high Sha512, SHA512_INIT, 512);
 
 #[cfg(test)]
 mod tests {
@@ -299,7 +299,7 @@ mod tests {
     #[test]
     fn test_sha224() {
         for test in &SHA224_TESTS {
-            test.test(SHA224::default());
+            test.test(Sha224::default());
         }
     }
 
@@ -316,7 +316,7 @@ mod tests {
     #[test]
     fn test_sha256() {
         for test in &SHA256_TESTS {
-            test.test(SHA256::default());
+            test.test(Sha256::default());
         }
     }
 
@@ -333,7 +333,7 @@ mod tests {
     #[test]
     fn test_sha384() {
         for test in &SHA384_TESTS {
-            test.test(SHA384::default());
+            test.test(Sha384::default());
         }
     }
 
@@ -350,7 +350,7 @@ mod tests {
     #[test]
     fn test_sha512() {
         for test in &SHA512_TESTS {
-            test.test(SHA512::default());
+            test.test(Sha512::default());
         }
     }
 }

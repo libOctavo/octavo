@@ -11,16 +11,16 @@ use byteorder::{
     LittleEndian
 };
 
-struct MD4State {
+struct State {
     s0: u32,
     s1: u32,
     s2: u32,
     s3: u32,
 }
 
-impl MD4State {
+impl State {
     fn new() -> Self {
-        MD4State {
+        State {
             s0: 0x67452301,
             s1: 0xefcdab89,
             s2: 0x98badcfe,
@@ -114,23 +114,23 @@ impl MD4State {
     }
 }
 
-pub struct MD4 {
-    state: MD4State,
+pub struct Md4 {
+    state: State,
     length: u64,
     buffer: FixedBuffer64,
 }
 
-impl Default for MD4 {
+impl Default for Md4 {
     fn default() -> Self {
-        MD4 {
-            state: MD4State::new(),
+        Md4 {
+            state: State::new(),
             buffer: FixedBuffer64::new(),
             length: 0
         }
     }
 }
 
-impl digest::Digest for MD4 {
+impl digest::Digest for Md4 {
     fn update<T>(&mut self, update: T) where T: AsRef<[u8]> {
         let update = update.as_ref();
         self.length += update.len() as u64;
@@ -162,7 +162,7 @@ impl digest::Digest for MD4 {
 #[cfg(test)]
 mod tests {
     use digest::test::Test;
-    use super::MD4;
+    use super::Md4;
 
     const TESTS: [Test<'static>; 7] = [
         Test { input: b"", output: &[ 0x31, 0xd6, 0xcf, 0xe0, 0xd1, 0x6a, 0xe9, 0x31, 0xb7, 0x3c, 0x59, 0xd7, 0xe0, 0xc0, 0x89, 0xc0 ] },
@@ -180,7 +180,7 @@ mod tests {
 
         // Test that it works when accepting the message all at once
         for test in &TESTS {
-            test.test(MD4::default());
+            test.test(Md4::default());
         }
     }
 }

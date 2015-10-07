@@ -11,13 +11,13 @@ use utils::buffer::{
     StandardPadding
 };
 
-struct SHA1State {
+struct State {
     state: [u32; 5]
 }
 
-impl SHA1State {
+impl State {
     fn new() -> Self {
-        SHA1State {
+        State {
             state: [0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476, 0xc3d2e1f0]
         }
     }
@@ -70,23 +70,23 @@ impl SHA1State {
     }
 }
 
-pub struct SHA1 {
-    state: SHA1State,
+pub struct Sha1 {
+    state: State,
     buffer: FixedBuffer64,
     length: u64
 }
 
-impl Default for SHA1 {
+impl Default for Sha1 {
     fn default() -> Self {
-        SHA1 {
-            state: SHA1State::new(),
+        Sha1 {
+            state: State::new(),
             buffer: FixedBuffer64::new(),
             length: 0
         }
     }
 }
 
-impl Digest for SHA1 {
+impl Digest for Sha1 {
     fn update<T: AsRef<[u8]>>(&mut self, data: T) {
         let data = data.as_ref();
         self.length += data.len() as u64;
@@ -116,7 +116,7 @@ impl Digest for SHA1 {
 #[cfg(test)]
 mod tests {
     use digest::test::Test;
-    use super::SHA1;
+    use super::Sha1;
 
     const TESTS: [Test<'static>; 7] = [
         Test { input: b"", output: &[ 0xda, 0x39, 0xa3, 0xee, 0x5e, 0x6b, 0x4b, 0x0d, 0x32, 0x55, 0xbf, 0xef, 0x95, 0x60, 0x18, 0x90, 0xaf, 0xd8, 0x07, 0x09,  ] },
@@ -131,7 +131,7 @@ mod tests {
     #[test]
     fn test_sha1() {
         for test in &TESTS {
-            test.test(SHA1::default());
+            test.test(Sha1::default());
         }
     }
 }

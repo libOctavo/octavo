@@ -116,15 +116,15 @@ impl State {
     }
 }
 
-pub struct RIPEMD160 {
+pub struct Ripemd160 {
     state: State,
     length: u64,
     buffer: FixedBuffer64,
 }
 
-impl Default for RIPEMD160 {
+impl Default for Ripemd160 {
     fn default() -> Self {
-        RIPEMD160 {
+        Ripemd160 {
             state: State::new(),
             length: 0,
             buffer: FixedBuffer64::new()
@@ -132,7 +132,7 @@ impl Default for RIPEMD160 {
     }
 }
 
-impl Digest for RIPEMD160 {
+impl Digest for Ripemd160 {
     fn update<T>(&mut self, update: T) where T: AsRef<[u8]> {
         let update = update.as_ref();
         self.length += update.len() as u64;
@@ -178,7 +178,7 @@ mod tests {
     #[test]
     fn test_ripemd160() {
         for test in &TESTS {
-            test.test(RIPEMD160::default());
+            test.test(Ripemd160::default());
         }
     }
 }
