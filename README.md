@@ -1,9 +1,9 @@
 # Octavo
 
-[![Join the chat at https://gitter.im/hauleth/octavo](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/hauleth/octavo?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Join the chat at https://gitter.im/libOctavo/octavo](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/libOctavo/octavo?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-[![Build Status](https://travis-ci.org/hauleth/octavo.svg)](https://travis-ci.org/hauleth/octavo)
-[![Coverage Status](https://coveralls.io/repos/hauleth/octavo/badge.svg?branch=master&service=github)](https://coveralls.io/github/hauleth/octavo?branch=master)
+[![Build Status](https://travis-ci.org/libOctavo/octavo.svg)](https://travis-ci.org/libOctavo/octavo)
+[![Coverage Status](https://coveralls.io/repos/libOctavo/octavo/badge.svg?branch=master&service=github)](https://coveralls.io/github/libOctavo/octavo?branch=master)
 
 <center>![Octavo's logo](docs/logo.png)</center>
 
