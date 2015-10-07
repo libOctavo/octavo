@@ -346,7 +346,7 @@ fn bcrypt_setup(cost: usize, salt: &[u8], key: &[u8]) -> Blowfish {
     state
 }
 
-pub fn bcrypt<I: AsRef<[u8]>, O: AsMut<[u8]>>(cost: usize, salt: I, input: I, mut output: O) {
+pub fn bcrypt<S: AsRef<[u8]>, I: AsRef<[u8]>, O: AsMut<[u8]>>(cost: usize, salt: S, input: I, mut output: O) {
     assert_eq!(salt.as_ref().len(), 16);
     assert!(0 < input.as_ref().len() && input.as_ref().len() <= 72);
     assert_eq!(output.as_mut().len(), 24);
