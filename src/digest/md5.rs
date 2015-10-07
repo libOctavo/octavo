@@ -11,16 +11,16 @@ use byteorder::{
 };
 
 #[derive(Debug)]
-struct MD5State {
+struct State {
     s0: u32,
     s1: u32,
     s2: u32,
     s3: u32
 }
 
-impl MD5State {
+impl State {
     fn new() -> Self {
-        MD5State {
+        State {
             s0: 0x67452301,
             s1: 0xefcdab89,
             s2: 0x98badcfe,
@@ -148,23 +148,23 @@ static C4: [u32; 16] = [
     0x6fa87e4f, 0xfe2ce6e0, 0xa3014314, 0x4e0811a1, 0xf7537e82, 0xbd3af235, 0x2ad7d2bb, 0xeb86d391
 ];
 
-pub struct MD5 {
-    state: MD5State,
+pub struct Md5 {
+    state: State,
     length: u64,
     buffer: FixedBuffer64,
 }
 
-impl Default for MD5 {
+impl Default for Md5 {
     fn default() -> Self {
-        MD5 {
-            state: MD5State::new(),
+        Md5 {
+            state: State::new(),
             length: 0,
             buffer: FixedBuffer64::new(),
         }
     }
 }
 
-impl Digest for MD5 {
+impl Digest for Md5 {
     fn update<T>(&mut self, input: T) where T: AsRef<[u8]> {
         let input = input.as_ref();
         self.length += input.len() as u64;
@@ -196,7 +196,7 @@ impl Digest for MD5 {
 #[cfg(test)]
 mod tests {
     use digest::test::Test;
-    use super::MD5;
+    use super::Md5;
 
     const TESTS: [Test<'static>; 7] = [
         Test { input: b"", output: &[ 0xd4, 0x1d, 0x8c, 0xd9, 0x8f, 0x00, 0xb2, 0x04, 0xe9, 0x80, 0x09, 0x98, 0xec, 0xf8, 0x42, 0x7e,  ] },
@@ -214,7 +214,7 @@ mod tests {
 
         // Test that it works when accepting the message all at once
         for test in &TESTS {
-            test.test(MD5::default());
+            test.test(Md5::default());
         }
     }
 }

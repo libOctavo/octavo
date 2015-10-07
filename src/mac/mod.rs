@@ -1,6 +1,6 @@
 pub mod hmac;
 
-pub trait MAC: Sized {
+pub trait Mac: Sized {
     fn update<D: AsRef<[u8]>>(&mut self, data: D);
 
     /// Output size in bits

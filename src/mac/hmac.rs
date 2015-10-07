@@ -1,14 +1,14 @@
 use std::io::Write;
 
 use digest::Digest;
-use mac::MAC;
+use mac::Mac;
 
-pub struct HMAC<T: Digest + Default> {
+pub struct Hmac<T: Digest + Default> {
     digest: T,
     key: Vec<u8>,
 }
 
-impl<T: Digest + Default> HMAC<T> {
+impl<T: Digest + Default> Hmac<T> {
     pub fn new<K: AsRef<[u8]>>(key: K) -> Self {
         Self::with_digest(key.as_ref(), Default::default())
     }
@@ -19,7 +19,7 @@ impl<T: Digest + Default> HMAC<T> {
 
         digest.update(&ikey);
 
-        HMAC {
+        Hmac {
             digest: digest,
             key: key,
         }
@@ -42,7 +42,7 @@ impl<T: Digest + Default> HMAC<T> {
 
 }
 
-impl<T: Digest + Default> MAC for HMAC<T> {
+impl<T: Digest + Default> Mac for Hmac<T> {
     fn update<D: AsRef<[u8]>>(&mut self, data: D) {
         self.digest.update(data)
     }
@@ -65,13 +65,13 @@ impl<T: Digest + Default> MAC for HMAC<T> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use mac::MAC;
+    use mac::Mac;
     use digest::Digest;
-    use digest::md5::MD5;
+    use digest::md5::Md5;
 
     #[test]
     fn test_empty_string() {
-        let mut hmac_md5 = HMAC::<MD5>::new("");
+        let mut hmac_md5 = Hmac::<Md5>::new("");
         hmac_md5.update("");
 
         let mut output = [0; 16];

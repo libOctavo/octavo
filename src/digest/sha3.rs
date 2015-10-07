@@ -10,7 +10,7 @@ use byteorder::{
 use std::io::Read;
 use std::hash::Hasher;
 
-struct SHA3State {
+struct State {
     hash: [u64; 25],
     message: [u8; 144],
     rest: usize,
@@ -34,11 +34,11 @@ const SHIFTS: [u32; 25] = [
     18,  2,   61,  56,  14,
 ];
 
-impl SHA3State {
+impl State {
     fn init(bits: usize) -> Self {
         let rate = 1600 - bits * 2;
         assert!(rate <= 1600 && (rate % 64) == 0);
-        SHA3State {
+        State {
             hash: [0; 25],
             message: [0; 144],
             rest: 0,
@@ -180,12 +180,12 @@ impl SHA3State {
 macro_rules! sha3_impl {
     ($name:ident -> $size:expr) => {
         pub struct $name {
-            state: SHA3State
+            state: State
         }
 
         impl Default for $name {
             fn default() -> Self {
-                $name { state: SHA3State::init($size) }
+                $name { state: State::init($size) }
             }
         }
 
@@ -220,10 +220,10 @@ macro_rules! sha3_impl {
     }
 }
 
-sha3_impl!(SHA3224 -> 224);
-sha3_impl!(SHA3256 -> 256);
-sha3_impl!(SHA3384 -> 384);
-sha3_impl!(SHA3512 -> 512);
+sha3_impl!(Sha3224 -> 224);
+sha3_impl!(Sha3256 -> 256);
+sha3_impl!(Sha3384 -> 384);
+sha3_impl!(Sha3512 -> 512);
 
 #[cfg(test)]
 mod tests {
@@ -244,7 +244,7 @@ mod tests {
     #[test]
     fn test_sha3_224() {
         for test in &SHA3_224_TESTS {
-            test.test(SHA3224::default());
+            test.test(Sha3224::default());
         }
     }
 
@@ -262,7 +262,7 @@ mod tests {
     #[test]
     fn test_sha3_256() {
         for test in &SHA3_256_TESTS {
-            test.test(SHA3256::default());
+            test.test(Sha3256::default());
         }
     }
 
@@ -280,7 +280,7 @@ mod tests {
     #[test]
     fn test_sha3_384() {
         for test in &SHA3_384_TESTS {
-            test.test(SHA3384::default());
+            test.test(Sha3384::default());
         }
     }
 
@@ -299,7 +299,7 @@ mod tests {
     #[test]
     fn test_sha3_512() {
         for test in &SHA3_512_TESTS {
-            test.test(SHA3512::default());
+            test.test(Sha3512::default());
         }
     }
 }

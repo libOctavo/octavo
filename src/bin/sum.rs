@@ -88,18 +88,18 @@ fn main() {
 
         let result = digest_for! {
             match engine_name with buffer_size, input {
-                "MD4" => md4::MD4,
-                "MD5" => md5::MD5,
-                "RIPEMD-160" => ripemd::RIPEMD160,
-                "SHA1" => sha1::SHA1,
-                "SHA-224" => sha2::SHA224,
-                "SHA-256" => sha2::SHA256,
-                "SHA-384" => sha2::SHA384,
-                "SHA-512" => sha2::SHA512,
-                "SHA3-224" => sha3::SHA3224,
-                "SHA3-256" => sha3::SHA3256,
-                "SHA3-384" => sha3::SHA3384,
-                "SHA3-512" => sha3::SHA3512,
+                "MD4" => md4::Md4,
+                "MD5" => md5::Md5,
+                "RIPEMD-160" => ripemd::Ripemd160,
+                "SHA1" => sha1::Sha1,
+                "SHA-224" => sha2::Sha224,
+                "SHA-256" => sha2::Sha256,
+                "SHA-384" => sha2::Sha384,
+                "SHA-512" => sha2::Sha512,
+                "SHA3-224" => sha3::Sha3224,
+                "SHA3-256" => sha3::Sha3256,
+                "SHA3-384" => sha3::Sha3384,
+                "SHA3-512" => sha3::Sha3512,
             }
         };
 
