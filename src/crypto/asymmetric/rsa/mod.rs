@@ -27,7 +27,7 @@ impl SecretKeyExtra {
     }
 }
 
-pub enum RSA {
+pub enum Rsa {
     Public {
         /// Modulus
         n: BigUint,
@@ -43,9 +43,9 @@ pub enum RSA {
     }
 }
 
-pub type KeyPair = (RSA, RSA);
+pub type KeyPair = (Rsa, Rsa);
 
-impl RSA {
+impl Rsa {
     pub fn keypair_from_primes<P, Q, E>(p: P, q: Q, e: E) -> KeyPair
         where P: Into<BigUint>, Q: Into<BigUint>, E: Into<BigUint> {
             let (p, q, e) = (p.into(), q.into(), e.into());
@@ -55,11 +55,11 @@ impl RSA {
 
             let d = e.inverse(&phi_n).expect("e is irreversible in ring phi(pq) - error");
 
-            let public = RSA::Public {
+            let public = Rsa::Public {
                 n: n.clone(),
                 e: e
             };
-            let private = RSA::Private {
+            let private = Rsa::Private {
                 n: n,
                 extra: Some(SecretKeyExtra::from_primes(p, q, &d)),
                 d: d,
@@ -86,22 +86,22 @@ impl RSA {
 
     pub fn is_public(&self) -> bool {
         match *self {
-            RSA::Public { .. } => true,
+            Rsa::Public { .. } => true,
             _ => false
         }
     }
 
     pub fn is_private(&self) -> bool {
         match *self {
-            RSA::Private { .. } => true,
+            Rsa::Private { .. } => true,
             _ => false
         }
     }
 
     pub fn crypt(&self, msg: &BigUint) -> BigUint {
         match *self {
-            RSA::Private { ref n, ref d, ref extra } => crypt(msg, n, d, extra.as_ref()),
-            RSA::Public { ref n, ref e } => crypt(msg, n, e, None),
+            Rsa::Private { ref n, ref d, ref extra } => crypt(msg, n, d, extra.as_ref()),
+            Rsa::Public { ref n, ref e } => crypt(msg, n, e, None),
         }
     }
 }
@@ -132,12 +132,12 @@ fn chinese_remainders_power(c: &BigUint, extra: &SecretKeyExtra) -> BigUint {
 
 #[cfg(test)]
 mod tests {
-    use super::RSA;
+    use super::Rsa;
 
     use num::bigint::{ToBigUint};
 
-    fn keys() -> (RSA, RSA) {
-        RSA::keypair_from_primes(
+    fn keys() -> (Rsa, Rsa) {
+        Rsa::keypair_from_primes(
             61.to_biguint().unwrap(),
             53.to_biguint().unwrap(),
             17.to_biguint().unwrap())
