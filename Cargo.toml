@@ -46,6 +46,7 @@ digest-deprecated = [
   "md5",
   "ripemd",
   "sha1",
+  "tiger"
 ]
 digest-safe = [
   "sha2",
@@ -58,7 +59,7 @@ sha1 = []
 sha2 = []
 sha3 = []
 # whirlpool = []
-# tiger = []
+tiger = []
 
 crypto = [
   "symmetric",
