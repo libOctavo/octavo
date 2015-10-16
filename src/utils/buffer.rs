@@ -111,14 +111,18 @@ pub trait StandardPadding {
     /// and is guaranteed to have exactly rem remaining bytes when it returns. If there are not at
     /// least rem bytes available, the buffer will be zero padded, processed, cleared, and then
     /// filled with zeros again until only rem bytes are remaining.
-    fn standard_padding<F: FnMut(&[u8])>(&mut self, rem: usize, func: F);
+    fn pad<F: FnMut(&[u8])>(&mut self, padding: u8, rem: usize, func: F);
+
+    fn standard_padding<F: FnMut(&[u8])>(&mut self, rem: usize, func: F) {
+        self.pad(0b10000000, rem, func)
+    }
 }
 
 impl <T: FixedBuffer> StandardPadding for T {
-    fn standard_padding<F: FnMut(&[u8])>(&mut self, rem: usize, mut func: F) {
+    fn pad<F: FnMut(&[u8])>(&mut self, padding: u8, rem: usize, mut func: F) {
         let size = Self::size();
 
-        self.next(1)[0] = 0b10000000;
+        self.next(1)[0] = padding;
 
         if self.remaining() < rem {
             self.zero_until(size);
