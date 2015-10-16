@@ -356,7 +356,7 @@ pub fn bcrypt<S: AsRef<[u8]>, I: AsRef<[u8]>, O: AsMut<[u8]>>(cost: usize, salt:
     let state = bcrypt_setup(cost, salt.as_ref(), input.as_ref());
     let mut ctext = [0x4f727068, 0x65616e42, 0x65686f6c, 0x64657253, 0x63727944, 0x6f756274];
     for chunk in ctext.chunks_mut(2) {
-        for _ in (0..64) {
+        for _ in 0..64 {
             let (l, r) = state.encrypt_round((chunk[0], chunk[1]));
             chunk[0] = l;
             chunk[1] = r;
