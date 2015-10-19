@@ -24,7 +24,8 @@ const ENGINES: &'static [&'static str] = &[
     "SHA3-224",
     "SHA3-256",
     "SHA3-384",
-    "SHA3-512"
+    "SHA3-512",
+    "Tiger"
 ];
 
 fn checksum<Eng: Digest + Default>(input: &mut Read, buffer_size: usize) -> String {
@@ -100,6 +101,7 @@ fn main() {
                 "SHA3-256" => sha3::Sha3256,
                 "SHA3-384" => sha3::Sha3384,
                 "SHA3-512" => sha3::Sha3512,
+                "Tiger" => tiger::Tiger
             }
         };
 
