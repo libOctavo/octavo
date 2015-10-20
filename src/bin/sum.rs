@@ -101,7 +101,7 @@ fn main() {
                 "SHA3-256" => sha3::Sha3256,
                 "SHA3-384" => sha3::Sha3384,
                 "SHA3-512" => sha3::Sha3512,
-                "Tiger" => tiger::Tiger
+                "Tiger" => tiger::Tiger,
             }
         };
 
