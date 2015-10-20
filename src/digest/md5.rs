@@ -76,7 +76,7 @@ impl State {
         }
 
         // round 1
-        for i in (0..4) {
+        for i in 0..4 {
             let i = i * 4;
             a = op_f(a, b, c, d, data[i].wrapping_add(C1[i]), 7);
             d = op_f(d, a, b, c, data[i + 1].wrapping_add(C1[i + 1]), 12);
@@ -86,7 +86,7 @@ impl State {
 
         // round 2
         let mut t = 1;
-        for i in (0..4) {
+        for i in 0..4 {
             let i = i * 4;
             a = op_g(a, b, c, d, data[t & 0x0f].wrapping_add(C2[i]), 5);
             d = op_g(d, a, b, c, data[(t + 5) & 0x0f].wrapping_add(C2[i + 1]), 9);
@@ -97,7 +97,7 @@ impl State {
 
         // round 3
         t = 5;
-        for i in (0..4) {
+        for i in 0..4 {
             let i = i * 4;
             a = op_h(a, b, c, d, data[t & 0x0f].wrapping_add(C3[i]), 4);
             d = op_h(d, a, b, c, data[(t + 3) & 0x0f].wrapping_add(C3[i + 1]), 11);
@@ -108,7 +108,7 @@ impl State {
 
         // round 4
         t = 0;
-        for i in (0..4) {
+        for i in 0..4 {
             let i = i * 4;
             a = op_i(a, b, c, d, data[t & 0x0f].wrapping_add(C4[i]), 6);
             d = op_i(d, a, b, c, data[(t + 7) & 0x0f].wrapping_add(C4[i + 1]), 10);

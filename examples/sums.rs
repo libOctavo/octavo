@@ -3,12 +3,14 @@ extern crate octavo;
 use std::io::Write;
 
 use octavo::digest::Digest;
-use octavo::digest::md5::Md5;
+
 use octavo::digest::md4::Md4;
+use octavo::digest::md5::Md5;
 use octavo::digest::ripemd::Ripemd160;
 use octavo::digest::sha1::Sha1;
 use octavo::digest::sha2::*;
 use octavo::digest::sha3::*;
+use octavo::digest::tiger::Tiger;
 
 fn hex<T: AsRef<[u8]>, D: Digest>(data: T, mut digest: D) -> String {
     digest.update(data);
@@ -43,4 +45,5 @@ fn main() {
     println!("SHA3-256:  {}", hex(&data, Sha3256::default()));
     println!("SHA3-384:  {}", hex(&data, Sha3384::default()));
     println!("SHA3-512:  {}", hex(&data, Sha3512::default()));
+    println!("Tiger:     {}", hex(&data, Tiger::default()));
 }
