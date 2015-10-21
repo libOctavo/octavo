@@ -209,12 +209,34 @@ mod tests {
     ];
 
     #[test]
-    fn test_md5() {
-        // Examples from wikipedia
-
-        // Test that it works when accepting the message all at once
+    fn rfc_1321_test_vectors() {
         for test in &TESTS {
             test.test(Md5::default());
         }
+    }
+
+    #[test]
+    fn quickcheck() {
+        use quickcheck::quickcheck;
+
+        fn prop(vec: Vec<u8>) -> bool {
+            use openssl::crypto::hash::{hash, Type};
+            use digest::Digest;
+
+            let octavo = {
+                let mut dig = Md5::default();
+                let mut res = vec![0; 16];
+
+                dig.update(&vec);
+                dig.result(&mut res[..]);
+                res
+            };
+
+            let openssl = hash(Type::MD5, &vec);
+
+            octavo == openssl
+        }
+
+        quickcheck(prop as fn(Vec<u8>) -> bool)
     }
 }

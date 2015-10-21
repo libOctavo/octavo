@@ -118,7 +118,7 @@ mod tests {
     use digest::test::Test;
     use super::Sha1;
 
-    const TESTS: [Test<'static>; 7] = [
+    const TESTS: &'static [Test<'static>] = &[
         Test { input: b"", output: &[ 0xda, 0x39, 0xa3, 0xee, 0x5e, 0x6b, 0x4b, 0x0d, 0x32, 0x55, 0xbf, 0xef, 0x95, 0x60, 0x18, 0x90, 0xaf, 0xd8, 0x07, 0x09,  ] },
         Test { input: b"a", output: &[ 0x86, 0xf7, 0xe4, 0x37, 0xfa, 0xa5, 0xa7, 0xfc, 0xe1, 0x5d, 0x1d, 0xdc, 0xb9, 0xea, 0xea, 0xea, 0x37, 0x76, 0x67, 0xb8,  ] },
         Test { input: b"abc", output: &[ 0xa9, 0x99, 0x3e, 0x36, 0x47, 0x06, 0x81, 0x6a, 0xba, 0x3e, 0x25, 0x71, 0x78, 0x50, 0xc2, 0x6c, 0x9c, 0xd0, 0xd8, 0x9d,  ] },
@@ -129,9 +129,34 @@ mod tests {
     ];
 
     #[test]
-    fn test_sha1() {
-        for test in &TESTS {
+    fn simple_test_vectors() {
+        for test in TESTS {
             test.test(Sha1::default());
         }
+    }
+
+    #[test]
+    fn quickcheck() {
+        use quickcheck::quickcheck;
+
+        fn prop(vec: Vec<u8>) -> bool {
+            use openssl::crypto::hash::{hash, Type};
+            use digest::Digest;
+
+            let octavo = {
+                let mut dig = Sha1::default();
+                let mut res = vec![0; 20];
+
+                dig.update(&vec);
+                dig.result(&mut res[..]);
+                res
+            };
+
+            let openssl = hash(Type::SHA1, &vec);
+
+            octavo == openssl
+        }
+
+        quickcheck(prop as fn(Vec<u8>) -> bool)
     }
 }

@@ -175,8 +175,7 @@ mod tests {
     ];
 
     #[test]
-    fn test_md4() {
-        // Test that it works when accepting the message all at once
+    fn rfc_1320_test_vectors() {
         for test in TESTS {
             test.test(Md4::default());
         }

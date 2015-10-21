@@ -23,8 +23,12 @@
 #![cfg_attr(feature = "clippy", plugin(clippy))]
 #![cfg_attr(not(feature = "lints"), allow(unknown_lints))]
 
-#![deny(trivial_casts, unreachable_code, while_true)]
+#![deny(unreachable_code, while_true)]
+#![cfg_attr(not(test), deny(trivial_casts))]
 #![warn(unused_qualifications)]
+
+#[cfg(test)] extern crate quickcheck;
+#[cfg(test)] extern crate openssl;
 
 extern crate byteorder;
 #[cfg(feature = "num")] extern crate num;
