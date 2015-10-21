@@ -2,8 +2,11 @@
 
 [![Join the chat at https://gitter.im/libOctavo/octavo](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/libOctavo/octavo?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-[![Build Status](https://travis-ci.org/libOctavo/octavo.svg)](https://travis-ci.org/libOctavo/octavo)
-[![Coverage Status](https://coveralls.io/repos/libOctavo/octavo/badge.svg?branch=master&service=github)](https://coveralls.io/github/libOctavo/octavo?branch=master)
+[![Crates.io](https://img.shields.io/crates/v/octavo.svg?style=flat-square)](https://crates.io/crates/octavo)
+[![Build Status](https://img.shields.io/travis/liboctavo/octavo.svg?style=flat-square)](https://travis-ci.org/libOctavo/octavo)
+[![Coverage Status](https://img.shields.io/coveralls/liboctavo/octavo.svg?style=flat-square)](https://coveralls.io/github/libOctavo/octavo?branch=master)
+[![GetBadges Game](https://img.shields.io/badge/game-GetBadges-blue.svg?style=flat-square)](https://liboctavo-octavo.getbadges.io)
+[![Gratipay](https://img.shields.io/gratipay/liboctavo.svg?style=flat-square)](https://gratipay.com/liboctavo/)
 
 <center>![Octavo's logo](docs/logo.png)</center>
 
@@ -27,7 +30,6 @@ You can help with this project in 3 ways:
 
 1. Help me code this up! Just fork, create branch, code & pull-request. Yay!
 2. Audit code or use it. If you find bug just fill the issue, it is great help also.
-3. [![Support via Gratipay](https://cdn.rawgit.com/gratipay/gratipay-badge/2.3.0/dist/gratipay.svg)](https://gratipay.com/hauleth/)
 
 ## Full disclosure
 
