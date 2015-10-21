@@ -175,7 +175,7 @@ mod tests {
     ];
 
     #[test]
-    fn rfc_1320_test_vectors() {
+    fn rfc1320_test_vectors() {
         for test in TESTS {
             test.test(Md4::default());
         }

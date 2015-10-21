@@ -209,7 +209,7 @@ mod tests {
     ];
 
     #[test]
-    fn rfc_1321_test_vectors() {
+    fn rfc1321_test_vectors() {
         for test in &TESTS {
             test.test(Md5::default());
         }
