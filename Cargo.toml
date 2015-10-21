@@ -28,15 +28,17 @@ openssl = "0.6"
 quickcheck = "0.2"
 
 [features]
+bcrypt = ["blowfish"]
 block = ["blowfish"]
 blowfish = []
 chacha20 = []
 crypto = ["symmetric", "public-key"]
-default = ["digest", "crypto", "ssl", "tools"]
+default = ["digest", "crypto", "ssl", "kdf", "tools"]
 digest = ["digest-deprecated", "digest-safe"]
 digest-deprecated = ["md4", "md5", "ripemd", "sha1", "tiger"]
 digest-safe = ["sha2", "sha3"]
 hmac = []
+kdf = ["bcrypt"]
 mac = ["hmac"]
 md4 = []
 md5 = []
