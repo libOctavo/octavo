@@ -37,5 +37,6 @@ extern crate byteorder;
 pub mod crypto;
 pub mod digest;
 pub mod mac;
+pub mod kdf;
 
 mod utils;
