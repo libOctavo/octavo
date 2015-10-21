@@ -1,110 +1,54 @@
 [package]
-name = "octavo"
-version = "0.1.0"
 authors = ["Łukasz Niemier <lukasz@niemier.pl>"]
-
 description = "Highly modular crypto & hash library written in pure Rust"
+documentation = "http://liboctavo.github.io/octavo"
 license = "MIT"
-repository = "https://github.com/hauleth/octavo"
+name = "octavo"
+repository = "https://github.com/libOctavo/octavo"
+version = "0.1.0"
 
 [dependencies]
 byteorder = "*"
 rustc-serialize = "*"
 
 [dependencies.clap]
-version = "1.4"
 optional = true
+version = "1.4"
 
 [dependencies.num]
-version = "*"
 optional = true
+version = "*"
 
 [dependencies.rand]
-version = "*"
 optional = true
+version = "*"
+
+[dev-dependencies]
+openssl = "0.6"
+quickcheck = "0.2"
 
 [features]
-default = [
-  "digest",
-  "crypto",
-  "ssl",
-  "tools"
-]
-unstable = []
-
-tools = ["clap"]
-
-digest = [
-  "digest-deprecated",
-  "digest-safe"
-]
-
-# Deprecated algorithms that are not considered safe enough to use in secure
-# manner.
-digest-deprecated = [
-  "md4",
-  "md5",
-  "ripemd",
-  "sha1",
-  "tiger"
-]
-digest-safe = [
-  "sha2",
-  "sha3",
-]
+block = ["blowfish"]
+blowfish = []
+chacha20 = []
+crypto = ["symmetric", "public-key"]
+default = ["digest", "crypto", "ssl", "tools"]
+digest = ["digest-deprecated", "digest-safe"]
+digest-deprecated = ["md4", "md5", "ripemd", "sha1", "tiger"]
+digest-safe = ["sha2", "sha3"]
+hmac = []
+mac = ["hmac"]
 md4 = []
 md5 = []
+public-key = ["rsa"]
 ripemd = []
+rsa = ["num", "rand"]
 sha1 = []
 sha2 = []
 sha3 = []
-# whirlpool = []
-tiger = []
-
-crypto = [
-  "symmetric",
-  "public-key"
-]
-
-symmetric = [
-  "block",
-  "stream"
-]
-
-block = [
-  "blowfish"
-]
-# aes = []
-blowfish = []
-# des = []
-# serpent = []
-# triple-des = []
-# twofish = []
-# idea = []
-
-stream = [
-  "chacha20"
-]
-# rc2 = []
-# rc3 = []
-# rc4 = []
-# rabbit = []
-# salsa20 = []
-chacha20 = []
-# hc-256 = []
-
-public-key = [
-  "rsa"
-]
-# dh = ["diffie-hellman"]
-# diffie-hellman = ["rand"]
-# ecc = ["rand"]
-# elgamal = ["rand"]
-rsa = ["num", "rand"]
-
-mac = [
-  "hmac"
-]
-hmac = []
-
 ssl = []
+stream = ["chacha20"]
+symmetric = ["block", "stream"]
+tiger = []
+tools = ["clap"]
+unstable = []

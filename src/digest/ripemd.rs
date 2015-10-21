@@ -165,7 +165,7 @@ mod tests {
     use digest::test::Test;
     use super::*;
 
-    const TESTS: [Test<'static>; 7] = [
+    const TESTS: &'static [Test<'static>] = &[
         Test { input: b"", output: &[ 0x9c, 0x11, 0x85, 0xa5, 0xc5, 0xe9, 0xfc, 0x54, 0x61, 0x28, 0x08, 0x97, 0x7e, 0xe8, 0xf5, 0x48, 0xb2, 0x25, 0x8d, 0x31,  ] },
         Test { input: b"a", output: &[ 0x0b, 0xdc, 0x9d, 0x2d, 0x25, 0x6b, 0x3e, 0xe9, 0xda, 0xae, 0x34, 0x7b, 0xe6, 0xf4, 0xdc, 0x83, 0x5a, 0x46, 0x7f, 0xfe,  ] },
         Test { input: b"abc", output: &[ 0x8e, 0xb2, 0x08, 0xf7, 0xe0, 0x5d, 0x98, 0x7a, 0x9b, 0x04, 0x4a, 0x8e, 0x98, 0xc6, 0xb0, 0x87, 0xf1, 0x5a, 0x0b, 0xfc,  ] },
@@ -176,9 +176,34 @@ mod tests {
     ];
 
     #[test]
-    fn test_ripemd160() {
-        for test in &TESTS {
+    fn simple_test_vectors() {
+        for test in TESTS {
             test.test(Ripemd160::default());
         }
+    }
+
+    #[test]
+    fn quickcheck() {
+        use quickcheck::quickcheck;
+
+        fn prop(vec: Vec<u8>) -> bool {
+            use openssl::crypto::hash::{hash, Type};
+            use digest::Digest;
+
+            let octavo = {
+                let mut dig = Ripemd160::default();
+                let mut res = vec![0; Ripemd160::output_bytes()];
+
+                dig.update(&vec);
+                dig.result(&mut res[..]);
+                res
+            };
+
+            let openssl = hash(Type::RIPEMD160, &vec);
+
+            octavo == openssl
+        }
+
+        quickcheck(prop as fn(Vec<u8>) -> bool)
     }
 }
