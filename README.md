@@ -3,6 +3,7 @@
 [![Join the chat at https://gitter.im/libOctavo/octavo](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/libOctavo/octavo?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 [![Crates.io](https://img.shields.io/crates/v/octavo.svg?style=flat-square)](https://crates.io/crates/octavo)
+[![License](https://img.shields.io/crates/l/octavo.svg?style=flat-square)](LICENSE)
 [![Build Status](https://img.shields.io/travis/libOctavo/octavo.svg?style=flat-square)](https://travis-ci.org/libOctavo/octavo)
 [![Coverage Status](https://img.shields.io/coveralls/libOctavo/octavo.svg?style=flat-square)](https://coveralls.io/github/libOctavo/octavo?branch=master)
 [![GetBadges Game](https://img.shields.io/badge/game-GetBadges-blue.svg?style=flat-square)](https://liboctavo-octavo.getbadges.io)
