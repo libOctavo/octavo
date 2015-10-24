@@ -1,10 +1,13 @@
 //! Implementation of popular (and less popular, but fancy) hashing algorithms.
 //!
-//! **WARNING**: Not all of them are cryptographic hash functions and there are known attacks on
-//! some of them. Use with careful and **always** check that the one you choose fits your
+//! **WARNING**: Not all of them are cryptographic hash functions and there are
+//! known attacks on
+//! some of them. Use with careful and **always** check that the one you choose
+//! fits your
 //! requirements!
 //!
-//! **WARNING**: If you want to use one of this functions as password hash then you are evil human
+//! **WARNING**: If you want to use one of this functions as password hash then
+//! you are evil human
 //! being and I really hope that I'm not using any of your services.
 //!
 //! ## Cryptographic hash functions
@@ -54,13 +57,13 @@ pub trait Digest {
     fn result<T>(self, output: T) where T: AsMut<[u8]>;
 }
 
-#[cfg(feature = "md4")] pub mod md4;
-#[cfg(feature = "md5")] pub mod md5;
-#[cfg(feature = "ripemd")] pub mod ripemd;
-#[cfg(feature = "sha1")] pub mod sha1;
-#[cfg(feature = "sha2")] pub mod sha2;
-#[cfg(feature = "sha3")] pub mod sha3;
-#[cfg(feature = "tiger")] pub mod tiger;
-#[cfg(feature = "whirlpool")] pub mod whirlpool;
+#[cfg(feature = "md4")]pub mod md4;
+#[cfg(feature = "md5")]pub mod md5;
+#[cfg(feature = "ripemd")]pub mod ripemd;
+#[cfg(feature = "sha1")]pub mod sha1;
+#[cfg(feature = "sha2")]pub mod sha2;
+#[cfg(feature = "sha3")]pub mod sha3;
+#[cfg(feature = "tiger")]pub mod tiger;
+#[cfg(feature = "whirlpool")]pub mod whirlpool;
 
-#[cfg(test)] mod test;
+#[cfg(test)]mod test;

@@ -19,11 +19,17 @@ pub fn generate_prime<T: Rng + RandBigInt>(gen: &mut T, bits: usize) -> Option<B
     loop {
         let mut int = gen.gen_biguint(bits);
 
-        if int.is_even() { int = int + BigUint::one(); }
+        if int.is_even() {
+            int = int + BigUint::one();
+        }
 
-        if tests::Fermat(gen).test_loop(&int, PRIME_TEST_COUNT).is_composite() { continue }
-        if tests::MillerRabin(gen).test_loop(&int, PRIME_TEST_COUNT).is_composite() { continue }
+        if tests::Fermat(gen).test_loop(&int, PRIME_TEST_COUNT).is_composite() {
+            continue;
+        }
+        if tests::MillerRabin(gen).test_loop(&int, PRIME_TEST_COUNT).is_composite() {
+            continue;
+        }
 
-        return Some(int)
+        return Some(int);
     }
 }

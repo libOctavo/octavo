@@ -1,5 +1,5 @@
 use num::{one, One, Integer, BigUint};
-use num::bigint::{ToBigUint};
+use num::bigint::ToBigUint;
 use rand::Rng;
 
 use utils::modular::power::Power;
@@ -14,7 +14,7 @@ impl Type {
     pub fn is_composite(&self) -> bool {
         match *self {
             Type::Composite => true,
-            _ => false
+            _ => false,
         }
     }
 }
@@ -24,7 +24,9 @@ pub trait PrimeTest {
 
     fn test_loop(&mut self, num: &BigUint, times: usize) -> Type {
         for _ in 0..times {
-            if self.test(&num).is_composite() { return Type::Composite }
+            if self.test(&num).is_composite() {
+                return Type::Composite;
+            }
         }
 
         Type::PropablyPrime
@@ -64,12 +66,18 @@ impl<'a, T: Rng + 'a> MillerRabin<'a, T> {
         let mut x = (&a).pow_mod(d, num);
         let num_1 = num - BigUint::one();
 
-        if x == one() || x == num_1 { return Type::PropablyPrime }
+        if x == one() || x == num_1 {
+            return Type::PropablyPrime;
+        }
 
         for _ in 0..s {
             x = (&x * &x) % num;
-            if x == one() { return Type::Composite }
-            if x == num_1 { return Type::PropablyPrime }
+            if x == one() {
+                return Type::Composite;
+            }
+            if x == num_1 {
+                return Type::PropablyPrime;
+            }
         }
 
         Type::Composite

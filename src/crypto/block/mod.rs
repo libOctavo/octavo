@@ -1,4 +1,5 @@
-#[cfg(feature = "blowfish")] pub mod blowfish;
+#[cfg(feature = "blowfish")]
+pub mod blowfish;
 
 pub trait BlockEncrypt<T> {
     fn block_size() -> usize;

@@ -27,12 +27,16 @@ impl<'a> Inverse for &'a BigInt {
         while !new_r.is_zero() {
             let quo = &r / &new_r;
             let tmp = &r - &quo * &new_r;
-            r = new_r; new_r = tmp;
+            r = new_r;
+            new_r = tmp;
             let tmp = &t - &quo * &new_t;
-            t = new_t; new_t = tmp;
+            t = new_t;
+            new_t = tmp;
         }
 
-        if r != One::one() { return None }
+        if r != One::one() {
+            return None;
+        }
         if t.is_negative() {
             Some(t + modulo)
         } else {

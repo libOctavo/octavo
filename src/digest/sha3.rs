@@ -1,11 +1,7 @@
 use digest;
 use utils::buffer;
 
-use byteorder::{
-    ReadBytesExt,
-    WriteBytesExt,
-    LittleEndian,
-};
+use byteorder::{ReadBytesExt, WriteBytesExt, LittleEndian};
 
 use std::io::Read;
 
@@ -16,22 +12,33 @@ struct State {
     block_size: usize,
 }
 
-const ROUND_CONSTS: [u64; 24] = [
-    0x0000000000000001, 0x0000000000008082, 0x800000000000808a, 0x8000000080008000,
-    0x000000000000808b, 0x0000000080000001, 0x8000000080008081, 0x8000000000008009,
-    0x000000000000008a, 0x0000000000000088, 0x0000000080008009, 0x000000008000000a,
-    0x000000008000808b, 0x800000000000008b, 0x8000000000008089, 0x8000000000008003,
-    0x8000000000008002, 0x8000000000000080, 0x000000000000800a, 0x800000008000000a,
-    0x8000000080008081, 0x8000000000008080, 0x0000000080000001, 0x8000000080008008
-];
+const ROUND_CONSTS: [u64; 24] = [0x0000000000000001,
+                                 0x0000000000008082,
+                                 0x800000000000808a,
+                                 0x8000000080008000,
+                                 0x000000000000808b,
+                                 0x0000000080000001,
+                                 0x8000000080008081,
+                                 0x8000000000008009,
+                                 0x000000000000008a,
+                                 0x0000000000000088,
+                                 0x0000000080008009,
+                                 0x000000008000000a,
+                                 0x000000008000808b,
+                                 0x800000000000008b,
+                                 0x8000000000008089,
+                                 0x8000000000008003,
+                                 0x8000000000008002,
+                                 0x8000000000000080,
+                                 0x000000000000800a,
+                                 0x800000008000000a,
+                                 0x8000000080008081,
+                                 0x8000000000008080,
+                                 0x0000000080000001,
+                                 0x8000000080008008];
 
-const SHIFTS: [u32; 25] = [
-    0,   1,   62,  28,  27,
-    36,  44,  6,   55,  20,
-    3,   10,  43,  25,  39,
-    41,  45,  15,  21,  8,
-    18,  2,   61,  56,  14,
-];
+const SHIFTS: [u32; 25] = [0, 1, 62, 28, 27, 36, 44, 6, 55, 20, 3, 10, 43, 25, 39, 41, 45, 15, 21,
+                           8, 18, 2, 61, 56, 14];
 
 impl State {
     fn init(bits: usize) -> Self {
@@ -51,11 +58,8 @@ impl State {
         let mut b = [0u64; 5];
 
         for i in 0..5 {
-            a[i] = self.hash[i]
-                ^ self.hash[i + 5]
-                ^ self.hash[i + 10]
-                ^ self.hash[i + 15]
-                ^ self.hash[i + 20];
+            a[i] = self.hash[i] ^ self.hash[i + 5] ^ self.hash[i + 10] ^ self.hash[i + 15] ^
+                   self.hash[i + 20];
         }
 
         for i in 0..5 {
@@ -63,8 +67,8 @@ impl State {
         }
 
         for i in 0..5 {
-            self.hash[i]      ^= b[i];
-            self.hash[i + 5]  ^= b[i];
+            self.hash[i] ^= b[i];
+            self.hash[i + 5] ^= b[i];
             self.hash[i + 10] ^= b[i];
             self.hash[i + 15] ^= b[i];
             self.hash[i + 20] ^= b[i];
@@ -78,30 +82,30 @@ impl State {
     }
 
     fn pi(&mut self) {
-        let tmp       = self.hash[ 1];
-        self.hash[ 1] = self.hash[ 6];
-        self.hash[ 6] = self.hash[ 9];
-        self.hash[ 9] = self.hash[22];
+        let tmp = self.hash[1];
+        self.hash[1] = self.hash[6];
+        self.hash[6] = self.hash[9];
+        self.hash[9] = self.hash[22];
         self.hash[22] = self.hash[14];
         self.hash[14] = self.hash[20];
-        self.hash[20] = self.hash[ 2];
-        self.hash[ 2] = self.hash[12];
+        self.hash[20] = self.hash[2];
+        self.hash[2] = self.hash[12];
         self.hash[12] = self.hash[13];
         self.hash[13] = self.hash[19];
         self.hash[19] = self.hash[23];
         self.hash[23] = self.hash[15];
-        self.hash[15] = self.hash[ 4];
-        self.hash[ 4] = self.hash[24];
+        self.hash[15] = self.hash[4];
+        self.hash[4] = self.hash[24];
         self.hash[24] = self.hash[21];
-        self.hash[21] = self.hash[ 8];
-        self.hash[ 8] = self.hash[16];
-        self.hash[16] = self.hash[ 5];
-        self.hash[ 5] = self.hash[ 3];
-        self.hash[ 3] = self.hash[18];
+        self.hash[21] = self.hash[8];
+        self.hash[8] = self.hash[16];
+        self.hash[16] = self.hash[5];
+        self.hash[5] = self.hash[3];
+        self.hash[3] = self.hash[18];
         self.hash[18] = self.hash[17];
         self.hash[17] = self.hash[11];
-        self.hash[11] = self.hash[ 7];
-        self.hash[ 7] = self.hash[10];
+        self.hash[11] = self.hash[7];
+        self.hash[7] = self.hash[10];
         self.hash[10] = tmp;
         // NOTE: self.hash[0] is left untouched
     }
@@ -112,7 +116,7 @@ impl State {
             let tmp_0 = self.hash[i];
             let tmp_1 = self.hash[i + 1];
 
-            self.hash[i]     ^= !tmp_1 & self.hash[i + 2];
+            self.hash[i] ^= !tmp_1 & self.hash[i + 2];
             self.hash[i + 1] ^= !self.hash[i + 2] & self.hash[i + 3];
             self.hash[i + 2] ^= !self.hash[i + 3] & self.hash[i + 4];
             self.hash[i + 3] ^= !self.hash[i + 4] & tmp_0;
@@ -157,7 +161,7 @@ impl State {
         while let Ok(len) = data.read(&mut self.message[self.rest..self.block_size]) {
             if len + self.rest < self.block_size {
                 self.rest = len;
-                return
+                return;
             }
             assert!(len + self.rest == self.block_size);
             let message = self.message;

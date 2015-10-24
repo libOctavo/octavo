@@ -1,1 +1,2 @@
-#[cfg(feature = "rsa")] pub mod rsa;
+#[cfg(feature = "rsa")]
+pub mod rsa;

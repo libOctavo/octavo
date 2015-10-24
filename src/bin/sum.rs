@@ -12,28 +12,28 @@ use rustc_serialize::hex::ToHex;
 
 use octavo::digest::*;
 
-const ENGINES: &'static [&'static str] = &[
-    "MD4",
-    "MD5",
-    "RIPEMD-160",
-    "SHA1",
-    "SHA-224",
-    "SHA-256",
-    "SHA-384",
-    "SHA-512",
-    "SHA3-224",
-    "SHA3-256",
-    "SHA3-384",
-    "SHA3-512",
-    "Tiger"
-];
+const ENGINES: &'static [&'static str] = &["MD4",
+                                           "MD5",
+                                           "RIPEMD-160",
+                                           "SHA1",
+                                           "SHA-224",
+                                           "SHA-256",
+                                           "SHA-384",
+                                           "SHA-512",
+                                           "SHA3-224",
+                                           "SHA3-256",
+                                           "SHA3-384",
+                                           "SHA3-512",
+                                           "Tiger"];
 
 fn checksum<Eng: Digest + Default>(input: &mut Read, buffer_size: usize) -> String {
     let mut eng = Eng::default();
     let mut buf = vec![0; buffer_size];
 
     while let Ok(len) = input.read(&mut buf[..]) {
-        if len == 0 { break }
+        if len == 0 {
+            break;
+        }
 
         eng.update(&buf[..len]);
     }
@@ -54,35 +54,38 @@ macro_rules! digest_for {
 }
 
 fn input(name: &str) -> io::Result<Box<Read>> {
-    if name == "-" { return Ok(Box::new(io::stdin())); }
+    if name == "-" {
+        return Ok(Box::new(io::stdin()));
+    }
 
     Ok(Box::new(try!(File::open(name))))
 }
 
 fn main() {
     let matches = App::new("sum")
-        .arg(Arg::with_name("digest")
-             .help("Select checksum engine. Defaults to SHA1.")
-             .possible_values(ENGINES)
-             .short("D")
-             .long("digest")
-             .global(true)
-             .empty_values(false)
-             .takes_value(true))
-        .arg(Arg::with_name("FILE")
-             .help("Files to compute checksums. `-` means STDIN. Defaults to STDIN.")
-             .multiple(true))
-        .arg(Arg::with_name("buffer size")
-             .help("Size of read buffer in bytes. Defaults to 1MiB.")
-             .takes_value(true)
-             .long("buffer-size"))
-        .get_matches();
+                      .arg(Arg::with_name("digest")
+                               .help("Select checksum engine. Defaults to SHA1.")
+                               .possible_values(ENGINES)
+                               .short("D")
+                               .long("digest")
+                               .global(true)
+                               .empty_values(false)
+                               .takes_value(true))
+                      .arg(Arg::with_name("FILE")
+                               .help("Files to compute checksums. `-` means STDIN. Defaults to \
+                                      STDIN.")
+                               .multiple(true))
+                      .arg(Arg::with_name("buffer size")
+                               .help("Size of read buffer in bytes. Defaults to 1MiB.")
+                               .takes_value(true)
+                               .long("buffer-size"))
+                      .get_matches();
 
     let engine_name = matches.value_of("digest").unwrap_or("SHA1");
     let files = matches.values_of("FILE").unwrap_or(vec!["-"]);
     let buffer_size = matches.value_of("buffer size")
-        .and_then(|val| val.parse().ok())
-        .unwrap_or(1024 * 1024);
+                             .and_then(|val| val.parse().ok())
+                             .unwrap_or(1024 * 1024);
 
     for file in files {
         let mut input: Box<Read> = input(file).unwrap();

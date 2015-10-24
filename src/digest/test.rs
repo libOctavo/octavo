@@ -2,7 +2,7 @@ use digest::Digest;
 
 pub struct Test<'a> {
     pub input: &'a [u8],
-    pub output: &'a [u8]
+    pub output: &'a [u8],
 }
 
 impl<'a> Test<'a> {
@@ -22,6 +22,9 @@ impl<T> Testable for T where T: Digest + Sized {
 
         self.result(&mut output[..]);
         assert!(test.output == &output[..],
-                "Input: {:?}\nExpected: {:?}\nGot: {:?}", test.input, test.output, output);
+                "Input: {:?}\nExpected: {:?}\nGot: {:?}",
+                test.input,
+                test.output,
+                output);
     }
 }

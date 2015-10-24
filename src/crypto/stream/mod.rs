@@ -1,4 +1,5 @@
-#[cfg(feature = "chacha20")] pub mod chacha20;
+#[cfg(feature = "chacha20")]
+pub mod chacha20;
 
 pub trait StreamEncrypt {
     fn encrypt_stream<I, O>(&mut self, input: I, output: O)

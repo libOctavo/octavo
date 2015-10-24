@@ -1,19 +1,11 @@
 use std::num::Wrapping as W;
 
 use digest;
-use utils::buffer::{
-    FixedBuffer64,
-    FixedBuffer,
-    StandardPadding
-};
+use utils::buffer::{FixedBuffer64, FixedBuffer, StandardPadding};
 
-use byteorder::{
-    ReadBytesExt,
-    WriteBytesExt,
-    BigEndian
-};
+use byteorder::{ReadBytesExt, WriteBytesExt, BigEndian};
 
-/* sboxes.c: Tiger S boxeszz */
+// sboxes.c: Tiger S boxeszz
 const SBOXES: [[u64; 256]; 4] = include!("tiger.sboxes");
 const ROUNDS: usize = 3;
 
@@ -63,21 +55,21 @@ impl State {
 
     fn key_schedule(x: &mut [W<u64>]) {
         x[0] = x[0] - (x[7] ^ W(0xa5a5a5a5a5a5a5a5));
-        x[1] = x[1] ^  x[0];
-        x[2] = x[2] +  x[1];
+        x[1] = x[1] ^ x[0];
+        x[2] = x[2] + x[1];
         x[3] = x[3] - (x[2] ^ (!x[1] << 19));
-        x[4] = x[4] ^  x[3];
-        x[5] = x[5] +  x[4];
+        x[4] = x[4] ^ x[3];
+        x[5] = x[5] + x[4];
         x[6] = x[6] - (x[5] ^ (!x[4] >> 23));
-        x[7] = x[7] ^  x[6];
+        x[7] = x[7] ^ x[6];
 
-        x[0] = x[0] +  x[7];
+        x[0] = x[0] + x[7];
         x[1] = x[1] - (x[0] ^ (!x[7] << 19));
-        x[2] = x[2] ^  x[1];
-        x[3] = x[3] +  x[2];
+        x[2] = x[2] ^ x[1];
+        x[3] = x[3] + x[2];
         x[4] = x[4] - (x[3] ^ (!x[2] >> 23));
-        x[5] = x[5] ^  x[4];
-        x[6] = x[6] +  x[5];
+        x[5] = x[5] ^ x[4];
+        x[6] = x[6] + x[5];
         x[7] = x[7] - (x[6] ^ W(0x0123456789abcdef));
     }
 
@@ -98,11 +90,13 @@ impl State {
 
         let tmp = *self; // save abc
         for i in 0..ROUNDS {
-            if i != 0 { Self::key_schedule(&mut wblock); }
+            if i != 0 {
+                Self::key_schedule(&mut wblock);
+            }
             let mul = match i {
                 0 => 5,
                 1 => 7,
-                _ => 9
+                _ => 9,
             };
             self.pass(&mut wblock, mul);
             self.rotate();
@@ -118,7 +112,7 @@ impl State {
 pub struct Tiger {
     state: State,
     buffer: FixedBuffer64,
-    length: u64
+    length: u64,
 }
 
 impl Default for Tiger {
@@ -126,13 +120,15 @@ impl Default for Tiger {
         Tiger {
             state: State::new(),
             buffer: FixedBuffer64::new(),
-            length: 0
+            length: 0,
         }
     }
 }
 
 impl digest::Digest for Tiger {
-    fn update<T>(&mut self, update: T) where T: AsRef<[u8]> {
+    fn update<T>(&mut self, update: T)
+        where T: AsRef<[u8]>
+    {
         let update = update.as_ref();
         self.length += update.len() as u64;
 
@@ -140,10 +136,16 @@ impl digest::Digest for Tiger {
         self.buffer.input(update, |d| state.compress(d));
     }
 
-    fn output_bits() -> usize { 192 }
-    fn block_size() -> usize { 64 }
+    fn output_bits() -> usize {
+        192
+    }
+    fn block_size() -> usize {
+        64
+    }
 
-    fn result<T>(mut self, mut out: T) where T: AsMut<[u8]> {
+    fn result<T>(mut self, mut out: T)
+        where T: AsMut<[u8]>
+    {
         let state = &mut self.state;
 
         self.buffer.pad(0x01, 8, |d| state.compress(d));
@@ -194,6 +196,8 @@ mod tests {
         let mut result = [0; 24];
         hash.result(&mut result[..]);
 
-        assert_eq!(&result[..], &[0xcd, 0x7e, 0xb9, 0x64, 0x5f, 0xb4, 0x05, 0xc6, 0x48, 0x5d, 0xd1, 0xaa, 0x14, 0x59, 0x6a, 0x63, 0xe5, 0x70, 0x4c, 0xc2, 0xff, 0x28, 0xf2, 0x4a])
+        assert_eq!(&result[..],
+                   &[0xcd, 0x7e, 0xb9, 0x64, 0x5f, 0xb4, 0x05, 0xc6, 0x48, 0x5d, 0xd1, 0xaa, 0x14,
+                     0x59, 0x6a, 0x63, 0xe5, 0x70, 0x4c, 0xc2, 0xff, 0x28, 0xf2, 0x4a])
     }
 }
