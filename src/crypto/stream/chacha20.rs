@@ -2,10 +2,7 @@ use std::slice;
 
 use super::{StreamEncrypt, StreamDecrypt};
 
-use byteorder::{
-    ReadBytesExt,
-    LittleEndian
-};
+use byteorder::{ReadBytesExt, LittleEndian};
 
 const ROUNDS: usize = 20;
 const STATE_WORDS: usize = 16;
@@ -78,7 +75,7 @@ impl State {
 pub struct ChaCha20 {
     state: State,
     buffer: [u32; STATE_WORDS],
-    index: usize
+    index: usize,
 }
 
 impl ChaCha20 {
@@ -86,14 +83,16 @@ impl ChaCha20 {
         ChaCha20 {
             state: State::expand(key.as_ref(), nonce.as_ref(), position),
             buffer: [0; STATE_WORDS],
-            index: STATE_BYTES
+            index: STATE_BYTES,
         }
     }
 
     pub fn new<Key, Nonce>(key: Key, nonce: Nonce) -> Self
-        where Key: AsRef<[u8]>, Nonce: AsRef<[u8]> {
-            Self::init(key.as_ref(), nonce.as_ref(), 1)
-        }
+        where Key: AsRef<[u8]>,
+              Nonce: AsRef<[u8]>
+    {
+        Self::init(key.as_ref(), nonce.as_ref(), 1)
+    }
 
     fn update(&mut self) {
         self.state.update(&mut self.buffer[..]);
@@ -104,7 +103,9 @@ impl ChaCha20 {
     fn crypt(&mut self, input: &[u8], output: &mut [u8]) {
         assert_eq!(input.len(), output.len());
 
-        if self.index == STATE_BYTES { self.update() }
+        if self.index == STATE_BYTES {
+            self.update()
+        }
 
         let buffer = unsafe {
             slice::from_raw_parts(self.buffer.as_ptr() as *const u8, STATE_BYTES)
@@ -121,29 +122,31 @@ impl ChaCha20 {
 impl StreamEncrypt for ChaCha20 {
     fn encrypt_stream<I, O>(&mut self, input: I, mut output: O)
         where I: AsRef<[u8]>,
-              O: AsMut<[u8]> {
-                  assert_eq!(input.as_ref().len(), output.as_mut().len());
+              O: AsMut<[u8]>
+    {
+        assert_eq!(input.as_ref().len(), output.as_mut().len());
 
-                  let input = input.as_ref().chunks(STATE_BYTES);
-                  let output = output.as_mut().chunks_mut(STATE_BYTES);
-                  for (i, o) in input.zip(output) {
-                      self.crypt(i, o)
-                  }
-              }
+        let input = input.as_ref().chunks(STATE_BYTES);
+        let output = output.as_mut().chunks_mut(STATE_BYTES);
+        for (i, o) in input.zip(output) {
+            self.crypt(i, o)
+        }
+    }
 }
 
 impl StreamDecrypt for ChaCha20 {
     fn decrypt_stream<I, O>(&mut self, input: I, mut output: O)
         where I: AsRef<[u8]>,
-              O: AsMut<[u8]> {
-                  assert_eq!(input.as_ref().len(), output.as_mut().len());
+              O: AsMut<[u8]>
+    {
+        assert_eq!(input.as_ref().len(), output.as_mut().len());
 
-                  let input = input.as_ref().chunks(STATE_BYTES);
-                  let output = output.as_mut().chunks_mut(STATE_BYTES);
-                  for (i, o) in input.zip(output) {
-                      self.crypt(i, o)
-                  }
-              }
+        let input = input.as_ref().chunks(STATE_BYTES);
+        let output = output.as_mut().chunks_mut(STATE_BYTES);
+        for (i, o) in input.zip(output) {
+            self.crypt(i, o)
+        }
+    }
 }
 
 #[cfg(test)]
@@ -156,7 +159,7 @@ mod test {
         nonce: [u8; 12],
         position: u32,
         plaintext: &'a [u8],
-        ciphertext: &'a [u8]
+        ciphertext: &'a [u8],
     }
 
     const TESTS: [Test<'static>; 2] = [

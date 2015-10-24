@@ -1,15 +1,7 @@
 use digest;
-use utils::buffer::{
-    FixedBuffer64,
-    FixedBuffer,
-    StandardPadding
-};
+use utils::buffer::{FixedBuffer64, FixedBuffer, StandardPadding};
 
-use byteorder::{
-    ReadBytesExt,
-    WriteBytesExt,
-    LittleEndian
-};
+use byteorder::{ReadBytesExt, WriteBytesExt, LittleEndian};
 
 struct State {
     s0: u32,
@@ -24,14 +16,20 @@ impl State {
             s0: 0x67452301,
             s1: 0xefcdab89,
             s2: 0x98badcfe,
-            s3: 0x10325476
+            s3: 0x10325476,
         }
     }
 
     pub fn process_block(&mut self, mut update: &[u8]) {
-        fn f(x: u32, y: u32, z: u32) -> u32 { ((y ^ z) & x) ^ z }
-        fn g(x: u32, y: u32, z: u32) -> u32 { (x & y) | (x & z) | (y & z) }
-        fn h(x: u32, y: u32, z: u32) -> u32 { x ^ y ^ z }
+        fn f(x: u32, y: u32, z: u32) -> u32 {
+            ((y ^ z) & x) ^ z
+        }
+        fn g(x: u32, y: u32, z: u32) -> u32 {
+            (x & y) | (x & z) | (y & z)
+        }
+        fn h(x: u32, y: u32, z: u32) -> u32 {
+            x ^ y ^ z
+        }
 
         fn op_f(a: u32, b: u32, c: u32, d: u32, x: u32, s: u32) -> u32 {
             a.wrapping_add(f(b, c, d)).wrapping_add(x).rotate_left(s)
@@ -56,55 +54,55 @@ impl State {
         let mut c = self.s2;
         let mut d = self.s3;
 
-        a = op_f(a, b, c, d, x[ 0],  3);
-        d = op_f(d, a, b, c, x[ 1],  7);
-        c = op_f(c, d, a, b, x[ 2], 11);
-        b = op_f(b, c, d, a, x[ 3], 19);
-        a = op_f(a, b, c, d, x[ 4],  3);
-        d = op_f(d, a, b, c, x[ 5],  7);
-        c = op_f(c, d, a, b, x[ 6], 11);
-        b = op_f(b, c, d, a, x[ 7], 19);
-        a = op_f(a, b, c, d, x[ 8],  3);
-        d = op_f(d, a, b, c, x[ 9],  7);
+        a = op_f(a, b, c, d, x[0], 3);
+        d = op_f(d, a, b, c, x[1], 7);
+        c = op_f(c, d, a, b, x[2], 11);
+        b = op_f(b, c, d, a, x[3], 19);
+        a = op_f(a, b, c, d, x[4], 3);
+        d = op_f(d, a, b, c, x[5], 7);
+        c = op_f(c, d, a, b, x[6], 11);
+        b = op_f(b, c, d, a, x[7], 19);
+        a = op_f(a, b, c, d, x[8], 3);
+        d = op_f(d, a, b, c, x[9], 7);
         c = op_f(c, d, a, b, x[10], 11);
         b = op_f(b, c, d, a, x[11], 19);
-        a = op_f(a, b, c, d, x[12],  3);
-        d = op_f(d, a, b, c, x[13],  7);
+        a = op_f(a, b, c, d, x[12], 3);
+        d = op_f(d, a, b, c, x[13], 7);
         c = op_f(c, d, a, b, x[14], 11);
         b = op_f(b, c, d, a, x[15], 19);
 
-        a = op_g(a, b, c, d, x[ 0],  3);
-        d = op_g(d, a, b, c, x[ 4],  5);
-        c = op_g(c, d, a, b, x[ 8],  9);
+        a = op_g(a, b, c, d, x[0], 3);
+        d = op_g(d, a, b, c, x[4], 5);
+        c = op_g(c, d, a, b, x[8], 9);
         b = op_g(b, c, d, a, x[12], 13);
-        a = op_g(a, b, c, d, x[ 1],  3);
-        d = op_g(d, a, b, c, x[ 5],  5);
-        c = op_g(c, d, a, b, x[ 9],  9);
+        a = op_g(a, b, c, d, x[1], 3);
+        d = op_g(d, a, b, c, x[5], 5);
+        c = op_g(c, d, a, b, x[9], 9);
         b = op_g(b, c, d, a, x[13], 13);
-        a = op_g(a, b, c, d, x[ 2],  3);
-        d = op_g(d, a, b, c, x[ 6],  5);
-        c = op_g(c, d, a, b, x[10],  9);
+        a = op_g(a, b, c, d, x[2], 3);
+        d = op_g(d, a, b, c, x[6], 5);
+        c = op_g(c, d, a, b, x[10], 9);
         b = op_g(b, c, d, a, x[14], 13);
-        a = op_g(a, b, c, d, x[ 3],  3);
-        d = op_g(d, a, b, c, x[ 7],  5);
-        c = op_g(c, d, a, b, x[11],  9);
+        a = op_g(a, b, c, d, x[3], 3);
+        d = op_g(d, a, b, c, x[7], 5);
+        c = op_g(c, d, a, b, x[11], 9);
         b = op_g(b, c, d, a, x[15], 13);
 
-        a = op_h(a, b, c, d, x[ 0],  3);
-        d = op_h(d, a, b, c, x[ 8],  9);
-        c = op_h(c, d, a, b, x[ 4], 11);
+        a = op_h(a, b, c, d, x[0], 3);
+        d = op_h(d, a, b, c, x[8], 9);
+        c = op_h(c, d, a, b, x[4], 11);
         b = op_h(b, c, d, a, x[12], 15);
-        a = op_h(a, b, c, d, x[ 2],  3);
-        d = op_h(d, a, b, c, x[10],  9);
-        c = op_h(c, d, a, b, x[ 6], 11);
+        a = op_h(a, b, c, d, x[2], 3);
+        d = op_h(d, a, b, c, x[10], 9);
+        c = op_h(c, d, a, b, x[6], 11);
         b = op_h(b, c, d, a, x[14], 15);
-        a = op_h(a, b, c, d, x[ 1],  3);
-        d = op_h(d, a, b, c, x[ 9],  9);
-        c = op_h(c, d, a, b, x[ 5], 11);
+        a = op_h(a, b, c, d, x[1], 3);
+        d = op_h(d, a, b, c, x[9], 9);
+        c = op_h(c, d, a, b, x[5], 11);
         b = op_h(b, c, d, a, x[13], 15);
-        a = op_h(a, b, c, d, x[ 3],  3);
-        d = op_h(d, a, b, c, x[11],  9);
-        c = op_h(c, d, a, b, x[ 7], 11);
+        a = op_h(a, b, c, d, x[3], 3);
+        d = op_h(d, a, b, c, x[11], 9);
+        c = op_h(c, d, a, b, x[7], 11);
         b = op_h(b, c, d, a, x[15], 15);
 
         self.s0 = self.s0.wrapping_add(a);
@@ -125,13 +123,15 @@ impl Default for Md4 {
         Md4 {
             state: State::new(),
             buffer: FixedBuffer64::new(),
-            length: 0
+            length: 0,
         }
     }
 }
 
 impl digest::Digest for Md4 {
-    fn update<T>(&mut self, update: T) where T: AsRef<[u8]> {
+    fn update<T>(&mut self, update: T)
+        where T: AsRef<[u8]>
+    {
         let update = update.as_ref();
         self.length += update.len() as u64;
 
@@ -139,8 +139,12 @@ impl digest::Digest for Md4 {
         self.buffer.input(update, |d| state.process_block(d));
     }
 
-    fn output_bits() -> usize { 128 }
-    fn block_size() -> usize { 64 }
+    fn output_bits() -> usize {
+        128
+    }
+    fn block_size() -> usize {
+        64
+    }
 
     fn result<T: AsMut<[u8]>>(mut self, mut out: T) {
         let state = &mut self.state;

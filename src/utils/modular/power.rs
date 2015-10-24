@@ -21,13 +21,19 @@ impl<'a> Power<&'a BigUint> for &'a BigUint {
         let mut base = self % modulus;
         let mut exp = exp.clone();
 
-        if exp == one() { return base }
+        if exp == one() {
+            return base;
+        }
 
         let mut acc: BigUint = one();
 
         while exp > zero() {
-            if exp.is_odd() { acc = (acc * &base) % modulus }
-            if exp > one() { base = (&base * &base) % modulus }
+            if exp.is_odd() {
+                acc = (acc * &base) % modulus
+            }
+            if exp > one() {
+                base = (&base * &base) % modulus
+            }
             exp = exp >> 1;
         }
 

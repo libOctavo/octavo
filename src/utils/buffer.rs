@@ -136,5 +136,7 @@ impl <T: FixedBuffer> StandardPadding for T {
 /// Zero all bytes in dst
 #[inline]
 pub fn zero(dst: &mut [u8]) {
-    for byte in dst { *byte = 0 }
+    for byte in dst {
+        *byte = 0
+    }
 }

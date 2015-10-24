@@ -1,25 +1,15 @@
-use byteorder::{
-    ReadBytesExt,
-    WriteBytesExt,
-    BigEndian
-};
+use byteorder::{ReadBytesExt, WriteBytesExt, BigEndian};
 
 use digest::Digest;
-use utils::buffer::{
-    FixedBuffer,
-    FixedBuffer64,
-    StandardPadding
-};
+use utils::buffer::{FixedBuffer, FixedBuffer64, StandardPadding};
 
 struct State {
-    state: [u32; 5]
+    state: [u32; 5],
 }
 
 impl State {
     fn new() -> Self {
-        State {
-            state: [0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476, 0xc3d2e1f0]
-        }
+        State { state: [0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476, 0xc3d2e1f0] }
     }
 
     #[allow(needless_range_loop)]
@@ -28,10 +18,18 @@ impl State {
 
         let mut words = [0u32; 80];
 
-        fn ff(b: u32, c: u32, d: u32) -> u32 { d ^ (b & (c ^ d)) }
-        fn gg(b: u32, c: u32, d: u32) -> u32 { b ^ c ^ d }
-        fn hh(b: u32, c: u32, d: u32) -> u32 { (b & c) | (d & (b | c)) }
-        fn ii(b: u32, c: u32, d: u32) -> u32 { b ^ c ^ d }
+        fn ff(b: u32, c: u32, d: u32) -> u32 {
+            d ^ (b & (c ^ d))
+        }
+        fn gg(b: u32, c: u32, d: u32) -> u32 {
+            b ^ c ^ d
+        }
+        fn hh(b: u32, c: u32, d: u32) -> u32 {
+            (b & c) | (d & (b | c))
+        }
+        fn ii(b: u32, c: u32, d: u32) -> u32 {
+            b ^ c ^ d
+        }
 
         for i in 0..16 {
             words[i] = data.read_u32::<BigEndian>().unwrap();
@@ -40,23 +38,25 @@ impl State {
             words[i] = (words[i - 3] ^ words[i - 8] ^ words[i - 14] ^ words[i - 16]).rotate_left(1);
         }
 
-        // let (mut a, mut b, mut c, mut d, mut e) = (self.h0, self.h1, self.h2, self.h3, self.h4);
+        // let (mut a, mut b, mut c, mut d, mut e) = (self.h0, self.h1, self.h2,
+        // self.h3, self.h4);
         let mut state = self.state.clone();
 
         for (i, &word) in words.iter().enumerate() {
             let (f, k) = match i {
-                0 ... 19 =>  (ff(state[1], state[2], state[3]), 0x5a827999),
-                20 ... 39 => (gg(state[1], state[2], state[3]), 0x6ed9eba1),
-                40 ... 59 => (hh(state[1], state[2], state[3]), 0x8f1bbcdc),
-                60 ... 79 => (ii(state[1], state[2], state[3]), 0xca62c1d6),
+                0...19 => (ff(state[1], state[2], state[3]), 0x5a827999),
+                20...39 => (gg(state[1], state[2], state[3]), 0x6ed9eba1),
+                40...59 => (hh(state[1], state[2], state[3]), 0x8f1bbcdc),
+                60...79 => (ii(state[1], state[2], state[3]), 0xca62c1d6),
                 _ => unreachable!(),
             };
 
-            let tmp = state[0].rotate_left(5)
-                .wrapping_add(f)
-                .wrapping_add(state[4])
-                .wrapping_add(k)
-                .wrapping_add(word);
+            let tmp = state[0]
+                          .rotate_left(5)
+                          .wrapping_add(f)
+                          .wrapping_add(state[4])
+                          .wrapping_add(k)
+                          .wrapping_add(word);
             state[4] = state[3];
             state[3] = state[2];
             state[2] = state[1].rotate_left(30);
@@ -73,7 +73,7 @@ impl State {
 pub struct Sha1 {
     state: State,
     buffer: FixedBuffer64,
-    length: u64
+    length: u64,
 }
 
 impl Default for Sha1 {
@@ -81,7 +81,7 @@ impl Default for Sha1 {
         Sha1 {
             state: State::new(),
             buffer: FixedBuffer64::new(),
-            length: 0
+            length: 0,
         }
     }
 }
@@ -95,8 +95,12 @@ impl Digest for Sha1 {
         self.buffer.input(data, |d| state.process_block(d));
     }
 
-    fn output_bits() -> usize { 160 }
-    fn block_size() -> usize { 64 }
+    fn output_bits() -> usize {
+        160
+    }
+    fn block_size() -> usize {
+        64
+    }
 
     fn result<T: AsMut<[u8]>>(mut self, mut out: T) {
         let state = &mut self.state;

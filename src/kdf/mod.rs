@@ -1,1 +1,2 @@
-#[cfg(feature = "bcrypt")] pub mod bcrypt;
+#[cfg(feature = "bcrypt")]
+pub mod bcrypt;

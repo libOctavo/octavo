@@ -12,7 +12,7 @@ pub struct SecretKeyExtra {
     q: BigUint,
     dmp1: BigUint,
     dmq1: BigUint,
-    qinv: BigUint
+    qinv: BigUint,
 }
 
 impl SecretKeyExtra {
@@ -40,61 +40,66 @@ pub enum Rsa {
         /// Private Exponent
         d: BigUint,
         extra: Option<SecretKeyExtra>,
-    }
+    },
 }
 
 pub type KeyPair = (Rsa, Rsa);
 
 impl Rsa {
     pub fn keypair_from_primes<P, Q, E>(p: P, q: Q, e: E) -> KeyPair
-        where P: Into<BigUint>, Q: Into<BigUint>, E: Into<BigUint> {
-            let (p, q, e) = (p.into(), q.into(), e.into());
+        where P: Into<BigUint>,
+              Q: Into<BigUint>,
+              E: Into<BigUint>
+    {
+        let (p, q, e) = (p.into(), q.into(), e.into());
 
-            let n = &p * &q;
-            let phi_n = &n - (&p + &q - BigUint::one());
+        let n = &p * &q;
+        let phi_n = &n - (&p + &q - BigUint::one());
 
-            let d = e.inverse(&phi_n).expect("e is irreversible in ring phi(pq) - error");
+        let d = e.inverse(&phi_n).expect("e is irreversible in ring phi(pq) - error");
 
-            let public = Rsa::Public {
-                n: n.clone(),
-                e: e
-            };
-            let private = Rsa::Private {
-                n: n,
-                extra: Some(SecretKeyExtra::from_primes(p, q, &d)),
-                d: d,
-            };
+        let public = Rsa::Public {
+            n: n.clone(),
+            e: e,
+        };
+        let private = Rsa::Private {
+            n: n,
+            extra: Some(SecretKeyExtra::from_primes(p, q, &d)),
+            d: d,
+        };
 
-            (public, private)
-        }
+        (public, private)
+    }
 
     pub fn generate_keypair<G, T>(mut rng: G, e: T, bits: usize) -> KeyPair
-        where G: Rng + RandBigInt, T: Into<BigUint> {
-            let e = e.into();
+        where G: Rng + RandBigInt,
+              T: Into<BigUint>
+    {
+        let e = e.into();
 
-            let mut p = generate_prime(&mut rng, bits).expect("Cannot generate safe prime");
-            while (&p - BigUint::one()) % &e != BigUint::one() {
-                p = generate_prime(&mut rng, bits).expect("Cannot generate safe prime");
-            }
-            let mut q = generate_prime(&mut rng, bits).expect("Cannot generate safe prime");
-            while (&q - BigUint::one()) % &e != BigUint::one() {
-                q = generate_prime(&mut rng, bits).expect("Cannot generate safe prime");
-            }
-
-            Self::keypair_from_primes(p, q, e)
+        let mut p = generate_prime(&mut rng, bits).expect("Cannot generate safe prime");
+        while (&p - BigUint::one()) % &e != BigUint::one() {
+            p = generate_prime(&mut rng, bits).expect("Cannot generate safe prime");
         }
+        let mut q = generate_prime(&mut rng, bits).expect("Cannot generate safe prime");
+        while (&q - BigUint::one()) % &e != BigUint::one() {
+            q = generate_prime(&mut rng, bits).expect("Cannot generate safe prime");
+        }
+
+        Self::keypair_from_primes(p, q, e)
+    }
 
     pub fn is_public(&self) -> bool {
         match *self {
             Rsa::Public { .. } => true,
-            _ => false
+            _ => false,
         }
     }
 
     pub fn is_private(&self) -> bool {
         match *self {
             Rsa::Private { .. } => true,
-            _ => false
+            _ => false,
         }
     }
 
@@ -109,7 +114,8 @@ impl Rsa {
 fn crypt(msg: &BigUint,
          modulus: &BigUint,
          exp: &BigUint,
-         extra: Option<&SecretKeyExtra>) -> BigUint {
+         extra: Option<&SecretKeyExtra>)
+         -> BigUint {
     if let Some(ref extra) = extra {
         chinese_remainders_power(msg, extra)
     } else {
@@ -134,13 +140,12 @@ fn chinese_remainders_power(c: &BigUint, extra: &SecretKeyExtra) -> BigUint {
 mod tests {
     use super::Rsa;
 
-    use num::bigint::{ToBigUint};
+    use num::bigint::ToBigUint;
 
     fn keys() -> (Rsa, Rsa) {
-        Rsa::keypair_from_primes(
-            61.to_biguint().unwrap(),
-            53.to_biguint().unwrap(),
-            17.to_biguint().unwrap())
+        Rsa::keypair_from_primes(61.to_biguint().unwrap(),
+                                 53.to_biguint().unwrap(),
+                                 17.to_biguint().unwrap())
     }
 
     #[test]
