@@ -20,9 +20,9 @@ macro_rules! bench_digest {
     };
 
     ($engine:path) => {
-        bench_digest!(bench_1x_lock_size,    $engine,   1);
-        bench_digest!(bench_10x_block_size,  $engine,  10);
-        bench_digest!(bench_100x_block_size, $engine, 100);
+        bench_digest!(_1x_block_size,   $engine,   1);
+        bench_digest!(_10x_block_size,  $engine,  10);
+        bench_digest!(_100x_block_size, $engine, 100);
     }
 }
 

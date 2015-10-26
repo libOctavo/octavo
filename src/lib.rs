@@ -25,7 +25,7 @@
 
 #![deny(unreachable_code, while_true)]
 #![cfg_attr(not(test), deny(trivial_casts))]
-#![warn(unused_qualifications)]
+#![warn(unused_qualifications, missing_docs)]
 
 #[cfg(test)] extern crate quickcheck;
 #[cfg(test)] extern crate openssl;
