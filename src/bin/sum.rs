@@ -4,7 +4,7 @@ extern crate octavo;
 extern crate clap;
 extern crate rustc_serialize;
 
-use std::io::{self, Read};
+use std::io::{self, Read, BufReader};
 use std::fs::File;
 
 use clap::{App, Arg};
@@ -26,11 +26,11 @@ const ENGINES: &'static [&'static str] = &["MD4",
                                            "SHA3-512",
                                            "Tiger"];
 
-fn checksum<Eng: Digest + Default>(input: &mut Read, buffer_size: usize) -> String {
+fn checksum<Eng: Digest + Default>(input: &mut Read) -> String {
     let mut eng = Eng::default();
-    let mut buf = vec![0; buffer_size];
+    let mut buf = vec![0; Eng::block_size()];
 
-    while let Ok(len) = input.read(&mut buf[..]) {
+    while let Ok(len) = input.read(&mut buf) {
         if len == 0 {
             break;
         }
@@ -41,13 +41,13 @@ fn checksum<Eng: Digest + Default>(input: &mut Read, buffer_size: usize) -> Stri
     let mut result = vec![0; Eng::output_bytes()];
     eng.result(&mut result[..]);
 
-    result[..].to_hex()
+    result.to_hex()
 }
 
 macro_rules! digest_for {
-    (match $name:ident with $size:expr, $input:ident { $($val:pat => $eng:ty,)+ }) => {
+    (match $name:ident with $input:ident { $($val:pat => $eng:ty,)+ }) => {
         match $name {
-            $($val => checksum::<$eng>(&mut $input, $size),)*
+            $($val => checksum::<$eng>(&mut $input),)*
                 _ => unreachable!()
         }
     }
@@ -75,23 +75,16 @@ fn main() {
                                .help("Files to compute checksums. `-` means STDIN. Defaults to \
                                       STDIN.")
                                .multiple(true))
-                      .arg(Arg::with_name("buffer size")
-                               .help("Size of read buffer in bytes. Defaults to 1MiB.")
-                               .takes_value(true)
-                               .long("buffer-size"))
                       .get_matches();
 
     let engine_name = matches.value_of("digest").unwrap_or("SHA1");
     let files = matches.values_of("FILE").unwrap_or(vec!["-"]);
-    let buffer_size = matches.value_of("buffer size")
-                             .and_then(|val| val.parse().ok())
-                             .unwrap_or(1024 * 1024);
 
     for file in files {
-        let mut input: Box<Read> = input(file).unwrap();
+        let mut input = BufReader::new(input(file).unwrap());
 
         let result = digest_for! {
-            match engine_name with buffer_size, input {
+            match engine_name with input {
                 "MD4" => md4::Md4,
                 "MD5" => md5::Md5,
                 "RIPEMD-160" => ripemd::Ripemd160,
