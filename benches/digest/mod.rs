@@ -11,7 +11,7 @@ macro_rules! bench_digest {
 
             b.iter(|| {
                 for _ in 0..$blocks {
-                    d.update(&data[..]);
+                    d.update(&data);
                 }
             });
 
