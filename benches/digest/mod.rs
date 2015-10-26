@@ -1,18 +1,28 @@
 macro_rules! bench_digest {
-    ($name:ident, $engine:path, $bytes:expr) => {
+    ($name:ident, $engine:path, $blocks:expr) => {
         #[bench]
         fn $name(b: &mut Bencher) {
             use octavo::digest::Digest;
 
+            let bs = <$engine>::block_size();
+
             let mut d = <$engine>::default();
-            let data = [0; $bytes];
+            let data = vec![0; bs];
 
             b.iter(|| {
-                d.update(&data[..]);
+                for _ in 0..$blocks {
+                    d.update(&data[..]);
+                }
             });
 
-            b.bytes = $bytes;
+            b.bytes = bs as u64 * $blocks;
         }
+    };
+
+    ($engine:path) => {
+        bench_digest!(bench_1x_lock_size,    $engine,   1);
+        bench_digest!(bench_10x_block_size,  $engine,  10);
+        bench_digest!(bench_100x_block_size, $engine, 100);
     }
 }
 
@@ -21,3 +31,4 @@ macro_rules! bench_digest {
 #[cfg(feature = "sha1")] #[macro_use] mod sha1;
 #[cfg(feature = "sha2")] #[macro_use] mod sha2;
 #[cfg(feature = "sha3")] #[macro_use] mod sha3;
+#[cfg(feature = "tiger")] #[macro_use] mod tiger;

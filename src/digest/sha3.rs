@@ -198,7 +198,7 @@ macro_rules! sha3_impl {
             }
 
             fn output_bits() -> usize { $size }
-            fn block_size() -> usize { 1600 - (2 * $size) }
+            fn block_size() -> usize { (1600 - (2 * $size)) / 8 }
 
             fn result<T>(mut self, mut out: T) where T: AsMut<[u8]> {
                 let mut ret = out.as_mut();
