@@ -15,6 +15,10 @@ rustc-serialize = "*"
 optional = true
 version = "1.4"
 
+[dependencies.clippy]
+optional = true
+version = "0.0.22"
+
 [dependencies.num]
 optional = true
 version = "*"
@@ -53,4 +57,4 @@ stream = ["chacha20"]
 symmetric = ["block", "stream"]
 tiger = []
 tools = ["clap"]
-unstable = []
+unstable = ["clippy"]
