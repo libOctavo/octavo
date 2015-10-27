@@ -1,16 +1,4 @@
-//! Implementation of popular (and less popular, but fancy) hashing algorithms.
-//!
-//! **WARNING**: Not all of them are cryptographic hash functions and there are
-//! known attacks on
-//! some of them. Use with careful and **always** check that the one you choose
-//! fits your
-//! requirements!
-//!
-//! **WARNING**: If you want to use one of this functions as password hash then
-//! you are evil human
-//! being and I really hope that I'm not using any of your services.
-//!
-//! ## Cryptographic hash functions
+//! Cryptographic hash functions primitives
 //!
 //! Via [Wikipedia](https://en.wikipedia.org/wiki/Cryptographic_hash_function):
 //!
@@ -21,19 +9,8 @@
 //! > - it is infeasible to modify a message without changing the hash
 //! > - it is infeasible to find two different messages with the same hash.
 //!
-//! ### Considered safe
-//!
-//! - `SHA2` family
-//! - `SHA3` family
-//!
-//! ### Deprecated in favour of stronger functions
-//!
-//! - `SHA1` - deprecated in favour of `SHA2` family
-//!
-//! ### Broken or easy breakable on modern hardware
-//!
-//! - `MD4`
-//! - `MD5`
+//! **WARNING**: If you want to use one of this functions as password hash then
+//! you are evil human being and I really hope that I'm not using any of your services.
 
 use generic_array::ArrayLength;
 use typenum::uint::Unsigned;
