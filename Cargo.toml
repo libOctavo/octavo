@@ -32,6 +32,7 @@ openssl = "0.6"
 quickcheck = "0.2"
 
 [features]
+no-std = []
 bcrypt = ["blowfish"]
 block = ["blowfish"]
 blowfish = []
