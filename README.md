@@ -17,13 +17,12 @@ Highly modular & configurable hash & crypto library written in pure Rust.
 
 ```toml
 [dependencies]
-octavo = "*"
+octavo = { git = "https://github.com/libOctavo/octavo" }
 ```
 
-## Algorithms
-
-Check [`Cargo.toml`](Cargo.toml) features section (commented out features are
-waiting for implementation).
+**WARNING!!!** Octavo is on very early stage of development. There is hell lot
+of issues and vulnerabilities to enormous kind of attacks! Do not use in
+production code (yet)!
 
 ## Contributing
 
@@ -31,6 +30,7 @@ You can help with this project in 3 ways:
 
 1. Help me code this up! Just fork, create branch, code & pull-request. Yay!
 2. Audit code or use it. If you find bug just fill the issue, it is great help also.
+3. Support us at [Gratipay](https://gratipay.com/liboctavo/).
 
 ## Full disclosure
 
