@@ -1,0 +1,7 @@
+{
+  "src/*.rs": { "type": "source" },
+  "benches/*.rs": { "type": "bench", "alternate": "tests/{}.rs" },
+  "tests/*.rs": { "type": "test", "alternate": "benches/{}.rs" },
+  "README.md": { "type": "doc" },
+  "docs/*": { "type": "doc" }
+}
