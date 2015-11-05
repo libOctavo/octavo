@@ -223,15 +223,15 @@ macro_rules! sha3_impl {
     }
 }
 
-sha3_impl!(Sha3224 -> 224);
-sha3_impl!(Sha3256 -> 256);
-sha3_impl!(Sha3384 -> 384);
-sha3_impl!(Sha3512 -> 512);
+sha3_impl!(Sha224 -> 224);
+sha3_impl!(Sha256 -> 256);
+sha3_impl!(Sha384 -> 384);
+sha3_impl!(Sha512 -> 512);
 
 #[cfg(test)]
 mod tests {
-    mod sha3224 {
-        use digest::sha3::Sha3224;
+    mod sha224 {
+        use digest::sha3::Sha224;
         use digest::test::Test;
 
         const TESTS: &'static [Test<'static>] = &[
@@ -248,13 +248,13 @@ mod tests {
         #[test]
         fn simple_test_vectors() {
             for test in TESTS {
-                test.test(Sha3224::default());
+                test.test(Sha224::default());
             }
         }
     }
 
-    mod sha3256 {
-        use digest::sha3::Sha3256;
+    mod sha256 {
+        use digest::sha3::Sha256;
         use digest::test::Test;
 
         const TESTS: &'static [Test<'static>] = &[
@@ -271,13 +271,13 @@ mod tests {
         #[test]
         fn simple_test_vectors() {
             for test in TESTS {
-                test.test(Sha3256::default());
+                test.test(Sha256::default());
             }
         }
     }
 
     mod sha3384 {
-        use digest::sha3::Sha3384;
+        use digest::sha3::Sha384;
         use digest::test::Test;
 
         const TESTS: &'static [Test<'static>] = &[
@@ -294,13 +294,13 @@ mod tests {
         #[test]
         fn simple_test_vectors() {
             for test in TESTS {
-                test.test(Sha3384::default());
+                test.test(Sha384::default());
             }
         }
     }
 
     mod sha3512 {
-        use digest::sha3::Sha3512;
+        use digest::sha3::Sha512;
         use digest::test::Test;
 
         const TESTS: &'static [Test<'static>] = &[
@@ -318,7 +318,7 @@ mod tests {
         #[test]
         fn simple_test_vectors() {
             for test in TESTS {
-                test.test(Sha3512::default());
+                test.test(Sha512::default());
             }
         }
     }

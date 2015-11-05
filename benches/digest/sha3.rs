@@ -3,7 +3,7 @@ mod sha224 {
 
     use octavo::digest::sha3;
 
-    bench_digest!(sha3::Sha3224);
+    bench_digest!(sha3::Sha224);
 }
 
 mod sha256 {
@@ -11,7 +11,7 @@ mod sha256 {
 
     use octavo::digest::sha3;
 
-    bench_digest!(sha3::Sha3256);
+    bench_digest!(sha3::Sha256);
 }
 
 mod sha384 {
@@ -19,7 +19,7 @@ mod sha384 {
 
     use octavo::digest::sha3;
 
-    bench_digest!(sha3::Sha3384);
+    bench_digest!(sha3::Sha384);
 }
 
 mod sha512 {
@@ -27,5 +27,5 @@ mod sha512 {
 
     use octavo::digest::sha3;
 
-    bench_digest!(sha3::Sha3512);
+    bench_digest!(sha3::Sha512);
 }

@@ -8,8 +8,7 @@ use octavo::digest::md4::Md4;
 use octavo::digest::md5::Md5;
 use octavo::digest::ripemd::Ripemd160;
 use octavo::digest::sha1::Sha1;
-use octavo::digest::sha2::*;
-use octavo::digest::sha3::*;
+use octavo::digest::{sha2, sha3};
 use octavo::digest::tiger::Tiger;
 
 fn hex<T: AsRef<[u8]>, D: Digest>(data: T, mut digest: D) -> String {
@@ -33,17 +32,17 @@ fn main() {
 
     println!("Data: {:?}\n", data);
 
-    println!("MD4:       {}", hex(&data, Md4::default()));
-    println!("MD5:       {}", hex(&data, Md5::default()));
-    println!("RIPEMD160: {}", hex(&data, Ripemd160::default()));
-    println!("SHA1:      {}", hex(&data, Sha1::default()));
-    println!("SHA224:    {}", hex(&data, Sha224::default()));
-    println!("SHA256:    {}", hex(&data, Sha256::default()));
-    println!("SHA384:    {}", hex(&data, Sha384::default()));
-    println!("SHA512:    {}", hex(&data, Sha512::default()));
-    println!("SHA3-224:  {}", hex(&data, Sha3224::default()));
-    println!("SHA3-256:  {}", hex(&data, Sha3256::default()));
-    println!("SHA3-384:  {}", hex(&data, Sha3384::default()));
-    println!("SHA3-512:  {}", hex(&data, Sha3512::default()));
-    println!("Tiger:     {}", hex(&data, Tiger::default()));
+    println!("MD4:        {}", hex(&data, Md4::default()));
+    println!("MD5:        {}", hex(&data, Md5::default()));
+    println!("RIPEMD-160: {}", hex(&data, Ripemd160::default()));
+    println!("SHA-1:      {}", hex(&data, Sha1::default()));
+    println!("SHA-224:    {}", hex(&data, sha2::Sha224::default()));
+    println!("SHA-256:    {}", hex(&data, sha2::Sha256::default()));
+    println!("SHA-384:    {}", hex(&data, sha2::Sha384::default()));
+    println!("SHA-512:    {}", hex(&data, sha2::Sha512::default()));
+    println!("SHA3-224:   {}", hex(&data, sha3::Sha224::default()));
+    println!("SHA3-256:   {}", hex(&data, sha3::Sha256::default()));
+    println!("SHA3-384:   {}", hex(&data, sha3::Sha384::default()));
+    println!("SHA3-512:   {}", hex(&data, sha3::Sha512::default()));
+    println!("Tiger:      {}", hex(&data, Tiger::default()));
 }
