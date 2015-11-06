@@ -2,7 +2,7 @@ use std::slice;
 
 use super::{StreamEncrypt, StreamDecrypt};
 
-use byteorder::{ReadBytesExt, LittleEndian};
+use byteorder::{ByteOrder, LittleEndian};
 
 const ROUNDS: usize = 20;
 const STATE_WORDS: usize = 16;
@@ -36,22 +36,22 @@ macro_rules! double_round {
 }
 
 impl State {
-    fn expand(mut key: &[u8], mut nonce: &[u8], position: u32) -> Self {
-        let mut state = [0; STATE_WORDS];
+    fn expand(key: &[u8], nonce: &[u8], position: u32) -> Self {
+        let mut state = [0u32; STATE_WORDS];
 
         state[0] = 0x61707865;
         state[1] = 0x3320646e;
         state[2] = 0x79622d32;
         state[3] = 0x6b206574;
 
-        for state in &mut state[4..12] {
-            *state = key.read_u32::<LittleEndian>().unwrap();
+        for (state, chunk) in state[4..12].iter_mut().zip(key.chunks(4)) {
+            *state = LittleEndian::read_u32(chunk);
         }
 
         state[12] = position;
 
-        for state in &mut state[13..16] {
-            *state = nonce.read_u32::<LittleEndian>().unwrap();
+        for (state, chunk) in state[13..16].iter_mut().zip(nonce.chunks(4)) {
+            *state = LittleEndian::read_u32(chunk);
         }
 
         State(state)

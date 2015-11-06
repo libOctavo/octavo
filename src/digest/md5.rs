@@ -1,6 +1,7 @@
+use byteorder::{ByteOrder, LittleEndian};
+
 use digest::Digest;
 use utils::buffer::{FixedBuffer64, FixedBuffer, StandardPadding};
-use byteorder::{WriteBytesExt, ReadBytesExt, LittleEndian};
 
 #[derive(Debug)]
 struct State {
@@ -21,7 +22,7 @@ impl State {
     }
 
     #[allow(needless_range_loop)]
-    fn process_block(&mut self, mut input: &[u8]) {
+    fn process_block(&mut self, input: &[u8]) {
         fn f(u: u32, v: u32, w: u32) -> u32 {
             (u & v) | (!u & w)
         }
@@ -59,12 +60,10 @@ impl State {
         let mut c = self.s2;
         let mut d = self.s3;
 
-        let mut i = 0;
         let mut data = [0u32; 16];
 
-        while let Ok(val) = input.read_u32::<LittleEndian>() {
-            data[i] = val;
-            i += 1;
+        for (v, c) in data.iter_mut().zip(input.chunks(4)) {
+            *v = LittleEndian::read_u32(c);
         }
 
         // round 1
@@ -194,16 +193,15 @@ impl Digest for Md5 {
         let state = &mut self.state;
 
         self.buffer.standard_padding(8, |d| state.process_block(d));
-        self.buffer.next(4).write_u32::<LittleEndian>((self.length << 3) as u32).unwrap();
-        self.buffer.next(4).write_u32::<LittleEndian>((self.length >> 29) as u32).unwrap();
+        LittleEndian::write_u64(self.buffer.next(8), self.length << 3);
         state.process_block(self.buffer.full_buffer());
 
         let mut out = out.as_mut();
         assert!(out.len() >= Self::output_bytes());
-        out.write_u32::<LittleEndian>(state.s0).unwrap();
-        out.write_u32::<LittleEndian>(state.s1).unwrap();
-        out.write_u32::<LittleEndian>(state.s2).unwrap();
-        out.write_u32::<LittleEndian>(state.s3).unwrap();
+        LittleEndian::write_u32(&mut out[0..4], state.s0);
+        LittleEndian::write_u32(&mut out[4..8], state.s1);
+        LittleEndian::write_u32(&mut out[8..12], state.s2);
+        LittleEndian::write_u32(&mut out[12..16], state.s3);
     }
 }
 

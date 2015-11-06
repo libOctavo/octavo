@@ -137,7 +137,7 @@ mod tests {
                     fn prop(key:Vec<u8>, data: Vec<u8>) -> bool {
                         let octavo = {
                             let mut dig = Hmac::<$octavo>::new(&key);
-                            let mut res = vec![0; <$octavo>::output_bytes()];
+                            let mut res = vec![0; Hmac::<$octavo>::output_bytes()];
 
                             dig.update(&data);
                             dig.result(&mut res[..]);

@@ -1,4 +1,4 @@
-use byteorder::{ReadBytesExt, WriteBytesExt, LittleEndian};
+use byteorder::{ByteOrder, LittleEndian};
 
 use digest::Digest;
 use utils::buffer::{FixedBuffer, FixedBuffer64, StandardPadding};
@@ -37,7 +37,7 @@ impl State {
         State { state: [0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476, 0xc3d2e1f0] }
     }
 
-    fn process_block(&mut self, mut block: &[u8]) {
+    fn process_block(&mut self, block: &[u8]) {
         assert_eq!(block.len(), 64);
 
         fn ff(x: u32, y: u32, z: u32) -> u32 {
@@ -76,8 +76,8 @@ impl State {
 
         let mut data = [0u32; 16];
 
-        for byte in &mut data {
-            *byte = block.read_u32::<LittleEndian>().unwrap();
+        for (c, v) in block.chunks(4).zip(data.iter_mut()) {
+            *v = LittleEndian::read_u32(c);
         }
 
         let mut left = self.state.clone();
@@ -143,14 +143,13 @@ impl Digest for Ripemd160 {
         let state = &mut self.state;
 
         self.buffer.standard_padding(8, |d| state.process_block(d));
-        self.buffer.next(4).write_u32::<LittleEndian>((self.length << 3) as u32).unwrap();
-        self.buffer.next(4).write_u32::<LittleEndian>((self.length >> 29) as u32).unwrap();
+        LittleEndian::write_u64(self.buffer.next(8), self.length << 3);
         state.process_block(self.buffer.full_buffer());
 
         let mut out = out.as_mut();
         assert!(out.len() >= Self::output_bytes());
-        for &val in &state.state {
-            out.write_u32::<LittleEndian>(val).unwrap();
+        for (c, &v) in out.chunks_mut(4).zip(&state.state) {
+            LittleEndian::write_u32(c, v);
         }
     }
 }

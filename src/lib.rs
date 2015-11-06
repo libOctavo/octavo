@@ -23,7 +23,7 @@
 #![cfg_attr(feature = "clippy", plugin(clippy))]
 #![cfg_attr(not(feature = "lints"), allow(unknown_lints))]
 
-#![deny(unreachable_code, while_true)]
+#![deny(unreachable_code, while_true, unused_mut, unused_variables, unused_imports)]
 #![cfg_attr(not(test), deny(trivial_casts))]
 #![warn(missing_docs)]
 

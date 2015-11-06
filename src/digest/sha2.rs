@@ -1,4 +1,4 @@
-use byteorder::{WriteBytesExt, ReadBytesExt, BigEndian};
+use byteorder::{ByteOrder, BigEndian};
 
 use digest::Digest;
 use utils::buffer::{FixedBuffer, FixedBuffer64, FixedBuffer128, StandardPadding};
@@ -123,14 +123,13 @@ struct State<T> {
 }
 
 impl State<u32> {
-    #[allow(needless_range_loop)]
-    fn process_block(&mut self, mut data: &[u8]) {
+    fn process_block(&mut self, data: &[u8]) {
         assert_eq!(data.len(), 64);
 
         let mut words = [0u32; 64];
 
-        for i in 0..16 {
-            words[i] = data.read_u32::<BigEndian>().unwrap();
+        for (d, w) in data.chunks(4).zip(words.iter_mut()) {
+            *w = BigEndian::read_u32(d);
         }
         for i in 16..64 {
             let s0 = words[i - 15].rotate_right(7) ^ words[i - 15].rotate_right(18) ^
@@ -182,14 +181,13 @@ impl State<u32> {
 }
 
 impl State<u64> {
-    #[allow(needless_range_loop)]
-    fn process_block(&mut self, mut data: &[u8]) {
+    fn process_block(&mut self, data: &[u8]) {
         assert_eq!(data.len(), 128);
 
         let mut words = [0u64; 80];
 
-        for i in 0..16 {
-            words[i] = data.read_u64::<BigEndian>().unwrap();
+        for (d, w) in data.chunks(8).zip(words.iter_mut()) {
+            *w = BigEndian::read_u64(d);
         }
 
         for i in 16..80 {
@@ -242,10 +240,10 @@ impl State<u64> {
 }
 
 macro_rules! impl_sha(
-    (low $name:ident, $init:ident, $bits:expr) => {
+    ($name:ident, $buffer:ty, $init:ident, $write:ident, $state:ty, $chunk:expr, $bsize:expr, $bits:expr) => {
         pub struct $name {
-            state: State<u32>,
-            buffer: FixedBuffer64,
+            state: State<$state>,
+            buffer: $buffer,
             length: u64
         }
 
@@ -253,7 +251,7 @@ macro_rules! impl_sha(
             fn default() -> Self {
                 $name {
                     state: State { state: $init },
-                    buffer: FixedBuffer64::new(),
+                    buffer: <$buffer>::new(),
                     length: 0
                 }
             }
@@ -269,67 +267,30 @@ macro_rules! impl_sha(
             }
 
             fn output_bits() -> usize { $bits }
-            fn block_size() -> usize { 64 }
+            fn block_size() -> usize { $bsize }
 
             fn result<T: AsMut<[u8]>>(mut self, mut out: T) {
+                let mut out = out.as_mut();
+                assert!(out.len() >= Self::output_bytes());
+
                 let state = &mut self.state;
 
                 self.buffer.standard_padding(8, |d| state.process_block(d));
-                self.buffer.next(8).write_u64::<BigEndian>(self.length * 8).unwrap();
+                BigEndian::write_u64(self.buffer.next(8), self.length << 3);
                 state.process_block(self.buffer.full_buffer());
 
-                let mut out = out.as_mut();
-                assert!(out.len() >= Self::output_bytes());
-                for i in 0..($bits / 32) {
-                    out.write_u32::<BigEndian>(state.state[i]).unwrap();
+                for (c, &v) in out[..Self::output_bytes()].chunks_mut($chunk).zip(state.state.iter()) {
+                    BigEndian::$write(c, v);
                 }
             }
         }
     };
-(high $name:ident, $init:ident, $bits:expr) => {
-    pub struct $name {
-        state: State<u64>,
-        buffer: FixedBuffer128,
-        length: u64
-    }
-
-    impl Default for $name {
-        fn default() -> Self {
-            $name {
-                state: State { state: $init },
-                buffer: FixedBuffer128::new(),
-                length: 0
-            }
-        }
-    }
-
-    impl Digest for $name {
-        fn update<T: AsRef<[u8]>>(&mut self, data: T) {
-            let data = data.as_ref();
-            self.length += data.len() as u64;
-
-            let state = &mut self.state;
-            self.buffer.input(data, |d| state.process_block(d));
-        }
-
-        fn output_bits() -> usize { $bits }
-        fn block_size() -> usize { 128 }
-
-        fn result<T: AsMut<[u8]>>(mut self, mut out: T) {
-            let state = &mut self.state;
-
-            self.buffer.standard_padding(8, |d| state.process_block(d));
-            self.buffer.next(8).write_u64::<BigEndian>(self.length * 8).unwrap();
-            state.process_block(self.buffer.full_buffer());
-
-            let mut out = out.as_mut();
-            assert!(out.len() >= Self::output_bytes());
-            for i in 0..($bits / 64) {
-                out.write_u64::<BigEndian>(state.state[i]).unwrap();
-            }
-        }
-    }
-}
+    (low $name:ident, $init:ident, $bits:expr) => {
+        impl_sha!($name, FixedBuffer64, $init, write_u32, u32, 4, 64, $bits);
+    };
+    (high $name:ident, $init:ident, $bits:expr) => {
+        impl_sha!($name, FixedBuffer128, $init, write_u64, u64, 8, 128, $bits);
+    };
 );
 
 impl_sha!(low  Sha224, SHA224_INIT, 224);

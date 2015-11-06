@@ -1,6 +1,6 @@
 use std::iter::Iterator;
 
-use byteorder::{ReadBytesExt, WriteBytesExt, BigEndian};
+use byteorder::{ByteOrder, BigEndian};
 
 use super::{BlockEncrypt, BlockDecrypt};
 
@@ -240,8 +240,8 @@ impl Blowfish {
         let mut tmp = (0, 0);
 
         for i in 0..9 {
-            let a = salt.next().unwrap().read_u32::<BigEndian>().unwrap();
-            let b = salt.next().unwrap().read_u32::<BigEndian>().unwrap();
+            let a = BigEndian::read_u32(salt.next().unwrap());
+            let b = BigEndian::read_u32(salt.next().unwrap());
             tmp = self.encrypt_round((tmp.0 ^ a, tmp.1 ^ b));
 
             self.p[2 * i] = tmp.0;
@@ -249,8 +249,8 @@ impl Blowfish {
         }
         for i in 0..4 {
             for j in 0..128 {
-                let a = salt.next().unwrap().read_u32::<BigEndian>().unwrap();
-                let b = salt.next().unwrap().read_u32::<BigEndian>().unwrap();
+                let a = BigEndian::read_u32(salt.next().unwrap());
+                let b = BigEndian::read_u32(salt.next().unwrap());
                 tmp = self.encrypt_round((tmp.0 ^ a, tmp.1 ^ b));
 
                 self.s[i][2 * j] = tmp.0;
@@ -307,15 +307,15 @@ impl BlockEncrypt<u8> for Blowfish {
         where I: AsRef<[u8]>,
               O: AsMut<[u8]>
     {
-        let mut input = input.as_ref();
+        let input = input.as_ref();
         let mut output = output.as_mut();
-        assert!(input.len() == 8);
-        assert!(output.len() == 8);
-        let block = (input.read_u32::<BigEndian>().unwrap(),
-                     input.read_u32::<BigEndian>().unwrap());
+        assert_eq!(input.len(), 8);
+        assert_eq!(output.len(), 8);
+        let block = (BigEndian::read_u32(&input[0..4]),
+                     BigEndian::read_u32(&input[4..8]));
         let (h, l) = self.encrypt_round(block);
-        output.write_u32::<BigEndian>(h).unwrap();
-        output.write_u32::<BigEndian>(l).unwrap();
+        BigEndian::write_u32(&mut output[0..4], h);
+        BigEndian::write_u32(&mut output[4..8], l);
     }
 }
 
@@ -328,15 +328,15 @@ impl BlockDecrypt<u8> for Blowfish {
         where I: AsRef<[u8]>,
               O: AsMut<[u8]>
     {
-        let mut input = input.as_ref();
+        let input = input.as_ref();
         let mut output = output.as_mut();
-        assert!(input.len() == 8);
-        assert!(output.len() == 8);
-        let block = (input.read_u32::<BigEndian>().unwrap(),
-                     input.read_u32::<BigEndian>().unwrap());
+        assert_eq!(input.len(), 8);
+        assert_eq!(output.len(), 8);
+        let block = (BigEndian::read_u32(&input[0..4]),
+                     BigEndian::read_u32(&input[4..8]));
         let (h, l) = self.decrypt_round(block);
-        output.write_u32::<BigEndian>(h).unwrap();
-        output.write_u32::<BigEndian>(l).unwrap();
+        BigEndian::write_u32(&mut output[0..4], h);
+        BigEndian::write_u32(&mut output[4..8], l);
     }
 }
 
