@@ -276,10 +276,10 @@ macro_rules! impl_sha(
                 let state = &mut self.state;
 
                 self.buffer.standard_padding(8, |d| state.process_block(d));
-                BigEndian::write_u64(self.buffer.next(8), self.length * 8);
+                BigEndian::write_u64(self.buffer.next(8), self.length << 3);
                 state.process_block(self.buffer.full_buffer());
 
-                for (c, &v) in out.chunks_mut($chunk).zip(state.state.iter()) {
+                for (c, &v) in out[..Self::output_bytes()].chunks_mut($chunk).zip(state.state.iter()) {
                     BigEndian::$write(c, v);
                 }
             }
