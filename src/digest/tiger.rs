@@ -3,7 +3,7 @@ use std::num::Wrapping as W;
 use digest;
 use utils::buffer::{FixedBuffer64, FixedBuffer, StandardPadding};
 
-use byteorder::{ReadBytesExt, WriteBytesExt, BigEndian};
+use byteorder::{ByteOrder, BigEndian};
 
 // sboxes.c: Tiger S boxeszz
 const SBOXES: [[u64; 256]; 4] = include!("tiger.sboxes");
@@ -80,12 +80,12 @@ impl State {
         self.b = tmp;
     }
 
-    fn compress(&mut self, mut block: &[u8]) {
+    fn compress(&mut self, block: &[u8]) {
         assert_eq!(block.len(), 64);
         let mut wblock = [W(0); 8];
 
-        for i in 0..8 {
-            wblock[i] = W(block.read_u64::<BigEndian>().unwrap());
+        for (v, c) in wblock.iter_mut().zip(block.chunks(8)) {
+            *v = W(BigEndian::read_u64(c));
         }
 
         let tmp = *self; // save abc
@@ -149,14 +149,14 @@ impl digest::Digest for Tiger {
         let state = &mut self.state;
 
         self.buffer.pad(0x01, 8, |d| state.compress(d));
-        self.buffer.next(8).write_u64::<BigEndian>(self.length << 3).unwrap();
+        BigEndian::write_u64(self.buffer.next(8), self.length << 3);
         state.compress(self.buffer.full_buffer());
 
         let mut out = out.as_mut();
         assert!(out.len() >= Self::output_bytes());
-        out.write_u64::<BigEndian>(state.a.0).unwrap();
-        out.write_u64::<BigEndian>(state.b.0).unwrap();
-        out.write_u64::<BigEndian>(state.c.0).unwrap();
+        BigEndian::write_u64(&mut out[0..8], state.a.0);
+        BigEndian::write_u64(&mut out[8..16], state.b.0);
+        BigEndian::write_u64(&mut out[16..24], state.c.0);
     }
 }
 
