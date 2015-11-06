@@ -1,4 +1,4 @@
-use byteorder::{ReadBytesExt, WriteBytesExt, BigEndian};
+use byteorder::{ByteOrder, BigEndian};
 
 use digest::Digest;
 use utils::buffer::{FixedBuffer, FixedBuffer64, StandardPadding};
@@ -13,7 +13,7 @@ impl State {
     }
 
     #[allow(needless_range_loop)]
-    fn process_block(&mut self, mut data: &[u8]) {
+    fn process_block(&mut self, data: &[u8]) {
         assert_eq!(data.len(), 64);
 
         let mut words = [0u32; 80];
@@ -31,15 +31,13 @@ impl State {
             b ^ c ^ d
         }
 
-        for i in 0..16 {
-            words[i] = data.read_u32::<BigEndian>().unwrap();
+        for (c, w) in data.chunks(4).zip(words.iter_mut()) {
+            *w = BigEndian::read_u32(c);
         }
         for i in 16..80 {
             words[i] = (words[i - 3] ^ words[i - 8] ^ words[i - 14] ^ words[i - 16]).rotate_left(1);
         }
 
-        // let (mut a, mut b, mut c, mut d, mut e) = (self.h0, self.h1, self.h2,
-        // self.h3, self.h4);
         let mut state = self.state.clone();
 
         for (i, &word) in words.iter().enumerate() {
@@ -106,13 +104,13 @@ impl Digest for Sha1 {
         let state = &mut self.state;
 
         self.buffer.standard_padding(8, |d| state.process_block(d));
-        self.buffer.next(8).write_u64::<BigEndian>(self.length * 8).unwrap();
+        BigEndian::write_u64(self.buffer.next(8), self.length * 8);
         state.process_block(self.buffer.full_buffer());
 
         let mut out = out.as_mut();
         assert!(out.len() >= Self::output_bytes());
-        for &val in &state.state {
-            out.write_u32::<BigEndian>(val).unwrap();
+        for (&val, c) in state.state.iter().zip(out.chunks_mut(4)) {
+            BigEndian::write_u32(c, val)
         }
     }
 }

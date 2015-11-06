@@ -1,7 +1,7 @@
 use digest;
 use utils::buffer;
 
-use byteorder::{ReadBytesExt, WriteBytesExt, LittleEndian};
+use byteorder::{ByteOrder, LittleEndian};
 
 use std::io::Read;
 
@@ -136,22 +136,10 @@ impl State {
         }
     }
 
-    fn process(&mut self, mut data: &[u8]) {
-        for i in 0..9 {
-            self.hash[i] ^= data.read_u64::<LittleEndian>().unwrap();
-        }
-        if self.block_size > 72 {
-            for i in 9..13 {
-                self.hash[i] ^= data.read_u64::<LittleEndian>().unwrap();
-            }
-        }
-        if self.block_size > 104 {
-            for i in 13..17 {
-                self.hash[i] ^= data.read_u64::<LittleEndian>().unwrap();
-            }
-        }
-        if self.block_size > 138 {
-            self.hash[17] ^= data.read_u64::<LittleEndian>().unwrap();
+    fn process(&mut self, data: &[u8]) {
+        let max = self.block_size / 8;
+        for (h, c) in self.hash[0..max].iter_mut().zip(data.chunks(8)) {
+            *h ^= LittleEndian::read_u64(c)
         }
 
         self.permutation();
@@ -163,7 +151,7 @@ impl State {
                 self.rest = len;
                 return;
             }
-            assert!(len + self.rest == self.block_size);
+            assert_eq!(len + self.rest, self.block_size);
             let message = self.message;
             self.process(&message[..]);
             self.rest = 0;
@@ -207,15 +195,11 @@ macro_rules! sha3_impl {
                 self.state.finish();
 
                 let mut tmp = [0u8; 200];
-                {
-                    let mut p = &mut tmp[..];
-
-                    for i in 0..25 {
-                        p.write_u64::<LittleEndian>(self.state.hash[i]).unwrap();
-                    }
+                for (&v, c) in self.state.hash.iter().zip(tmp.chunks_mut(8)) {
+                    LittleEndian::write_u64(c, v);
                 }
 
-                for i in 0..(Self::output_bytes()) {
+                for i in 0..Self::output_bytes() {
                     ret[i] = tmp[i];
                 }
             }
