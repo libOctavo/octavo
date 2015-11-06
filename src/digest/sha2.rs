@@ -339,7 +339,7 @@ impl Digest for Sha512_224 {
     fn output_bits() -> usize { 224 }
     fn block_size() -> usize { 128 }
 
-    fn result<T: AsMut<[u8]>>(mut self, mut out: T) {
+    fn result<T: AsMut<[u8]>>(self, mut out: T) {
         let mut res: Vec<u8> = vec![0; Self::output_bytes()+4 ];
         self._sha512_224.result(&mut res[..]);
         let mut out = out.as_mut();
