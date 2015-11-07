@@ -194,14 +194,13 @@ macro_rules! sha3_impl {
 
                 self.state.finish();
 
-                let mut tmp = [0u8; 200];
-                for (&v, c) in self.state.hash.iter().zip(tmp.chunks_mut(8)) {
-                    LittleEndian::write_u64(c, v);
-                }
-
-                for i in 0..Self::output_bytes() {
-                    ret[i] = tmp[i];
-                }
+                unsafe {
+                    use std::ptr;
+                    ptr::copy_nonoverlapping(
+                        self.state.hash.as_ptr() as *const u8,
+                        ret.as_mut_ptr(),
+                        Self::output_bytes())
+                };
             }
         }
     }
