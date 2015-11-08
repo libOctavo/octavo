@@ -109,57 +109,64 @@ impl State {
     }
 }
 
-#[derive(Clone)]
-pub struct Tiger {
-    state: State,
-    buffer: FixedBuffer64,
-    length: u64,
-}
-
-impl Default for Tiger {
-    fn default() -> Self {
-        Tiger {
-            state: State::new(),
-            buffer: FixedBuffer64::new(),
-            length: 0,
+macro_rules! tiger_impl {
+    ($name:ident, $padding:expr) => {
+        #[derive(Clone)]
+        pub struct $name {
+            state: State,
+            buffer: FixedBuffer64,
+            length: u64,
         }
-    }
+
+        impl Default for $name {
+            fn default() -> Self {
+                $name {
+                    state: State::new(),
+                    buffer: FixedBuffer64::new(),
+                    length: 0,
+                }
+            }
+        }
+
+        impl digest::Digest for $name {
+            fn update<T>(&mut self, update: T)
+                where T: AsRef<[u8]>
+                {
+                    let update = update.as_ref();
+                    self.length += update.len() as u64;
+
+                    let state = &mut self.state;
+                    self.buffer.input(update, |d| state.compress(d));
+                }
+
+            fn output_bits() -> usize {
+                192
+            }
+            fn block_size() -> usize {
+                64
+            }
+
+            fn result<T>(mut self, mut out: T)
+                where T: AsMut<[u8]>
+                {
+                    let state = &mut self.state;
+
+                    self.buffer.pad($padding, 8, |d| state.compress(d));
+                    BigEndian::write_u64(self.buffer.next(8), self.length << 3);
+                    state.compress(self.buffer.full_buffer());
+
+                    let mut out = out.as_mut();
+                    assert!(out.len() >= Self::output_bytes());
+                    BigEndian::write_u64(&mut out[0..8], state.a.0);
+                    BigEndian::write_u64(&mut out[8..16], state.b.0);
+                    BigEndian::write_u64(&mut out[16..24], state.c.0);
+                }
+        }
+    };
 }
 
-impl digest::Digest for Tiger {
-    fn update<T>(&mut self, update: T)
-        where T: AsRef<[u8]>
-    {
-        let update = update.as_ref();
-        self.length += update.len() as u64;
-
-        let state = &mut self.state;
-        self.buffer.input(update, |d| state.compress(d));
-    }
-
-    fn output_bits() -> usize {
-        192
-    }
-    fn block_size() -> usize {
-        64
-    }
-
-    fn result<T>(mut self, mut out: T)
-        where T: AsMut<[u8]>
-    {
-        let state = &mut self.state;
-
-        self.buffer.pad(0x01, 8, |d| state.compress(d));
-        BigEndian::write_u64(self.buffer.next(8), self.length << 3);
-        state.compress(self.buffer.full_buffer());
-
-        let mut out = out.as_mut();
-        assert!(out.len() >= Self::output_bytes());
-        BigEndian::write_u64(&mut out[0..8], state.a.0);
-        BigEndian::write_u64(&mut out[8..16], state.b.0);
-        BigEndian::write_u64(&mut out[16..24], state.c.0);
-    }
-}
+tiger_impl!(Tiger,  0x01);
+tiger_impl!(Tiger2, 0x80);
 
 #[cfg(test)]
 mod tests {
@@ -199,6 +206,6 @@ mod tests {
 
         assert_eq!(&result[..],
                    &[0xcd, 0x7e, 0xb9, 0x64, 0x5f, 0xb4, 0x05, 0xc6, 0x48, 0x5d, 0xd1, 0xaa, 0x14,
-                     0x59, 0x6a, 0x63, 0xe5, 0x70, 0x4c, 0xc2, 0xff, 0x28, 0xf2, 0x4a])
+                   0x59, 0x6a, 0x63, 0xe5, 0x70, 0x4c, 0xc2, 0xff, 0x28, 0xf2, 0x4a])
     }
 }
