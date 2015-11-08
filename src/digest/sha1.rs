@@ -3,6 +3,7 @@ use byteorder::{ByteOrder, BigEndian};
 use digest::Digest;
 use utils::buffer::{FixedBuffer, FixedBuffer64, StandardPadding};
 
+#[derive(Copy, Clone, Debug)]
 struct State {
     state: [u32; 5],
 }
@@ -68,6 +69,7 @@ impl State {
     }
 }
 
+#[derive(Clone)]
 pub struct Sha1 {
     state: State,
     buffer: FixedBuffer64,

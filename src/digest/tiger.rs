@@ -109,6 +109,7 @@ impl State {
     }
 }
 
+#[derive(Clone)]
 pub struct Tiger {
     state: State,
     buffer: FixedBuffer64,

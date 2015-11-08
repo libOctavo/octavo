@@ -118,7 +118,8 @@ const U64_ROUNDS: [u64; 80] = [0x428a2f98d728ae22,
                                0x5fcb6fab3ad6faec,
                                0x6c44198c4a475817];
 
-struct State<T> {
+#[derive(Copy, Clone, Debug)]
+struct State<T: Copy> {
     state: [T; 8],
 }
 
@@ -241,6 +242,7 @@ impl State<u64> {
 
 macro_rules! impl_sha(
     ($name:ident, $buffer:ty, $init:ident, $write:ident, $state:ty, $chunk:expr, $bsize:expr, $bits:expr) => {
+        #[derive(Clone)]
         pub struct $name {
             state: State<$state>,
             buffer: $buffer,

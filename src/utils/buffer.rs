@@ -48,7 +48,16 @@ macro_rules! impl_fixed_buffer( ($name:ident, $size:expr) => (
             pub fn new() -> Self {
                 $name {
                     buffer: [0u8; $size],
-                    position: 0
+                    position: 0,
+                }
+            }
+        }
+
+        impl Clone for $name {
+            fn clone(&self) -> Self {
+                $name {
+                    buffer: self.buffer,
+                    position: self.position,
                 }
             }
         }

@@ -3,7 +3,7 @@ use byteorder::{ByteOrder, LittleEndian};
 use digest::Digest;
 use utils::buffer::{FixedBuffer64, FixedBuffer, StandardPadding};
 
-#[derive(Debug)]
+#[derive(Copy, Clone, Debug)]
 struct State {
     s0: u32,
     s1: u32,
@@ -155,6 +155,7 @@ static C4: [u32; 16] = [0xf4292244, 0x432aff97, 0xab9423a7, 0xfc93a039, 0x655b59
                         0xffeff47d, 0x85845dd1, 0x6fa87e4f, 0xfe2ce6e0, 0xa3014314, 0x4e0811a1,
                         0xf7537e82, 0xbd3af235, 0x2ad7d2bb, 0xeb86d391];
 
+#[derive(Clone)]
 pub struct Md5 {
     state: State,
     length: u64,

@@ -3,6 +3,7 @@ use utils::buffer::{FixedBuffer64, FixedBuffer, StandardPadding};
 
 use byteorder::{ByteOrder, LittleEndian};
 
+#[derive(Copy, Clone, Debug)]
 struct State {
     s0: u32,
     s1: u32,
@@ -109,6 +110,7 @@ impl State {
     }
 }
 
+#[derive(Clone)]
 pub struct Md4 {
     state: State,
     length: u64,

@@ -5,11 +5,23 @@ use byteorder::{ByteOrder, LittleEndian};
 
 use std::io::Read;
 
+#[derive(Copy)]
 struct State {
     hash: [u64; 25],
     message: [u8; 144],
     rest: usize,
     block_size: usize,
+}
+
+impl Clone for State {
+    fn clone(&self) -> Self {
+        State {
+            hash: self.hash,
+            message: self.message,
+            rest: self.rest,
+            block_size: self.block_size,
+        }
+    }
 }
 
 const ROUND_CONSTS: [u64; 24] = [0x0000000000000001,
@@ -170,6 +182,7 @@ impl State {
 
 macro_rules! sha3_impl {
     ($name:ident -> $size:expr) => {
+        #[derive(Clone)]
         pub struct $name {
             state: State
         }
