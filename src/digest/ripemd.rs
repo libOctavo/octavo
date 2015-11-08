@@ -28,6 +28,7 @@ const RIGHT_ROTATE: [u32; 80] = [8, 9, 9, 11, 13, 15, 15, 5, 7, 7, 8, 11, 14, 14
 const LEFT_CONST: [u32; 5] = [0x00000000, 0x5A827999, 0x6ED9EBA1, 0x8F1BBCDC, 0xA953FD4E];
 const RIGHT_CONST: [u32; 5] = [0x50A28BE6, 0x5C4DD124, 0x6D703EF3, 0x7A6D76E9, 0x00000000];
 
+#[derive(Copy, Clone, Debug)]
 struct State {
     state: [u32; 5],
 }
@@ -105,6 +106,7 @@ impl State {
     }
 }
 
+#[derive(Clone)]
 pub struct Ripemd160 {
     state: State,
     length: u64,
