@@ -17,7 +17,7 @@ version = "1.4"
 
 [dependencies.clippy]
 optional = true
-version = "0.0.22"
+version = "0.0"
 
 [dependencies.num]
 optional = true
