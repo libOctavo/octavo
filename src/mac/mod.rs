@@ -1,4 +1,4 @@
-pub mod hmac;
+#[cfg(feature = "hmac")] pub mod hmac;
 
 pub trait Mac: Sized {
     fn update<D: AsRef<[u8]>>(&mut self, data: D);
