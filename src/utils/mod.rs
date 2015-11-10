@@ -3,3 +3,5 @@ pub mod buffer;
 pub mod modular;
 #[cfg(all(feature = "num", feature = "rand"))]
 pub mod primes;
+#[cfg(features = "asm-cpuid")]
+pub mod cpuid;
