@@ -18,8 +18,10 @@ mod asm {
     pub fn build() {
         println!("Building with x86-64 asm support");
         compile("cpuid");
-        compile("sha1");
         compile("md5");
+        compile("sha1");
+        compile("sha256");
+        compile("sha512");
     }
 }
 
