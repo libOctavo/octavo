@@ -1,7 +1,8 @@
 use byteorder::{ByteOrder, BigEndian};
+use typenum::consts::{U20, U64, U160};
 
 use digest::Digest;
-use utils::buffer::{FixedBuffer, FixedBuffer64, StandardPadding};
+use utils::buffer::{FixedBuf, FixedBuffer64, StandardPadding};
 
 #[cfg(feature = "asm-sha1")]
 mod asm;
@@ -48,6 +49,11 @@ impl Default for Sha1 {
 }
 
 impl Digest for Sha1 {
+    type OutputBits = U160;
+    type OutputBytes = U20;
+
+    type BlockSize = U64;
+
     fn update<T: AsRef<[u8]>>(&mut self, data: T) {
         let data = data.as_ref();
         self.length += data.len() as u64;
