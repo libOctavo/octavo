@@ -32,17 +32,19 @@ fn main() {
 
     println!("Data: {:?}\n", data);
 
-    println!("MD4:        {}", hex(&data, Md4::default()));
-    println!("MD5:        {}", hex(&data, Md5::default()));
-    println!("RIPEMD-160: {}", hex(&data, Ripemd160::default()));
-    println!("SHA-1:      {}", hex(&data, Sha1::default()));
-    println!("SHA-224:    {}", hex(&data, sha2::Sha224::default()));
-    println!("SHA-256:    {}", hex(&data, sha2::Sha256::default()));
-    println!("SHA-384:    {}", hex(&data, sha2::Sha384::default()));
-    println!("SHA-512:    {}", hex(&data, sha2::Sha512::default()));
-    println!("SHA3-224:   {}", hex(&data, sha3::Sha224::default()));
-    println!("SHA3-256:   {}", hex(&data, sha3::Sha256::default()));
-    println!("SHA3-384:   {}", hex(&data, sha3::Sha384::default()));
-    println!("SHA3-512:   {}", hex(&data, sha3::Sha512::default()));
-    println!("Tiger:      {}", hex(&data, Tiger::default()));
+    println!("MD4:         {}", hex(&data, Md4::default()));
+    println!("MD5:         {}", hex(&data, Md5::default()));
+    println!("RIPEMD-160:  {}", hex(&data, Ripemd160::default()));
+    println!("SHA-1:       {}", hex(&data, Sha1::default()));
+    println!("SHA-224:     {}", hex(&data, sha2::Sha224::default()));
+    println!("SHA-256:     {}", hex(&data, sha2::Sha256::default()));
+    println!("SHA-384:     {}", hex(&data, sha2::Sha384::default()));
+    println!("SHA-512:     {}", hex(&data, sha2::Sha512::default()));
+    println!("SHA-512/224: {}", hex(&data, sha2::Sha512224::default()));
+    println!("SHA-512/256: {}", hex(&data, sha2::Sha512256::default()));
+    println!("SHA3-224:    {}", hex(&data, sha3::Sha224::default()));
+    println!("SHA3-256:    {}", hex(&data, sha3::Sha256::default()));
+    println!("SHA3-384:    {}", hex(&data, sha3::Sha384::default()));
+    println!("SHA3-512:    {}", hex(&data, sha3::Sha512::default()));
+    println!("Tiger:       {}", hex(&data, Tiger::default()));
 }
