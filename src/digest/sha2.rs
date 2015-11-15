@@ -325,40 +325,8 @@ impl_sha!(low  Sha256, SHA256_INIT, 256);
 impl_sha!(high Sha384, SHA384_INIT, 384);
 impl_sha!(high Sha512, SHA512_INIT, 512);
 
-// bits output by SHA-512/224 are not multiple of 64, thus it needs some hackery
-impl_sha!(high _Sha512_224, SHA512_224_INIT, 256);
-impl_sha!(high Sha512_256, SHA512_256_INIT, 256);
-
-pub struct Sha512_224 {
-    _sha512_224: _Sha512_224,
-}
-
-impl Default for Sha512_224 {
-    fn default() -> Self {
-        Sha512_224 {
-            _sha512_224: _Sha512_224::default(),
-        }
-    }
-}
-
-impl Digest for Sha512_224 {
-    fn update<T: AsRef<[u8]>>(&mut self, data: T) {
-        self._sha512_224.update(data);    
-    }
-
-    fn output_bits() -> usize { 224 }
-    fn block_size() -> usize { 128 }
-
-    fn result<T: AsMut<[u8]>>(self, mut out: T) {
-        let mut res: Vec<u8> = vec![0; Self::output_bytes()+4 ];
-        self._sha512_224.result(&mut res[..]);
-        let mut out = out.as_mut();
-        // copy first 28 bytes to out
-        for i in 0..Self::output_bytes() {
-            out[i] = res[i];
-        }
-    }
-}
+impl_sha!(high Sha512224, SHA512_224_INIT, 224);
+impl_sha!(high Sha512256, SHA512_256_INIT, 256);
 
 #[cfg(test)]
 mod tests {
@@ -549,9 +517,9 @@ mod tests {
         }
     }
 
-    mod sha512_224 {
+    mod sha512224 {
         use digest::test::Test;
-        use digest::sha2::Sha512_224;
+        use digest::sha2::Sha512224;
 
         // TODO: find appropriate test vectors, temporary using values found on: http://self.gutenberg.org/articles/sha512
         const TESTS: &'static [Test<'static>] = &[
@@ -563,7 +531,7 @@ mod tests {
         #[test]
         fn simple_test_vectors() {
             for test in TESTS {
-                test.test(Sha512_224::default());
+                test.test(Sha512224::default());
             }
         }
 
@@ -573,7 +541,7 @@ mod tests {
 
     mod sha512_256 {
         use digest::test::Test;
-        use digest::sha2::Sha512_256;
+        use digest::sha2::Sha512256;
 
         // TODO: find appropriate test vectors, temporary using values found on: http://self.gutenberg.org/articles/sha512
         const TESTS: &'static [Test<'static>] = &[
@@ -585,7 +553,7 @@ mod tests {
         #[test]
         fn simple_test_vectors() {
             for test in TESTS {
-                test.test(Sha512_256::default());
+                test.test(Sha512256::default());
             }
         }
 

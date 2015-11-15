@@ -40,8 +40,8 @@ fn main() {
     println!("SHA-256:     {}", hex(&data, sha2::Sha256::default()));
     println!("SHA-384:     {}", hex(&data, sha2::Sha384::default()));
     println!("SHA-512:     {}", hex(&data, sha2::Sha512::default()));
-    println!("SHA-512/224: {}", hex(&data, sha2::Sha512_224::default()));
-    println!("SHA-512/256: {}", hex(&data, sha2::Sha512_256::default()));
+    println!("SHA-512/224: {}", hex(&data, sha2::Sha512224::default()));
+    println!("SHA-512/256: {}", hex(&data, sha2::Sha512256::default()));
     println!("SHA3-224:    {}", hex(&data, sha3::Sha224::default()));
     println!("SHA3-256:    {}", hex(&data, sha3::Sha256::default()));
     println!("SHA3-384:    {}", hex(&data, sha3::Sha384::default()));
