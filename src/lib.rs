@@ -27,6 +27,11 @@
 #![cfg_attr(not(test), deny(trivial_casts))]
 #![warn(missing_docs)]
 
+// Support Redox (http://www.redox-os.org/). This is temporary fix until `redox` crate will be
+// renamed as `std`.
+#![cfg_attr(feature = "no-std", no_std)]
+#[cfg(target_os = "redox")] extern crate redox as std;
+
 #[cfg(test)] extern crate quickcheck;
 #[cfg(test)] extern crate openssl;
 

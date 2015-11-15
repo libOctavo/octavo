@@ -135,7 +135,8 @@ const U64_ROUNDS: [u64; 80] = [0x428a2f98d728ae22,
                                0x5fcb6fab3ad6faec,
                                0x6c44198c4a475817];
 
-struct State<T> {
+#[derive(Copy, Clone, Debug)]
+struct State<T: Copy> {
     state: [T; 8],
 }
 
@@ -258,6 +259,7 @@ impl State<u64> {
 
 macro_rules! impl_sha(
     ($name:ident, $buffer:ty, $init:ident, $write:ident, $state:ty, $chunk:expr, $bsize:expr, $bits:expr) => {
+        #[derive(Clone)]
         pub struct $name {
             state: State<$state>,
             buffer: $buffer,
@@ -296,9 +298,17 @@ macro_rules! impl_sha(
                 BigEndian::write_u64(self.buffer.next(8), self.length << 3);
                 state.process_block(self.buffer.full_buffer());
 
-                for (c, &v) in out[..Self::output_bytes()].chunks_mut($chunk).zip(state.state.iter()) {
-                    BigEndian::$write(c, v);
+                for i in &mut state.state {
+                    *i = i.to_be();
                 }
+
+                unsafe {
+                    use std::ptr;
+                    ptr::copy_nonoverlapping(
+                        state.state.as_ptr() as *const u8,
+                        out.as_mut_ptr(),
+                        Self::output_bytes())
+                };
             }
         }
     };
