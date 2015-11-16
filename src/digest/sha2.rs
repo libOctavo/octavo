@@ -548,7 +548,7 @@ mod tests {
 
     }
 
-    mod sha512_256 {
+    mod sha512256 {
         use digest::test::Test;
         use digest::sha2::Sha512256;
 
