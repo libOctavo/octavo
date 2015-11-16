@@ -37,6 +37,23 @@ const SHA512_INIT: [u64; 8] = [0x6a09e667f3bcc908,
                                0x9b05688c2b3e6c1f,
                                0x1f83d9abfb41bd6b,
                                0x5be0cd19137e2179];
+const SHA512_224_INIT: [u64; 8] = [0x8c3d37c819544da2,
+                                   0x73e1996689dcd4d6,
+                                   0x1dfab7ae32ff9c82,
+                                   0x679dd514582f9fcf,
+                                   0x0f6d2b697bd44da8,
+                                   0x77e36f7304c48942,
+                                   0x3f9d85a86a1d36c8,
+                                   0x1112e6ad91d692a1];
+const SHA512_256_INIT: [u64; 8] = [0x22312194fc2bf72c,
+                                   0x9f555fa3c84c64c2,
+                                   0x2393b86b6f53b151,
+                                   0x963877195940eabd,
+                                   0x96283ee2a88effe3,
+                                   0xbe5e1e2553863992,
+                                   0x2b0199fc2c85b8aa,
+                                   0x0eb72ddc81c52ca2];
+
 const U64_ROUNDS: [u64; 80] = [0x428a2f98d728ae22,
                                0x7137449123ef65cd,
                                0xb5c0fbcfec4d3b2f,
@@ -308,6 +325,9 @@ impl_sha!(low  Sha256, SHA256_INIT, 256);
 impl_sha!(high Sha384, SHA384_INIT, 384);
 impl_sha!(high Sha512, SHA512_INIT, 512);
 
+impl_sha!(high Sha512224, SHA512_224_INIT, 224);
+impl_sha!(high Sha512256, SHA512_256_INIT, 256);
+
 #[cfg(test)]
 mod tests {
     mod sha224 {
@@ -503,5 +523,49 @@ mod tests {
 
             quickcheck(prop as fn(Vec<u8>) -> bool)
         }
+    }
+
+    mod sha512224 {
+        use digest::test::Test;
+        use digest::sha2::Sha512224;
+
+        // TODO: find appropriate test vectors, temporary using values found on: http://self.gutenberg.org/articles/sha512
+        const TESTS: &'static [Test<'static>] = &[
+            Test { input: b"", output: &[ 0x6e, 0xd0, 0xdd, 0x02, 0x80, 0x6f, 0xa8, 0x9e, 0x25, 0xde, 0x06, 0x0c, 0x19, 0xd3, 0xac, 0x86, 0xca, 0xbb, 0x87, 0xd6, 0xa0, 0xdd, 0xd0, 0x5c, 0x33, 0x3b, 0x84, 0xf4, ] },
+            Test { input: b"The quick brown fox jumps over the lazy dog", output: &[ 0x94, 0x4c, 0xd2, 0x84, 0x7f, 0xb5, 0x45, 0x58, 0xd4, 0x77, 0x5d, 0xb0, 0x48, 0x5a, 0x50, 0x00, 0x31, 0x11, 0xc8, 0xe5, 0xda, 0xa6, 0x3f, 0xe7, 0x22, 0xc6, 0xaa, 0x37, ] },
+            Test { input: b"The quick brown fox jumps over the lazy dog.", output: &[ 0x6d, 0x6a, 0x92, 0x79, 0x49, 0x5e, 0xc4, 0x06, 0x17, 0x69, 0x75, 0x2e, 0x7f, 0xf9, 0xc6, 0x8b, 0x6b, 0x0b, 0x3c, 0x5a, 0x28, 0x1b, 0x79, 0x17, 0xce, 0x05, 0x72, 0xde, ] },
+        ];
+
+        #[test]
+        fn simple_test_vectors() {
+            for test in TESTS {
+                test.test(Sha512224::default());
+            }
+        }
+
+        // no quickcheck – openssl does not implement this
+
+    }
+
+    mod sha512_256 {
+        use digest::test::Test;
+        use digest::sha2::Sha512256;
+
+        // TODO: find appropriate test vectors, temporary using values found on: http://self.gutenberg.org/articles/sha512
+        const TESTS: &'static [Test<'static>] = &[
+            Test { input: b"", output: &[ 0xc6, 0x72, 0xb8, 0xd1, 0xef, 0x56, 0xed, 0x28, 0xab, 0x87, 0xc3, 0x62, 0x2c, 0x51, 0x14, 0x06, 0x9b, 0xdd, 0x3a, 0xd7, 0xb8, 0xf9, 0x73, 0x74, 0x98, 0xd0, 0xc0, 0x1e, 0xce, 0xf0, 0x96, 0x7a, ] },
+            Test { input: b"The quick brown fox jumps over the lazy dog", output: &[ 0xdd, 0x9d, 0x67, 0xb3, 0x71, 0x51, 0x9c, 0x33, 0x9e, 0xd8, 0xdb, 0xd2, 0x5a, 0xf9, 0x0e, 0x97, 0x6a, 0x1e, 0xee, 0xfd, 0x4a, 0xd3, 0xd8, 0x89, 0x00, 0x5e, 0x53, 0x2f, 0xc5, 0xbe, 0xf0, 0x4d, ] },
+            Test { input: b"The quick brown fox jumps over the lazy dog.", output: &[ 0x15, 0x46, 0x74, 0x18, 0x40, 0xf8, 0xa4, 0x92, 0xb9, 0x59, 0xd9, 0xb8, 0xb2, 0x34, 0x4b, 0x9b, 0x0e, 0xb5, 0x1b, 0x00, 0x4b, 0xba, 0x35, 0xc0, 0xae, 0xba, 0xac, 0x86, 0xd4, 0x52, 0x64, 0xc3, ] },
+        ];
+
+        #[test]
+        fn simple_test_vectors() {
+            for test in TESTS {
+                test.test(Sha512256::default());
+            }
+        }
+
+        // no quickcheck – openssl does not implement this
+
     }
 }
