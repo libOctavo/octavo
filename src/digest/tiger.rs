@@ -4,6 +4,7 @@ use digest;
 use utils::buffer::{FixedBuffer64, FixedBuf, StandardPadding};
 
 use byteorder::{ByteOrder, BigEndian};
+use typenum::consts::{U24, U64, U192};
 
 // sboxes.c: Tiger S boxeszz
 const SBOXES: [[u64; 256]; 4] = include!("tiger.sboxes");
@@ -129,6 +130,11 @@ macro_rules! tiger_impl {
         }
 
         impl digest::Digest for $name {
+            type OutputBits = U192;
+            type OutputBytes = U24;
+
+            type BlockSize = U64;
+
             fn update<T>(&mut self, update: T)
                 where T: AsRef<[u8]>
                 {
@@ -138,13 +144,6 @@ macro_rules! tiger_impl {
                     let state = &mut self.state;
                     self.buffer.input(update, |d| state.compress(d));
                 }
-
-            fn output_bits() -> usize {
-                192
-            }
-            fn block_size() -> usize {
-                64
-            }
 
             fn result<T>(mut self, mut out: T)
                 where T: AsMut<[u8]>
@@ -206,6 +205,6 @@ mod tests {
 
         assert_eq!(&result[..],
                    &[0xcd, 0x7e, 0xb9, 0x64, 0x5f, 0xb4, 0x05, 0xc6, 0x48, 0x5d, 0xd1, 0xaa, 0x14,
-                   0x59, 0x6a, 0x63, 0xe5, 0x70, 0x4c, 0xc2, 0xff, 0x28, 0xf2, 0x4a])
+                     0x59, 0x6a, 0x63, 0xe5, 0x70, 0x4c, 0xc2, 0xff, 0x28, 0xf2, 0x4a])
     }
 }

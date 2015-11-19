@@ -35,17 +35,22 @@
 //! - `MD4`
 //! - `MD5`
 
+use typenum::uint::Unsigned;
+
 pub trait Digest {
+    /// Output size in bits
+    type OutputBits: Unsigned;
+    /// Output size in bytes
+    type OutputBytes: Unsigned;
+
+    type BlockSize: Unsigned;
+
     /// Update digest with data.
     fn update<T>(&mut self, input: T) where T: AsRef<[u8]>;
 
-    /// Output size in bits
-    fn output_bits() -> usize;
-    /// Output size in bytes
-    fn output_bytes() -> usize {
-        (Self::output_bits() + 7) / 8
-    }
-    fn block_size() -> usize;
+    fn output_bits() -> usize { Self::OutputBits::to_usize() }
+    fn output_bytes() -> usize { Self::OutputBytes::to_usize() }
+    fn block_size() -> usize { Self::BlockSize::to_usize() }
 
     /// Write resulting hash into `output`.
     ///

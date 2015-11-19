@@ -2,6 +2,7 @@ use digest;
 use utils::buffer::{FixedBuffer64, FixedBuf, StandardPadding};
 
 use byteorder::{ByteOrder, LittleEndian};
+use typenum::consts::{U16, U64, U128};
 
 #[derive(Copy, Clone, Debug)]
 struct State {
@@ -128,6 +129,11 @@ impl Default for Md4 {
 }
 
 impl digest::Digest for Md4 {
+    type OutputBits = U128;
+    type OutputBytes = U16;
+
+    type BlockSize = U64;
+
     fn update<T>(&mut self, update: T)
         where T: AsRef<[u8]>
     {
@@ -136,13 +142,6 @@ impl digest::Digest for Md4 {
 
         let state = &mut self.state;
         self.buffer.input(update, |d| state.process_block(d));
-    }
-
-    fn output_bits() -> usize {
-        128
-    }
-    fn block_size() -> usize {
-        64
     }
 
     fn result<T: AsMut<[u8]>>(mut self, mut out: T) {

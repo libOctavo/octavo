@@ -1,4 +1,5 @@
 use byteorder::{ByteOrder, BigEndian};
+use typenum::consts::{U20, U64, U160};
 
 use digest::Digest;
 use utils::buffer::{FixedBuf, FixedBuffer64, StandardPadding};
@@ -87,19 +88,17 @@ impl Default for Sha1 {
 }
 
 impl Digest for Sha1 {
+    type OutputBits = U160;
+    type OutputBytes = U20;
+
+    type BlockSize = U64;
+
     fn update<T: AsRef<[u8]>>(&mut self, data: T) {
         let data = data.as_ref();
         self.length += data.len() as u64;
 
         let state = &mut self.state;
         self.buffer.input(data, |d| state.process_block(d));
-    }
-
-    fn output_bits() -> usize {
-        160
-    }
-    fn block_size() -> usize {
-        64
     }
 
     fn result<T: AsMut<[u8]>>(mut self, mut out: T) {

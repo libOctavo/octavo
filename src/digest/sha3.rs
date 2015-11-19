@@ -2,8 +2,11 @@ use digest;
 use utils::buffer;
 
 use byteorder::{ByteOrder, LittleEndian};
+use typenum::consts::{U8, U72, U104, U136, U144, U224, U256, U384, U512};
+use typenum::uint::Unsigned;
 
 use std::io::Read;
+use std::ops::Div;
 
 #[derive(Copy)]
 struct State {
@@ -181,7 +184,7 @@ impl State {
 }
 
 macro_rules! sha3_impl {
-    ($name:ident -> $size:expr) => {
+    ($name:ident -> $size:ty, $bsize:ty) => {
         #[derive(Clone)]
         pub struct $name {
             state: State
@@ -189,17 +192,19 @@ macro_rules! sha3_impl {
 
         impl Default for $name {
             fn default() -> Self {
-                $name { state: State::init($size) }
+                $name { state: State::init(<$size as Unsigned>::to_usize()) }
             }
         }
 
         impl digest::Digest for $name {
+            type OutputBits = $size;
+            type OutputBytes = <$size as Div<U8>>::Output;
+
+            type BlockSize = $bsize;
+
             fn update<T>(&mut self, data: T) where T: AsRef<[u8]> {
                 self.state.update(data.as_ref());
             }
-
-            fn output_bits() -> usize { $size }
-            fn block_size() -> usize { (1600 - (2 * $size)) / 8 }
 
             fn result<T>(mut self, mut out: T) where T: AsMut<[u8]> {
                 let mut ret = out.as_mut();
@@ -219,10 +224,10 @@ macro_rules! sha3_impl {
     }
 }
 
-sha3_impl!(Sha224 -> 224);
-sha3_impl!(Sha256 -> 256);
-sha3_impl!(Sha384 -> 384);
-sha3_impl!(Sha512 -> 512);
+sha3_impl!(Sha224 -> U224, U144);
+sha3_impl!(Sha256 -> U256, U136);
+sha3_impl!(Sha384 -> U384, U104);
+sha3_impl!(Sha512 -> U512, U72);
 
 #[cfg(test)]
 mod tests {

@@ -1,4 +1,5 @@
 use byteorder::{ByteOrder, LittleEndian};
+use typenum::consts::{U20, U64, U160};
 
 use digest::Digest;
 use utils::buffer::{FixedBuf, FixedBuffer64, StandardPadding};
@@ -124,6 +125,11 @@ impl Default for Ripemd160 {
 }
 
 impl Digest for Ripemd160 {
+    type OutputBits = U160;
+    type OutputBytes = U20;
+
+    type BlockSize = U64;
+
     fn update<T>(&mut self, update: T)
         where T: AsRef<[u8]>
     {
@@ -132,13 +138,6 @@ impl Digest for Ripemd160 {
 
         let state = &mut self.state;
         self.buffer.input(update, |d| state.process_block(d));
-    }
-
-    fn output_bits() -> usize {
-        160
-    }
-    fn block_size() -> usize {
-        64
     }
 
     fn result<T: AsMut<[u8]>>(mut self, mut out: T) {
