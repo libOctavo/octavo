@@ -32,10 +32,9 @@ impl<T: Digest> Hmac<T> {
         }
     }
 
-    fn expand_key(key: &[u8], mut digest: T) -> Vec<u8> {
+    fn expand_key(key: &[u8], mut digest: T) -> GenericArray<u8, T::BlockSize> {
         let bs = T::block_size();
-        // TODO: Replace this with static array as soon as associated constants lands
-        let mut exp_key = vec![0; bs];
+        let mut exp_key = GenericArray::new();
 
         if key.len() <= bs {
             for i in 0..key.len() {
