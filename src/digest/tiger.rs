@@ -1,7 +1,7 @@
 use std::num::Wrapping as W;
 
 use digest;
-use utils::buffer::{FixedBuffer64, FixedBuffer, StandardPadding};
+use utils::buffer::{FixedBuffer64, FixedBuf, StandardPadding};
 
 use byteorder::{ByteOrder, BigEndian};
 

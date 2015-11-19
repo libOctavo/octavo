@@ -1,7 +1,7 @@
 use byteorder::{ByteOrder, LittleEndian};
 
 use digest::Digest;
-use utils::buffer::{FixedBuffer64, FixedBuffer, StandardPadding};
+use utils::buffer::{FixedBuffer64, FixedBuf, StandardPadding};
 
 #[derive(Copy, Clone, Debug)]
 struct State {
