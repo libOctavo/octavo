@@ -1,30 +1,40 @@
 use digest::Digest;
 use mac::Mac;
 
-pub struct Hmac<T: Digest + Default> {
-    digest: T,
-    key: Vec<u8>,
+const IPAD: u8 = 0x36;
+const OPAD: u8 = 0x5c;
+
+pub struct Hmac<T: Digest> {
+    inner: T,
+    outer: T,
 }
 
 impl<T: Digest + Default> Hmac<T> {
     pub fn new<K: AsRef<[u8]>>(key: K) -> Self {
         Self::with_digest(key.as_ref(), Default::default())
     }
+}
 
-    pub fn with_digest(key: &[u8], mut digest: T) -> Self {
-        let key = Self::expand_key(key);
-        let ikey: Vec<_> = key.iter().map(|&b| b ^ 0x36).collect();
+impl<T: Digest> Hmac<T> {
+    pub fn with_digest(key: &[u8], digest: T) -> Self {
+        let mut inner = digest.clone();
+        let mut outer = digest.clone();
 
-        digest.update(&ikey);
+        let key = Self::expand_key(key, digest);
+        for byte in key {
+            inner.update(&[byte ^ IPAD]);
+            outer.update(&[byte ^ OPAD]);
+        }
 
         Hmac {
-            digest: digest,
-            key: key,
+            inner: inner,
+            outer: outer,
         }
     }
 
-    fn expand_key(key: &[u8]) -> Vec<u8> {
+    fn expand_key(key: &[u8], mut digest: T) -> Vec<u8> {
         let bs = T::block_size();
+        // TODO: Replace this with static array as soon as associated constants lands
         let mut exp_key = vec![0; bs];
 
         if key.len() <= bs {
@@ -32,7 +42,6 @@ impl<T: Digest + Default> Hmac<T> {
                 exp_key[i] = key[i];
             }
         } else {
-            let mut digest = T::default();
             digest.update(key);
             digest.result(&mut exp_key[..]);
         }
@@ -42,9 +51,9 @@ impl<T: Digest + Default> Hmac<T> {
 
 }
 
-impl<T: Digest + Default> Mac for Hmac<T> {
+impl<T: Digest> Mac for Hmac<T> {
     fn update<D: AsRef<[u8]>>(&mut self, data: D) {
-        self.digest.update(data)
+        self.inner.update(data)
     }
 
     fn output_bits() -> usize {
@@ -55,14 +64,10 @@ impl<T: Digest + Default> Mac for Hmac<T> {
     }
 
     fn result<O: AsMut<[u8]>>(mut self, mut output: O) {
-        self.digest.result(output.as_mut());
-        self.digest = T::default();
+        self.inner.result(output.as_mut());
 
-        let okey: Vec<_> = self.key.iter().map(|&b| b ^ 0x5c).collect();
-
-        self.digest.update(okey);
-        self.digest.update(output.as_mut());
-        self.digest.result(output.as_mut());
+        self.outer.update(output.as_mut());
+        self.outer.result(output.as_mut());
     }
 }
 
