@@ -1,11 +1,16 @@
-use std::io::Read;
+use std::cmp;
+use std::ptr;
+
+use generic_array::{ArrayLength, GenericArray};
+use typenum::uint::Unsigned;
+use typenum::consts::{U64, U128};
 
 /// A FixedBuffer, likes its name implies, is a fixed size buffer. When the buffer becomes full, it
 /// must be processed. The input() method takes care of processing and then clearing the buffer
 /// automatically. However, other methods do not and require the caller to process the buffer. Any
 /// method that modifies the buffer directory or provides the caller with bytes that can be modifies
 /// results in those bytes being marked as used by the buffer.
-pub trait FixedBuffer {
+pub trait FixedBuf {
     /// Input a vector of bytes. If the buffer becomes full, process it with the provided
     /// function and then clear the buffer.
     fn input<F: FnMut(&[u8])>(&mut self, input: &[u8], func: F);
@@ -37,81 +42,109 @@ pub trait FixedBuffer {
     fn size() -> usize;
 }
 
-macro_rules! impl_fixed_buffer( ($name:ident, $size:expr) => (
-        pub struct $name {
-            buffer: [u8; $size],
-            position: usize,
+pub struct FixedBuffer<N: ArrayLength<u8>> {
+    buffer: GenericArray<u8, N>,
+    position: usize,
+}
+
+pub type FixedBuffer64 = FixedBuffer<U64>;
+pub type FixedBuffer128 = FixedBuffer<U128>;
+
+impl<N: ArrayLength<u8>> FixedBuffer<N> {
+    /// Create a new buffer
+    pub fn new() -> Self {
+        FixedBuffer {
+            buffer: GenericArray::new(),
+            position: 0,
+        }
+    }
+
+    fn fill(&mut self, data: &[u8]) -> bool {
+        assert!(self.position + data.len() <= Self::size());
+        let start = self.position;
+
+        self.position += data.len();
+
+        // Faster than loop. Benched and tested, gives about 20% speedup.
+        //
+        // -- Hauleth
+        unsafe {
+            ptr::copy_nonoverlapping(data.as_ptr(), self.buffer[start..].as_mut_ptr(), data.len());
         }
 
-        impl $name {
-            /// Create a new buffer
-            pub fn new() -> Self {
-                $name {
-                    buffer: [0u8; $size],
-                    position: 0,
-                }
-            }
+        self.position == Self::size()
+    }
+}
+
+impl<N: ArrayLength<u8>> FixedBuf for FixedBuffer<N> {
+    fn input<F: FnMut(&[u8])>(&mut self, input: &[u8], mut func: F) {
+        let len = input.len();
+        let remaining = cmp::min(self.remaining(), len);
+
+        if !self.fill(&input[..remaining]) {
+            return;
         }
 
-        impl Clone for $name {
-            fn clone(&self) -> Self {
-                $name {
-                    buffer: self.buffer,
-                    position: self.position,
-                }
-            }
+        func(&self.buffer);
+        self.position = 0;
+
+        let will_remain = len - ((len - remaining) % Self::size());
+
+        for chunk in input[remaining..will_remain].chunks(Self::size()) {
+            func(&chunk)
         }
 
-        impl FixedBuffer for $name {
-            fn input<F: FnMut(&[u8])>(&mut self, mut input: &[u8], mut func: F) {
-                while let Ok(size) = input.read(&mut self.buffer[self.position..$size]) {
-                    if (size + self.position) < $size {
-                        self.position += size;
-                        break
-                    }
-                    func(&self.buffer);
-                    self.position = 0;
-                }
-            }
+        self.fill(&input[will_remain..]);
+    }
 
-            fn reset(&mut self) {
-                self.position = 0;
-            }
+    fn reset(&mut self) {
+        self.position = 0;
+    }
 
-            fn zero_until(&mut self, idx: usize) {
-                assert!(idx >= self.position);
-                zero(&mut self.buffer[self.position..idx]);
-                self.position = idx;
-            }
-
-            fn next(&mut self, len: usize) -> &mut [u8] {
-                self.position += len;
-                &mut self.buffer[self.position - len..self.position]
-            }
-
-            fn full_buffer(&mut self) -> &[u8] {
-                assert!(self.position == $size);
-                self.position = 0;
-                &self.buffer[..$size]
-            }
-
-            fn current_buffer(&self) -> &[u8] {
-                &self.buffer[..self.position]
-            }
-
-            fn position(&self) -> usize { self.position }
-
-            fn remaining(&self) -> usize { $size - self.position }
-
-            fn size() -> usize { $size }
+    fn zero_until(&mut self, idx: usize) {
+        assert!(idx >= self.position);
+        for b in &mut self.buffer[self.position..idx] {
+            *b = 0
         }
-));
+        self.position = idx;
+    }
 
-/// A fixed size buffer of 64 bytes useful for cryptographic operations.
-impl_fixed_buffer!(FixedBuffer64, 64);
+    fn next(&mut self, len: usize) -> &mut [u8] {
+        self.position += len;
+        &mut self.buffer[self.position - len..self.position]
+    }
 
-/// A fixed size buffer of 128 bytes useful for cryptographic operations.
-impl_fixed_buffer!(FixedBuffer128, 128);
+    fn full_buffer(&mut self) -> &[u8] {
+        assert!(self.position == Self::size());
+        self.position = 0;
+        &self.buffer[..Self::size()]
+    }
+
+    fn current_buffer(&self) -> &[u8] {
+        &self.buffer[..self.position]
+    }
+
+    fn position(&self) -> usize {
+        self.position
+    }
+
+    fn remaining(&self) -> usize {
+        Self::size() - self.position
+    }
+
+    fn size() -> usize {
+        <N as Unsigned>::to_usize()
+    }
+}
+
+impl<N: ArrayLength<u8>> Clone for FixedBuffer<N> {
+    fn clone(&self) -> Self {
+        FixedBuffer {
+            buffer: GenericArray::from_slice(&self.buffer),
+            position: self.position,
+        }
+    }
+}
 
 /// The StandardPadding trait adds a method useful for various hash algorithms to a FixedBuffer
 /// struct.
@@ -127,9 +160,9 @@ pub trait StandardPadding {
     }
 }
 
-impl <T: FixedBuffer> StandardPadding for T {
+impl<T: FixedBuf> StandardPadding for T {
     fn pad<F: FnMut(&[u8])>(&mut self, padding: u8, rem: usize, mut func: F) {
-        let size = Self::size();
+        let size = T::size();
 
         self.next(1)[0] = padding;
 

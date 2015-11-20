@@ -21,7 +21,7 @@
 
 #![cfg_attr(feature = "clippy", feature(plugin))]
 #![cfg_attr(feature = "clippy", plugin(clippy))]
-#![cfg_attr(not(feature = "lints"), allow(unknown_lints))]
+#![cfg_attr(not(feature = "clippy"), allow(unknown_lints))]
 
 #![deny(unreachable_code, while_true, unused_mut, unused_variables, unused_imports)]
 #![cfg_attr(not(test), deny(trivial_casts))]
@@ -36,6 +36,8 @@
 #[cfg(test)] extern crate openssl;
 
 extern crate byteorder;
+extern crate generic_array;
+extern crate typenum;
 #[cfg(feature = "num")] extern crate num;
 #[cfg(feature = "rand")] extern crate rand;
 

@@ -7,9 +7,14 @@ name = "octavo"
 repository = "https://github.com/libOctavo/octavo"
 version = "0.1.0"
 
+[profile.bench]
+debug = true
+
 [dependencies]
-byteorder = "*"
-rustc-serialize = "*"
+byteorder = "0.4.2"
+generic-array = "0.0.3"
+rustc-serialize = "0.3.16"
+typenum = "1.0.1"
 
 [dependencies.clap]
 optional = true
@@ -32,7 +37,6 @@ openssl = "0.6"
 quickcheck = "0.2"
 
 [features]
-no-std = []
 bcrypt = ["blowfish"]
 block = ["blowfish"]
 blowfish = []
@@ -47,6 +51,7 @@ kdf = ["bcrypt"]
 mac = ["hmac"]
 md4 = []
 md5 = []
+no-std = []
 public-key = ["rsa"]
 ripemd = []
 rsa = ["num", "rand"]

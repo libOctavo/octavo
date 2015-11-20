@@ -1,7 +1,10 @@
+use std::ops::Div;
+
 use byteorder::{ByteOrder, BigEndian};
+use typenum::consts::{U8, U64, U128, U224, U256, U384, U512};
 
 use digest::Digest;
-use utils::buffer::{FixedBuffer, FixedBuffer64, FixedBuffer128, StandardPadding};
+use utils::buffer::{FixedBuf, FixedBuffer64, FixedBuffer128, StandardPadding};
 
 const SHA224_INIT: [u32; 8] = [0xc1059ed8, 0x367cd507, 0x3070dd17, 0xf70e5939, 0xffc00b31,
                                0x68581511, 0x64f98fa7, 0xbefa4fa4];
@@ -258,7 +261,7 @@ impl State<u64> {
 }
 
 macro_rules! impl_sha(
-    ($name:ident, $buffer:ty, $init:ident, $write:ident, $state:ty, $chunk:expr, $bsize:expr, $bits:expr) => {
+    ($name:ident, $buffer:ty, $init:ident, $state:ty, $bsize:ty, $bits:ty) => {
         #[derive(Clone)]
         pub struct $name {
             state: State<$state>,
@@ -277,6 +280,11 @@ macro_rules! impl_sha(
         }
 
         impl Digest for $name {
+            type OutputBits = $bits;
+            type OutputBytes = <$bits as Div<U8>>::Output;
+
+            type BlockSize = $bsize;
+
             fn update<T: AsRef<[u8]>>(&mut self, data: T) {
                 let data = data.as_ref();
                 self.length += data.len() as u64;
@@ -284,9 +292,6 @@ macro_rules! impl_sha(
                 let state = &mut self.state;
                 self.buffer.input(data, |d| state.process_block(d));
             }
-
-            fn output_bits() -> usize { $bits }
-            fn block_size() -> usize { $bsize }
 
             fn result<T: AsMut<[u8]>>(mut self, mut out: T) {
                 let mut out = out.as_mut();
@@ -312,21 +317,21 @@ macro_rules! impl_sha(
             }
         }
     };
-    (low $name:ident, $init:ident, $bits:expr) => {
-        impl_sha!($name, FixedBuffer64, $init, write_u32, u32, 4, 64, $bits);
-    };
-    (high $name:ident, $init:ident, $bits:expr) => {
-        impl_sha!($name, FixedBuffer128, $init, write_u64, u64, 8, 128, $bits);
-    };
+(low $name:ident, $init:ident, $bits:ty) => {
+    impl_sha!($name, FixedBuffer64, $init, u32, U64, $bits);
+};
+(high $name:ident, $init:ident, $bits:ty) => {
+    impl_sha!($name, FixedBuffer128, $init, u64, U128, $bits);
+};
 );
 
-impl_sha!(low  Sha224, SHA224_INIT, 224);
-impl_sha!(low  Sha256, SHA256_INIT, 256);
-impl_sha!(high Sha384, SHA384_INIT, 384);
-impl_sha!(high Sha512, SHA512_INIT, 512);
+impl_sha!(low  Sha224, SHA224_INIT, U224);
+impl_sha!(low  Sha256, SHA256_INIT, U256);
+impl_sha!(high Sha384, SHA384_INIT, U384);
+impl_sha!(high Sha512, SHA512_INIT, U512);
 
-impl_sha!(high Sha512224, SHA512_224_INIT, 224);
-impl_sha!(high Sha512256, SHA512_256_INIT, 256);
+impl_sha!(high Sha512224, SHA512_224_INIT, U224);
+impl_sha!(high Sha512256, SHA512_256_INIT, U256);
 
 #[cfg(test)]
 mod tests {
@@ -522,11 +527,25 @@ mod tests {
         use digest::sha2::Sha512224;
 
         // TODO: find appropriate test vectors, temporary using values found on: http://self.gutenberg.org/articles/sha512
-        const TESTS: &'static [Test<'static>] = &[
-            Test { input: b"", output: &[ 0x6e, 0xd0, 0xdd, 0x02, 0x80, 0x6f, 0xa8, 0x9e, 0x25, 0xde, 0x06, 0x0c, 0x19, 0xd3, 0xac, 0x86, 0xca, 0xbb, 0x87, 0xd6, 0xa0, 0xdd, 0xd0, 0x5c, 0x33, 0x3b, 0x84, 0xf4, ] },
-            Test { input: b"The quick brown fox jumps over the lazy dog", output: &[ 0x94, 0x4c, 0xd2, 0x84, 0x7f, 0xb5, 0x45, 0x58, 0xd4, 0x77, 0x5d, 0xb0, 0x48, 0x5a, 0x50, 0x00, 0x31, 0x11, 0xc8, 0xe5, 0xda, 0xa6, 0x3f, 0xe7, 0x22, 0xc6, 0xaa, 0x37, ] },
-            Test { input: b"The quick brown fox jumps over the lazy dog.", output: &[ 0x6d, 0x6a, 0x92, 0x79, 0x49, 0x5e, 0xc4, 0x06, 0x17, 0x69, 0x75, 0x2e, 0x7f, 0xf9, 0xc6, 0x8b, 0x6b, 0x0b, 0x3c, 0x5a, 0x28, 0x1b, 0x79, 0x17, 0xce, 0x05, 0x72, 0xde, ] },
-        ];
+        const TESTS: &'static [Test<'static>] =
+            &[Test {
+                  input: b"",
+                  output: &[0x6e, 0xd0, 0xdd, 0x02, 0x80, 0x6f, 0xa8, 0x9e, 0x25, 0xde, 0x06, 0x0c,
+                            0x19, 0xd3, 0xac, 0x86, 0xca, 0xbb, 0x87, 0xd6, 0xa0, 0xdd, 0xd0, 0x5c,
+                            0x33, 0x3b, 0x84, 0xf4],
+              },
+              Test {
+                  input: b"The quick brown fox jumps over the lazy dog",
+                  output: &[0x94, 0x4c, 0xd2, 0x84, 0x7f, 0xb5, 0x45, 0x58, 0xd4, 0x77, 0x5d, 0xb0,
+                            0x48, 0x5a, 0x50, 0x00, 0x31, 0x11, 0xc8, 0xe5, 0xda, 0xa6, 0x3f, 0xe7,
+                            0x22, 0xc6, 0xaa, 0x37],
+              },
+              Test {
+                  input: b"The quick brown fox jumps over the lazy dog.",
+                  output: &[0x6d, 0x6a, 0x92, 0x79, 0x49, 0x5e, 0xc4, 0x06, 0x17, 0x69, 0x75, 0x2e,
+                            0x7f, 0xf9, 0xc6, 0x8b, 0x6b, 0x0b, 0x3c, 0x5a, 0x28, 0x1b, 0x79, 0x17,
+                            0xce, 0x05, 0x72, 0xde],
+              }];
 
         #[test]
         fn simple_test_vectors() {
@@ -535,7 +554,7 @@ mod tests {
             }
         }
 
-        // no quickcheck – openssl does not implement this
+    // no quickcheck – openssl does not implement this
 
     }
 
@@ -544,11 +563,25 @@ mod tests {
         use digest::sha2::Sha512256;
 
         // TODO: find appropriate test vectors, temporary using values found on: http://self.gutenberg.org/articles/sha512
-        const TESTS: &'static [Test<'static>] = &[
-            Test { input: b"", output: &[ 0xc6, 0x72, 0xb8, 0xd1, 0xef, 0x56, 0xed, 0x28, 0xab, 0x87, 0xc3, 0x62, 0x2c, 0x51, 0x14, 0x06, 0x9b, 0xdd, 0x3a, 0xd7, 0xb8, 0xf9, 0x73, 0x74, 0x98, 0xd0, 0xc0, 0x1e, 0xce, 0xf0, 0x96, 0x7a, ] },
-            Test { input: b"The quick brown fox jumps over the lazy dog", output: &[ 0xdd, 0x9d, 0x67, 0xb3, 0x71, 0x51, 0x9c, 0x33, 0x9e, 0xd8, 0xdb, 0xd2, 0x5a, 0xf9, 0x0e, 0x97, 0x6a, 0x1e, 0xee, 0xfd, 0x4a, 0xd3, 0xd8, 0x89, 0x00, 0x5e, 0x53, 0x2f, 0xc5, 0xbe, 0xf0, 0x4d, ] },
-            Test { input: b"The quick brown fox jumps over the lazy dog.", output: &[ 0x15, 0x46, 0x74, 0x18, 0x40, 0xf8, 0xa4, 0x92, 0xb9, 0x59, 0xd9, 0xb8, 0xb2, 0x34, 0x4b, 0x9b, 0x0e, 0xb5, 0x1b, 0x00, 0x4b, 0xba, 0x35, 0xc0, 0xae, 0xba, 0xac, 0x86, 0xd4, 0x52, 0x64, 0xc3, ] },
-        ];
+        const TESTS: &'static [Test<'static>] =
+            &[Test {
+                  input: b"",
+                  output: &[0xc6, 0x72, 0xb8, 0xd1, 0xef, 0x56, 0xed, 0x28, 0xab, 0x87, 0xc3, 0x62,
+                            0x2c, 0x51, 0x14, 0x06, 0x9b, 0xdd, 0x3a, 0xd7, 0xb8, 0xf9, 0x73, 0x74,
+                            0x98, 0xd0, 0xc0, 0x1e, 0xce, 0xf0, 0x96, 0x7a],
+              },
+              Test {
+                  input: b"The quick brown fox jumps over the lazy dog",
+                  output: &[0xdd, 0x9d, 0x67, 0xb3, 0x71, 0x51, 0x9c, 0x33, 0x9e, 0xd8, 0xdb, 0xd2,
+                            0x5a, 0xf9, 0x0e, 0x97, 0x6a, 0x1e, 0xee, 0xfd, 0x4a, 0xd3, 0xd8, 0x89,
+                            0x00, 0x5e, 0x53, 0x2f, 0xc5, 0xbe, 0xf0, 0x4d],
+              },
+              Test {
+                  input: b"The quick brown fox jumps over the lazy dog.",
+                  output: &[0x15, 0x46, 0x74, 0x18, 0x40, 0xf8, 0xa4, 0x92, 0xb9, 0x59, 0xd9, 0xb8,
+                            0xb2, 0x34, 0x4b, 0x9b, 0x0e, 0xb5, 0x1b, 0x00, 0x4b, 0xba, 0x35, 0xc0,
+                            0xae, 0xba, 0xac, 0x86, 0xd4, 0x52, 0x64, 0xc3],
+              }];
 
         #[test]
         fn simple_test_vectors() {
@@ -557,7 +590,7 @@ mod tests {
             }
         }
 
-        // no quickcheck – openssl does not implement this
+    // no quickcheck – openssl does not implement this
 
     }
 }
