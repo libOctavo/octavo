@@ -7,6 +7,9 @@ name = "octavo"
 repository = "https://github.com/libOctavo/octavo"
 version = "0.1.0"
 
+[profile.bench]
+debug = true
+
 [dependencies]
 byteorder = "0.4.2"
 generic-array = "0.0.3"
