@@ -16,10 +16,6 @@ generic-array = "0.0.3"
 rustc-serialize = "0.3.16"
 typenum = "1.0.1"
 
-[dependencies.clap]
-optional = true
-version = "1.4"
-
 [dependencies.clippy]
 optional = true
 version = "0.0"
@@ -42,7 +38,7 @@ block = ["blowfish"]
 blowfish = []
 chacha20 = []
 crypto = ["symmetric", "public-key"]
-default = ["digest", "crypto", "ssl", "kdf", "tools"]
+default = ["digest", "crypto", "ssl", "kdf"]
 digest = ["digest-deprecated", "digest-safe"]
 digest-deprecated = ["md4", "md5", "ripemd", "sha1", "tiger"]
 digest-safe = ["sha2", "sha3"]
@@ -62,5 +58,4 @@ ssl = []
 stream = ["chacha20"]
 symmetric = ["block", "stream"]
 tiger = []
-tools = ["clap"]
 unstable = ["clippy"]
