@@ -1,4 +1,5 @@
 use std::cmp;
+use std::ptr;
 
 use generic_array::{ArrayLength, GenericArray};
 use typenum::uint::Unsigned;
@@ -60,10 +61,15 @@ impl<N: ArrayLength<u8>> FixedBuffer<N> {
 
     fn fill(&mut self, data: &[u8]) -> bool {
         assert!(self.position + data.len() <= Self::size());
+        let start = self.position;
 
-        for b in data {
-            self.buffer[self.position] = *b;
-            self.position += 1;
+        self.position += data.len();
+
+        // Faster than loop. Benched and tested, gives about 20% speedup.
+        //
+        // -- Hauleth
+        unsafe {
+            ptr::copy_nonoverlapping(data.as_ptr(), self.buffer[start..].as_mut_ptr(), data.len());
         }
 
         self.position == Self::size()
