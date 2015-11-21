@@ -1,17 +1,15 @@
-use digest;
-use utils::buffer;
+use std::ops::Div;
 
 use byteorder::{ByteOrder, LittleEndian};
 use typenum::consts::{U8, U72, U104, U136, U144, U224, U256, U384, U512};
 use typenum::uint::Unsigned;
 
-use std::io::Read;
-use std::ops::Div;
+use digest;
+use utils::buffer::{FixedBuf, FixedBuffer, StandardPadding};
 
 #[derive(Copy)]
 struct State {
     hash: [u64; 25],
-    message: [u8; 144],
     rest: usize,
     block_size: usize,
 }
@@ -20,7 +18,6 @@ impl Clone for State {
     fn clone(&self) -> Self {
         State {
             hash: self.hash,
-            message: self.message,
             rest: self.rest,
             block_size: self.block_size,
         }
@@ -61,7 +58,6 @@ impl State {
         assert!(rate <= 1600 && (rate % 64) == 0);
         State {
             hash: [0; 25],
-            message: [0; 144],
             rest: 0,
             block_size: rate / 8,
         }
@@ -159,40 +155,22 @@ impl State {
 
         self.permutation();
     }
-
-    fn update(&mut self, mut data: &[u8]) {
-        while let Ok(len) = data.read(&mut self.message[self.rest..self.block_size]) {
-            if len + self.rest < self.block_size {
-                self.rest = len;
-                return;
-            }
-            assert_eq!(len + self.rest, self.block_size);
-            let message = self.message;
-            self.process(&message[..]);
-            self.rest = 0;
-        }
-    }
-
-    fn finish(&mut self) {
-        buffer::zero(&mut self.message[self.rest..self.block_size]);
-        self.message[self.rest] |= 0x06;
-        self.message[self.block_size - 1] |= 0x80;
-
-        let message = self.message;
-        self.process(&message[..]);
-    }
 }
 
 macro_rules! sha3_impl {
     ($name:ident -> $size:ty, $bsize:ty) => {
         #[derive(Clone)]
         pub struct $name {
-            state: State
+            state: State,
+            buffer: FixedBuffer<$bsize>,
         }
 
         impl Default for $name {
             fn default() -> Self {
-                $name { state: State::init(<$size as Unsigned>::to_usize()) }
+                $name {
+                    state: State::init(<$size as Unsigned>::to_usize()),
+                    buffer: FixedBuffer::new(),
+                }
             }
         }
 
@@ -203,19 +181,25 @@ macro_rules! sha3_impl {
             type BlockSize = $bsize;
 
             fn update<T>(&mut self, data: T) where T: AsRef<[u8]> {
-                self.state.update(data.as_ref());
+                let state = &mut self.state;
+                self.buffer.input(data.as_ref(), |d| state.process(d));
             }
 
             fn result<T>(mut self, mut out: T) where T: AsMut<[u8]> {
                 let mut ret = out.as_mut();
                 assert!(ret.len() >= Self::output_bytes());
+                let state = &mut self.state;
 
-                self.state.finish();
+                self.buffer.pad(0b00000110, 0, |d| state.process(d));
+                let buf = self.buffer.full_buffer();
+                let last = buf.len() - 1;
+                buf[last] |= 0b10000000;
+                state.process(buf);
 
                 unsafe {
                     use std::ptr;
                     ptr::copy_nonoverlapping(
-                        self.state.hash.as_ptr() as *const u8,
+                        state.hash.as_ptr() as *const u8,
                         ret.as_mut_ptr(),
                         Self::output_bytes())
                 };
