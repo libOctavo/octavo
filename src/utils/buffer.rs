@@ -27,7 +27,7 @@ pub trait FixedBuf {
     fn next(&mut self, len: usize) -> &mut [u8];
 
     /// Get the current buffer. The buffer must already be full. This clears the buffer as well.
-    fn full_buffer(&mut self) -> &[u8];
+    fn full_buffer(&mut self) -> &mut [u8];
 
     /// Get the current buffer.
     fn current_buffer(&self) -> &[u8];
@@ -114,10 +114,10 @@ impl<N: ArrayLength<u8>> FixedBuf for FixedBuffer<N> {
         &mut self.buffer[self.position - len..self.position]
     }
 
-    fn full_buffer(&mut self) -> &[u8] {
+    fn full_buffer(&mut self) -> &mut [u8] {
         assert!(self.position == Self::size());
         self.position = 0;
-        &self.buffer[..Self::size()]
+        &mut self.buffer[..]
     }
 
     fn current_buffer(&self) -> &[u8] {
@@ -172,13 +172,5 @@ impl<T: FixedBuf> StandardPadding for T {
         }
 
         self.zero_until(size - rem);
-    }
-}
-
-/// Zero all bytes in dst
-#[inline]
-pub fn zero(dst: &mut [u8]) {
-    for byte in dst {
-        *byte = 0
     }
 }
