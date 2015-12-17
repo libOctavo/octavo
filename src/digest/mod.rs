@@ -35,22 +35,29 @@
 //! - `MD4`
 //! - `MD5`
 
+use generic_array::ArrayLength;
 use typenum::uint::Unsigned;
 
-pub trait Digest {
+pub trait Digest: Clone {
     /// Output size in bits
-    type OutputBits: Unsigned;
+    type OutputBits: Unsigned + ArrayLength<u8>;
     /// Output size in bytes
-    type OutputBytes: Unsigned;
+    type OutputBytes: Unsigned + ArrayLength<u8>;
 
-    type BlockSize: Unsigned;
+    type BlockSize: Unsigned + ArrayLength<u8>;
 
     /// Update digest with data.
     fn update<T>(&mut self, input: T) where T: AsRef<[u8]>;
 
-    fn output_bits() -> usize { Self::OutputBits::to_usize() }
-    fn output_bytes() -> usize { Self::OutputBytes::to_usize() }
-    fn block_size() -> usize { Self::BlockSize::to_usize() }
+    fn output_bits() -> usize {
+        Self::OutputBits::to_usize()
+    }
+    fn output_bytes() -> usize {
+        Self::OutputBytes::to_usize()
+    }
+    fn block_size() -> usize {
+        Self::BlockSize::to_usize()
+    }
 
     /// Write resulting hash into `output`.
     ///
@@ -70,5 +77,3 @@ pub trait Digest {
 #[cfg(feature = "sha3")]pub mod sha3;
 #[cfg(feature = "tiger")]pub mod tiger;
 #[cfg(feature = "whirlpool")]pub mod whirlpool;
-
-#[cfg(test)]mod test;

@@ -1,4 +1,15 @@
-use digest::Digest;
+use octavo::digest::Digest;
+
+#[macro_use]
+mod macros;
+
+mod md4;
+mod md5;
+mod sha1;
+mod sha2;
+mod sha3;
+mod ripemd;
+mod tiger;
 
 pub struct Test<'a> {
     pub input: &'a [u8],
@@ -15,7 +26,8 @@ pub trait Testable: Sized {
     fn test(self, &Test);
 }
 
-impl<T> Testable for T where T: Digest + Sized {
+impl<T> Testable for T where T: Digest + Sized
+{
     fn test(mut self, test: &Test) {
         self.update(test.input);
         let mut output = vec![0; T::output_bytes()];

@@ -30,16 +30,16 @@
 // Support Redox (http://www.redox-os.org/). This is temporary fix until `redox` crate will be
 // renamed as `std`.
 #![cfg_attr(feature = "no-std", no_std)]
-#[cfg(target_os = "redox")] extern crate redox as std;
-
-#[cfg(test)] extern crate quickcheck;
-#[cfg(test)] extern crate openssl;
+#[cfg(target_os = "redox")]
+extern crate redox as std;
 
 extern crate byteorder;
 extern crate generic_array;
 extern crate typenum;
-#[cfg(feature = "num")] extern crate num;
-#[cfg(feature = "rand")] extern crate rand;
+#[cfg(feature = "num")]
+extern crate num;
+#[cfg(feature = "rand")]
+extern crate rand;
 
 pub mod crypto;
 pub mod digest;
