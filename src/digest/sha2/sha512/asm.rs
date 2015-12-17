@@ -1,4 +1,4 @@
-extern {
+extern "C" {
     fn OCTAVO_sha512_compress(state: *mut u64, data: *const u8);
 }
 

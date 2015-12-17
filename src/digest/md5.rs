@@ -6,7 +6,7 @@ use utils::buffer::{FixedBuffer64, FixedBuf, StandardPadding};
 
 #[cfg(feature = "asm-md5")]
 mod compress {
-    extern {
+    extern "C" {
         fn OCTAVO_md5_compress(state: *mut u32, data: *const u8);
     }
 

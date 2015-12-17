@@ -1,4 +1,4 @@
-extern {
+extern "C" {
     fn OCTAVO_cpuid() -> u64;
     fn OCTAVO_cpuid_ex() -> u64;
 }
