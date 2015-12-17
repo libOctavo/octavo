@@ -135,32 +135,3 @@ fn chinese_remainders_power(c: &BigUint, extra: &SecretKeyExtra) -> BigUint {
 
     m2 + h * &extra.q
 }
-
-#[cfg(test)]
-mod tests {
-    use super::Rsa;
-
-    use num::bigint::ToBigUint;
-
-    fn keys() -> (Rsa, Rsa) {
-        Rsa::keypair_from_primes(61.to_biguint().unwrap(),
-                                 53.to_biguint().unwrap(),
-                                 17.to_biguint().unwrap())
-    }
-
-    #[test]
-    fn test_encryption() {
-        let (public, _) = keys();
-        let c = public.crypt(&65.to_biguint().unwrap());
-
-        assert_eq!(c, 2790.to_biguint().unwrap())
-    }
-
-    #[test]
-    fn test_decryption() {
-        let (_, private) = keys();
-        let m = private.crypt(&2790.to_biguint().unwrap());
-
-        assert_eq!(m, 65.to_biguint().unwrap())
-    }
-}
