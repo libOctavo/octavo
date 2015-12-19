@@ -24,7 +24,7 @@
 
 #include "common"
 
-/* void sha512_compress(uint64_t state[8], const uint8_t block[128]) */
+/* fn sha512_compress(state: &mut [u64; 8], block: &[u8; 128]) */
 ENTRY(OCTAVO_sha512_compress)
   /*
    * Storage usage:

@@ -24,7 +24,7 @@
 
 #include "common"
 
-/* void sha256_compress(uint32_t state[8], const uint8_t block[64]) */
+/* fn sha256_compress(state: &mut [u32; 8], block: &[u8; 64]) */
 ENTRY(OCTAVO_sha256_compress)
   /*
    * Storage usage:

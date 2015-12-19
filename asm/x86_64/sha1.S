@@ -24,7 +24,7 @@
 
 #include "common"
 
-/* fn OCTAVO_sha1_compress(state: *mut u32, block: *const u8) */
+/* fn OCTAVO_sha1_compress(state: &mut [u32; 5], block: &[u8; 64]) */
 ENTRY(OCTAVO_sha1_compress)
   /*
    * Storage usage:

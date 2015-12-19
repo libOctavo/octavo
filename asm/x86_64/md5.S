@@ -24,7 +24,7 @@
 
 #include "common"
 
-/* void md5_compress(uint32_t state[4], const uint32_t block[16]) */
+/* fn md5_compress(state: &mut [u32; 4], block: &[u8; 16]) */
 ENTRY(OCTAVO_md5_compress)
   /*
    * Storage usage:
