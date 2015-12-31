@@ -11,12 +11,12 @@ version = "0.1.0"
 debug = true
 
 [dependencies]
-generic-array = "0.0.3"
-rustc-serialize = "0.3.16"
-typenum = "1.0.1"
+generic-array = "0.1"
+rustc-serialize = "0.3"
+typenum = "1.0"
 
 [dependencies.byteorder]
-version = "0.4.2"
+version = "0.4"
 features = ["no-std"]
 
 [dependencies.clippy]
