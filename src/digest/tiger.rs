@@ -99,7 +99,7 @@ impl State {
                 1 => 7,
                 _ => 9,
             };
-            self.pass(&mut wblock, mul);
+            self.pass(&wblock, mul);
             self.rotate();
         }
 
