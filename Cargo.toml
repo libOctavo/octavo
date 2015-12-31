@@ -1,5 +1,6 @@
 [package]
 authors = ["Łukasz Niemier <lukasz@niemier.pl>"]
+build = "build.rs"
 description = "Highly modular crypto & hash library written in pure Rust"
 documentation = "http://liboctavo.github.io/octavo"
 license = "MIT"
@@ -9,6 +10,9 @@ version = "0.1.0"
 
 [profile.bench]
 debug = true
+
+[build-dependencies]
+gcc = "0.3.19"
 
 [dependencies]
 generic-array = "0.1"
@@ -50,6 +54,7 @@ kdf = ["bcrypt"]
 mac = ["hmac"]
 md4 = []
 md5 = []
+no-asm = []
 no-std = []
 public-key = ["rsa"]
 ripemd = []

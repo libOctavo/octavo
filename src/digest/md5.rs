@@ -4,26 +4,42 @@ use typenum::consts::{U16, U64, U128};
 use digest::Digest;
 use utils::buffer::{FixedBuffer64, FixedBuf, StandardPadding};
 
-#[derive(Copy, Clone, Debug)]
-struct State {
-    s0: u32,
-    s1: u32,
-    s2: u32,
-    s3: u32,
-}
-
-impl State {
-    fn new() -> Self {
-        State {
-            s0: 0x67452301,
-            s1: 0xefcdab89,
-            s2: 0x98badcfe,
-            s3: 0x10325476,
-        }
+#[cfg(feature = "asm-md5")]
+mod compress {
+    extern "C" {
+        fn OCTAVO_md5_compress(state: *mut u32, data: *const u8);
     }
 
-    #[allow(needless_range_loop)]
-    fn process_block(&mut self, input: &[u8]) {
+    pub fn compress(state: &mut [u32], data: &[u8]) {
+        unsafe { OCTAVO_md5_compress(state.as_mut_ptr(), data.as_ptr()) }
+    }
+}
+
+#[cfg(not(feature = "asm-md5"))]
+mod compress {
+    use byteorder::{ByteOrder, LittleEndian};
+
+    // Round 1 constants
+    const C1: [u32; 16] = [0xd76aa478, 0xe8c7b756, 0x242070db, 0xc1bdceee, 0xf57c0faf, 0x4787c62a,
+                           0xa8304613, 0xfd469501, 0x698098d8, 0x8b44f7af, 0xffff5bb1, 0x895cd7be,
+                           0x6b901122, 0xfd987193, 0xa679438e, 0x49b40821];
+
+    // Round 2 constants
+    const C2: [u32; 16] = [0xf61e2562, 0xc040b340, 0x265e5a51, 0xe9b6c7aa, 0xd62f105d, 0x02441453,
+                           0xd8a1e681, 0xe7d3fbc8, 0x21e1cde6, 0xc33707d6, 0xf4d50d87, 0x455a14ed,
+                           0xa9e3e905, 0xfcefa3f8, 0x676f02d9, 0x8d2a4c8a];
+
+    // Round 3 constants
+    const C3: [u32; 16] = [0xfffa3942, 0x8771f681, 0x6d9d6122, 0xfde5380c, 0xa4beea44, 0x4bdecfa9,
+                           0xf6bb4b60, 0xbebfbc70, 0x289b7ec6, 0xeaa127fa, 0xd4ef3085, 0x04881d05,
+                           0xd9d4d039, 0xe6db99e5, 0x1fa27cf8, 0xc4ac5665];
+
+    // Round 4 constants
+    const C4: [u32; 16] = [0xf4292244, 0x432aff97, 0xab9423a7, 0xfc93a039, 0x655b59c3, 0x8f0ccc92,
+                           0xffeff47d, 0x85845dd1, 0x6fa87e4f, 0xfe2ce6e0, 0xa3014314, 0x4e0811a1,
+                           0xf7537e82, 0xbd3af235, 0x2ad7d2bb, 0xeb86d391];
+
+    pub fn compress(state: &mut [u32], input: &[u8]) {
         fn f(u: u32, v: u32, w: u32) -> u32 {
             (u & v) | (!u & w)
         }
@@ -56,10 +72,10 @@ impl State {
             w.wrapping_add(i(x, y, z)).wrapping_add(m).rotate_left(s).wrapping_add(x)
         }
 
-        let mut a = self.s0;
-        let mut b = self.s1;
-        let mut c = self.s2;
-        let mut d = self.s3;
+        let mut a = state[0];
+        let mut b = state[1];
+        let mut c = state[2];
+        let mut d = state[3];
 
         let mut data = [0u32; 16];
 
@@ -129,32 +145,29 @@ impl State {
             t += 28;
         }
 
-        self.s0 = self.s0.wrapping_add(a);
-        self.s1 = self.s1.wrapping_add(b);
-        self.s2 = self.s2.wrapping_add(c);
-        self.s3 = self.s3.wrapping_add(d);
+        state[0] = state[0].wrapping_add(a);
+        state[1] = state[1].wrapping_add(b);
+        state[2] = state[2].wrapping_add(c);
+        state[3] = state[3].wrapping_add(d);
     }
 }
 
-// Round 1 constants
-static C1: [u32; 16] = [0xd76aa478, 0xe8c7b756, 0x242070db, 0xc1bdceee, 0xf57c0faf, 0x4787c62a,
-                        0xa8304613, 0xfd469501, 0x698098d8, 0x8b44f7af, 0xffff5bb1, 0x895cd7be,
-                        0x6b901122, 0xfd987193, 0xa679438e, 0x49b40821];
+#[derive(Copy, Clone, Debug)]
+struct State {
+    state: [u32; 4],
+}
 
-// Round 2 constants
-static C2: [u32; 16] = [0xf61e2562, 0xc040b340, 0x265e5a51, 0xe9b6c7aa, 0xd62f105d, 0x02441453,
-                        0xd8a1e681, 0xe7d3fbc8, 0x21e1cde6, 0xc33707d6, 0xf4d50d87, 0x455a14ed,
-                        0xa9e3e905, 0xfcefa3f8, 0x676f02d9, 0x8d2a4c8a];
+impl State {
+    fn new() -> Self {
+        State { state: [0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476] }
+    }
 
-// Round 3 constants
-static C3: [u32; 16] = [0xfffa3942, 0x8771f681, 0x6d9d6122, 0xfde5380c, 0xa4beea44, 0x4bdecfa9,
-                        0xf6bb4b60, 0xbebfbc70, 0x289b7ec6, 0xeaa127fa, 0xd4ef3085, 0x04881d05,
-                        0xd9d4d039, 0xe6db99e5, 0x1fa27cf8, 0xc4ac5665];
+    fn process_block(&mut self, input: &[u8]) {
+        assert_eq!(input.len(), 64);
 
-// Round 4 constants
-static C4: [u32; 16] = [0xf4292244, 0x432aff97, 0xab9423a7, 0xfc93a039, 0x655b59c3, 0x8f0ccc92,
-                        0xffeff47d, 0x85845dd1, 0x6fa87e4f, 0xfe2ce6e0, 0xa3014314, 0x4e0811a1,
-                        0xf7537e82, 0xbd3af235, 0x2ad7d2bb, 0xeb86d391];
+        compress::compress(&mut self.state, input);
+    }
+}
 
 #[derive(Clone)]
 pub struct Md5 {
@@ -198,9 +211,8 @@ impl Digest for Md5 {
 
         let mut out = out.as_mut();
         assert!(out.len() >= Self::output_bytes());
-        LittleEndian::write_u32(&mut out[0..4], state.s0);
-        LittleEndian::write_u32(&mut out[4..8], state.s1);
-        LittleEndian::write_u32(&mut out[8..12], state.s2);
-        LittleEndian::write_u32(&mut out[12..16], state.s3);
+        for (b, s) in out.chunks_mut(4).zip(state.state.iter()) {
+            LittleEndian::write_u32(b, *s);
+        }
     }
 }
