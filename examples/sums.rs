@@ -30,8 +30,6 @@ fn hex<T: AsRef<[u8]>, D: Digest>(data: T, mut digest: D) -> String {
 fn main() {
     let data = "octavo";
 
-    println!("Data: {:?}\n", data);
-
     println!("MD4:         {}", hex(&data, Md4::default()));
     println!("MD5:         {}", hex(&data, Md5::default()));
     println!("RIPEMD-160:  {}", hex(&data, Ripemd160::default()));

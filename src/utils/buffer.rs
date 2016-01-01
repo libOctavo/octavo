@@ -1,5 +1,6 @@
 use std::cmp;
 use std::ptr;
+use std::fmt;
 
 use generic_array::{ArrayLength, GenericArray};
 use typenum::uint::Unsigned;
@@ -143,6 +144,12 @@ impl<N: ArrayLength<u8>> Clone for FixedBuffer<N> {
             buffer: GenericArray::from_slice(&self.buffer),
             position: self.position,
         }
+    }
+}
+
+impl<N: ArrayLength<u8>> fmt::Debug for FixedBuffer<N> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+        write!(f, "{:?}", &self.buffer[..self.position])
     }
 }
 

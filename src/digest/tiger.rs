@@ -6,7 +6,7 @@ use utils::buffer::{FixedBuffer64, FixedBuf, StandardPadding};
 use byteorder::{ByteOrder, BigEndian};
 use typenum::consts::{U24, U64, U192};
 
-// sboxes.c: Tiger S boxeszz
+// sboxes.c: Tiger S boxes
 const SBOXES: [[u64; 256]; 4] = include!("tiger.sboxes");
 const ROUNDS: usize = 3;
 
