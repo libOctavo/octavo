@@ -1,3 +1,5 @@
+use std::str;
+
 use octavo::digest::Digest;
 
 #[macro_use]
@@ -34,8 +36,9 @@ impl<T> Testable for T where T: Digest + Sized
 
         self.result(&mut output[..]);
         assert!(test.output == &output[..],
-                "Input: {:?}\nExpected: {:?}\nGot: {:?}",
+                "Input: {:?} (str: {})\nExpected: {:?}\nGot: {:?}",
                 test.input,
+                str::from_utf8(test.input).unwrap_or("<non-UTF8>"),
                 test.output,
                 output);
     }
