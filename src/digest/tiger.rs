@@ -82,7 +82,7 @@ impl State {
     }
 
     fn compress(&mut self, block: &[u8]) {
-        assert_eq!(block.len(), 64);
+        debug_assert!(block.len() == 64);
         let mut wblock = [W(0); 8];
 
         for (v, c) in wblock.iter_mut().zip(block.chunks(8)) {

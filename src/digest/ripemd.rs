@@ -40,7 +40,7 @@ impl State {
     }
 
     fn process_block(&mut self, block: &[u8]) {
-        assert_eq!(block.len(), 64);
+        debug_assert!(block.len() == 64);
 
         fn ff(x: u32, y: u32, z: u32) -> u32 {
             x ^ y ^ z

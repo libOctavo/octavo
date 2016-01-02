@@ -16,7 +16,7 @@ impl State {
 
     #[allow(needless_range_loop)]
     fn process_block(&mut self, data: &[u8]) {
-        assert_eq!(data.len(), 64);
+        debug_assert!(data.len() == 64);
 
         let mut words = [0u32; 80];
 
