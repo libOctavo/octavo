@@ -1,3 +1,14 @@
+//! RIPEMD (RACE Integrity Primitives Evaluation Message Digest)
+//!
+//! # General info
+//!
+//! | Name       | Digest size | Block size | Rounds | Structure            | Reference             |
+//! | ---------- | ----------: | ---------: | -----: | -------------------- | --------------------- |
+//! | RIPEMD-160 |    160 bits |   512 bits |      4 | [Merkle–Damgård][md] | [RIPEMD website][web] |
+//!
+//! [web]: http://homes.esat.kuleuven.be/~bosselae/ripemd160.html "The RIPEMD-160 page"
+//! [md]: https://en.wikipedia.org/wiki/Merkle%E2%80%93Damg%C3%A5rd_construction
+
 use byteorder::{ByteOrder, LittleEndian};
 use typenum::consts::{U20, U64, U160};
 
@@ -130,6 +141,9 @@ impl State {
     }
 }
 
+/// RIPEMD-160 implementation
+///
+/// For more details check [module docs](index.html)
 #[derive(Clone)]
 pub struct Ripemd160 {
     state: State,

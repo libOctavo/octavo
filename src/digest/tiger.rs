@@ -1,3 +1,15 @@
+//! Tiger
+//!
+//! # General info
+//!
+//! | Name        | Digest size | Block size | Rounds | Structure            | Reference            |
+//! | ----------- | ----------: | ---------: | -----: | -------------------- | -------------------- |
+//! | Tiger       |    192 bits |   512 bits |     24 | [Merkle–Damgård][md] | [Tiger website][web] |
+//! | Tiger2      |    192 bits |   512 bits |     24 | [Merkle–Damgård][md] | [Tiger website][web] |
+//!
+//! [web]: http://www.cs.technion.ac.il/~biham/Reports/Tiger/ "Tiger: A Fast New Hash Function(Designed in 1995)"
+//! [md]: https://en.wikipedia.org/wiki/Merkle%E2%80%93Damg%C3%A5rd_construction
+
 use std::num::Wrapping as W;
 
 use digest;
@@ -6,7 +18,7 @@ use utils::buffer::{FixedBuffer64, FixedBuf, StandardPadding};
 use byteorder::{ByteOrder, BigEndian};
 use typenum::consts::{U24, U64, U192};
 
-// sboxes.c: Tiger S boxes
+// Tiger S boxes
 const SBOXES: [[u64; 256]; 4] = include!("tiger.sboxes");
 const ROUNDS: usize = 3;
 
@@ -111,13 +123,14 @@ impl State {
 }
 
 macro_rules! tiger_impl {
-    ($name:ident, $padding:expr) => {
-        #[derive(Clone)]
-        pub struct $name {
-            state: State,
-            buffer: FixedBuffer64,
-            length: u64,
-        }
+    ($(#[$meta:meta])* struct $name:ident, $padding:expr) => {
+        $(#[$meta])*
+            #[derive(Clone)]
+            pub struct $name {
+                state: State,
+                buffer: FixedBuffer64,
+                length: u64,
+            }
 
         impl Default for $name {
             fn default() -> Self {
@@ -164,5 +177,17 @@ macro_rules! tiger_impl {
     };
 }
 
-tiger_impl!(Tiger,  0x01);
-tiger_impl!(Tiger2, 0x80);
+tiger_impl!(
+    /// Tiger implementation
+    ///
+    /// For more details check [module docs](index.html)
+    struct Tiger,  0x01);
+tiger_impl!(
+    /// Tiger2 implementation
+    ///
+    /// The only difference between original Tiger and Tiger2 is padding value which is `0b00000001`
+    /// (`0x01`) for Tiger and `0b10000000` (`0x80`, the same that is used by MD-4/5 and SHA-1/2)
+    /// for Tiger2.
+    ///
+    /// For more details check [module docs](index.html)
+    struct Tiger2, 0x80);

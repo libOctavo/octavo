@@ -1,3 +1,28 @@
+//! SHA-2 family (Secure Hash Algorithm)
+//!
+//! # General info
+//!
+//! | Name        | Digest size | Block size | Rounds | Structure            | Reference               |
+//! | ----------- | ----------: | ---------: | -----: | -------------------- | ----------------------- |
+//! | SHA-224     |    224 bits |   512 bits |     64 | [Merkle–Damgård][md] | [FIPS 180-4][fips180-4] |
+//! | SHA-256     |    256 bits |   512 bits |     64 | [Merkle–Damgård][md] | [FIPS 180-4][fips180-4] |
+//! | SHA-384     |    384 bits |  1024 bits |     80 | [Merkle–Damgård][md] | [FIPS 180-4][fips180-4] |
+//! | SHA-512     |    512 bits |  1024 bits |     80 | [Merkle–Damgård][md] | [FIPS 180-4][fips180-4] |
+//! | SHA-512/224 |    224 bits |  1024 bits |     80 | [Merkle–Damgård][md] | [FIPS 180-4][fips180-4] |
+//! | SHA-512/256 |    256 bits |  1024 bits |     80 | [Merkle–Damgård][md] | [FIPS 180-4][fips180-4] |
+//!
+//! [fips180-4]: http://csrc.nist.gov/publications/fips/fips180-4/fips-180-4.pdf "FIPS 180-4 Secure Hash Standard (SHS)"
+//! [md]: https://en.wikipedia.org/wiki/Merkle%E2%80%93Damg%C3%A5rd_construction
+//!
+//! # Warning
+//!
+//! SHA-384, SHA-512, SHA-512/224 and SHA-512/256 implementations are specified to manage messages
+//! with legth at most 2^128 - 1 bits length. Due to simplification of implementation this library
+//! currently manage messages with length at most 2^64 - 1 bits which is reasonable for most usages
+//! (2 EB which is greater than maximum partition size in [ext4][]).
+//!
+//! [ext4]: https://en.wikipedia.org/wiki/Ext4 "ext4 - Wikipedia"
+
 use std::ops::Div;
 use std::num::Wrapping as W;
 
@@ -311,20 +336,40 @@ impl_state!(u64, U64_ROUNDS, 128, 8, 80, read_u64,
             ( 1,  8,  7), (19, 61,  6),
             (14, 18, 41), (28, 34, 39));
 
-macro_rules! impl_sha(
-    (low $name:ident, $init:ident, $bits:ty) => {
-        #[derive(Clone)]
-        pub struct $name {
-            state: State<u32>,
-            buffer: FixedBuffer64,
-            length: u64
-        }
+trait ShaPad {
+    fn sha_pad<F: FnMut(&[u8])>(&mut self, length: u64, f: F);
+}
+
+impl ShaPad for FixedBuffer64 {
+    fn sha_pad<F: FnMut(&[u8])>(&mut self, length: u64, f: F) {
+        self.standard_padding(8, f);
+        BigEndian::write_u64(self.next(8), length << 3);
+    }
+}
+
+impl ShaPad for FixedBuffer128 {
+    fn sha_pad<F: FnMut(&[u8])>(&mut self, length: u64, f: F) {
+        self.standard_padding(16, f);
+        BigEndian::write_u64(self.next(8), 0);
+        BigEndian::write_u64(self.next(8), length << 3);
+    }
+}
+
+macro_rules! impl_sha {
+    ($(#[$attr:meta])* struct $name:ident, $state:ty, $bsize:ty, $buf:ty, $init:ident, $bits:ty) => {
+        $(#[$attr])*
+            #[derive(Clone)]
+            pub struct $name {
+                state: State<$state>,
+                buffer: $buf,
+                length: u64
+            }
 
         impl Default for $name {
             fn default() -> Self {
                 $name {
                     state: State { state: $init },
-                    buffer: FixedBuffer64::new(),
+                    buffer: <$buf>::new(),
                     length: 0
                 }
             }
@@ -334,7 +379,7 @@ macro_rules! impl_sha(
             type OutputBits = $bits;
             type OutputBytes = <$bits as Div<U8>>::Output;
 
-            type BlockSize = U64;
+            type BlockSize = $bsize;
 
             fn update<T: AsRef<[u8]>>(&mut self, data: T) {
                 let data = data.as_ref();
@@ -350,8 +395,7 @@ macro_rules! impl_sha(
 
                 let state = &mut self.state;
 
-                self.buffer.standard_padding(8, |d| state.process_block(d));
-                BigEndian::write_u64(self.buffer.next(8), self.length << 3);
+                self.buffer.sha_pad(self.length, |d| state.process_block(d));
                 state.process_block(self.buffer.full_buffer());
 
                 for i in &mut state.state {
@@ -368,69 +412,42 @@ macro_rules! impl_sha(
             }
         }
     };
-    (high $name:ident, $init:ident, $bits:ty) => {
-        #[derive(Clone)]
-        pub struct $name {
-            state: State<u64>,
-            buffer: FixedBuffer128,
-            length: u64
-        }
-
-        impl Default for $name {
-            fn default() -> Self {
-                $name {
-                    state: State { state: $init },
-                    buffer: FixedBuffer128::new(),
-                    length: 0
-                }
-            }
-        }
-
-        impl Digest for $name {
-            type OutputBits = $bits;
-            type OutputBytes = <$bits as Div<U8>>::Output;
-
-            type BlockSize = U128;
-
-            fn update<T: AsRef<[u8]>>(&mut self, data: T) {
-                let data = data.as_ref();
-                self.length += data.len() as u64;
-
-                let state = &mut self.state;
-                self.buffer.input(data, |d| state.process_block(d));
-            }
-
-            fn result<T: AsMut<[u8]>>(mut self, mut out: T) {
-                let mut out = out.as_mut();
-                assert!(out.len() >= Self::output_bytes());
-
-                let state = &mut self.state;
-
-                self.buffer.standard_padding(16, |d| state.process_block(d));
-                BigEndian::write_u64(self.buffer.next(8), 0);
-                BigEndian::write_u64(self.buffer.next(8), self.length << 3);
-                state.process_block(self.buffer.full_buffer());
-
-                for i in &mut state.state {
-                    *i = W(i.0.to_be());
-                }
-
-                unsafe {
-                    use std::ptr;
-                    ptr::copy_nonoverlapping(
-                        state.state.as_ptr() as *const u8,
-                        out.as_mut_ptr(),
-                        Self::output_bytes())
-                };
-            }
-        }
+    ($(#[$attr:meta])* high $name:ident, $init:ident, $bits:ty) => {
+        impl_sha!($(#[$attr])* struct $name, u64, U128, FixedBuffer128, $init, $bits);
     };
-);
+    ($(#[$attr:meta])* low $name:ident, $init:ident, $bits:ty) => {
+        impl_sha!($(#[$attr])* struct $name, u32, U64, FixedBuffer64, $init, $bits);
+    };
+}
 
-impl_sha!(low  Sha224, SHA224_INIT, U224);
-impl_sha!(low  Sha256, SHA256_INIT, U256);
-impl_sha!(high Sha384, SHA384_INIT, U384);
-impl_sha!(high Sha512, SHA512_INIT, U512);
+impl_sha!(
+    /// SHA-224 implementation
+    ///
+    /// For more details check [module docs](index.html)
+    low  Sha224, SHA224_INIT, U224);
+impl_sha!(
+    /// SHA-256 implementation
+    ///
+    /// For more details check [module docs](index.html)
+    low  Sha256, SHA256_INIT, U256);
+impl_sha!(
+    /// SHA-384 implementation
+    ///
+    /// For more details check [module docs](index.html)
+    high Sha384, SHA384_INIT, U384);
+impl_sha!(
+    /// SHA-512 implementation
+    ///
+    /// For more details check [module docs](index.html)
+    high Sha512, SHA512_INIT, U512);
 
-impl_sha!(high Sha512224, SHA512_224_INIT, U224);
-impl_sha!(high Sha512256, SHA512_256_INIT, U256);
+impl_sha!(
+    /// SHA-512/224 implementation
+    ///
+    /// For more details check [module docs](index.html)
+    high Sha512224, SHA512_224_INIT, U224);
+impl_sha!(
+    /// SHA-512/256 implementation
+    ///
+    /// For more details check [module docs](index.html)
+    high Sha512256, SHA512_256_INIT, U256);

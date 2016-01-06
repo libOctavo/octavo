@@ -1,3 +1,20 @@
+//! SHA-1 (Secure Hash Algorithm)
+//!
+//! # WARNING!!!
+//!
+//! This hash function has been severely compromised. **Do not use!**
+//!
+//! Instead you should use SHA-2 or SHA-3 family.
+//!
+//! # General info
+//!
+//! | Name  | Digest size | Block size | Rounds | Structure            | Reference               |
+//! | ----- | ----------: | ---------: | -----: | -------------------- | ----------------------- |
+//! | SHA-1 |    160 bits |   512 bits |     80 | [Merkle–Damgård][md] | [FIPS 180-4][fips180-4] |
+//!
+//! [fips180-4]: http://csrc.nist.gov/publications/fips/fips180-4/fips-180-4.pdf "FIPS 180-4 Secure Hash Standard (SHS)"
+//! [md]: https://en.wikipedia.org/wiki/Merkle%E2%80%93Damg%C3%A5rd_construction
+
 use byteorder::{ByteOrder, BigEndian};
 use typenum::consts::{U20, U64, U160};
 
@@ -179,6 +196,9 @@ impl State {
     }
 }
 
+/// SHA-1 implementation
+///
+/// For more details check [module docs](index.html)
 #[derive(Clone)]
 pub struct Sha1 {
     state: State,

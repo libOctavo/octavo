@@ -1,3 +1,17 @@
+//! SHA-3 family (Secure Hash Algorithm)
+//!
+//! # General info
+//!
+//! | Name     | Digest size | Block size | Rounds | Structure        | Reference           |
+//! | -------- | ----------: | ---------: | -----: | ---------------- | ------------------- |
+//! | SHA3-224 |    224 bits |  1152 bits |     24 | [Sponge][sponge] | [FIPS 202][fips202] |
+//! | SHA3-256 |    256 bits |  1088 bits |     24 | [Sponge][sponge] | [FIPS 202][fips202] |
+//! | SHA3-384 |    384 bits |   832 bits |     24 | [Sponge][sponge] | [FIPS 202][fips202] |
+//! | SHA3-512 |    512 bits |   576 bits |     24 | [Sponge][sponge] | [FIPS 202][fips202] |
+//!
+//! [fips202]: http://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.202.pdf "SHA-3 Standard: Permutation-Based Hash and Extendable-Output Functions"
+//! [sponge]: https://en.wikipedia.org/wiki/Sponge_function "Sponge function"
+
 use std::ops::Div;
 
 use byteorder::{ByteOrder, LittleEndian};
@@ -175,7 +189,7 @@ impl State {
 }
 
 macro_rules! sha3_impl {
-    ($name:ident -> $size:ty, $bsize:ty) => {
+    ($(#[$attr:meta])* struct $name:ident -> $size:ty, $bsize:ty) => {
         #[derive(Clone)]
         pub struct $name {
             state: State,
@@ -225,7 +239,23 @@ macro_rules! sha3_impl {
     }
 }
 
-sha3_impl!(Sha224 -> U224, U144);
-sha3_impl!(Sha256 -> U256, U136);
-sha3_impl!(Sha384 -> U384, U104);
-sha3_impl!(Sha512 -> U512, U72);
+sha3_impl!(
+    /// SHA3-224 implementation
+    ///
+    /// For more details check [module docs](index.html)
+    struct Sha224 -> U224, U144);
+sha3_impl!(
+    /// SHA3-256 implementation
+    ///
+    /// For more details check [module docs](index.html)
+    struct Sha256 -> U256, U136);
+sha3_impl!(
+    /// SHA3-384 implementation
+    ///
+    /// For more details check [module docs](index.html)
+    struct Sha384 -> U384, U104);
+sha3_impl!(
+    /// SHA3-512 implementation
+    ///
+    /// For more details check [module docs](index.html)
+    struct Sha512 -> U512, U72);

@@ -1,3 +1,20 @@
+//! MD5 (Message-Digest Algorithm version 5)
+//!
+//! # WARNING!!!
+//!
+//! This hash function has been severely compromised. **Do not use!**
+//!
+//! Instead you should use SHA-2 or SHA-3 family (if security required) or Tiger (if speed required).
+//!
+//! # General info
+//!
+//! | Name | Digest size | Block size | Rounds | Structure            | Reference           |
+//! | ---- | ----------: | ---------: | ------:| -------------------- | ------------------- |
+//! | MD5  |    128 bits |   512 bits |      4 | [Merkle–Damgård][md] | [RFC 1321][rfc1321] |
+//!
+//! [rfc1321]: https://tools.ietf.org/html/rfc1321 "The MD5 Message-Digest Algorithm"
+//! [md]: https://en.wikipedia.org/wiki/Merkle%E2%80%93Damg%C3%A5rd_construction
+
 use byteorder::{ByteOrder, LittleEndian};
 use typenum::consts::{U16, U64, U128};
 
@@ -156,6 +173,9 @@ static C4: [u32; 16] = [0xf4292244, 0x432aff97, 0xab9423a7, 0xfc93a039, 0x655b59
                         0xffeff47d, 0x85845dd1, 0x6fa87e4f, 0xfe2ce6e0, 0xa3014314, 0x4e0811a1,
                         0xf7537e82, 0xbd3af235, 0x2ad7d2bb, 0xeb86d391];
 
+/// MD5 implementation
+///
+/// For more details check [module docs](index.html)
 #[derive(Clone)]
 pub struct Md5 {
     state: State,

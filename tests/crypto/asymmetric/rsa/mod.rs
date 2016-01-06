@@ -4,8 +4,8 @@ use num::bigint::ToBigUint;
 
 fn keys() -> (Rsa, Rsa) {
     Rsa::keypair_from_primes(61.to_biguint().unwrap(),
-    53.to_biguint().unwrap(),
-    17.to_biguint().unwrap())
+                             53.to_biguint().unwrap(),
+                             17.to_biguint().unwrap())
 }
 
 #[test]

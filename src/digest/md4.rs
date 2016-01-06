@@ -1,8 +1,25 @@
-use digest;
-use utils::buffer::{FixedBuffer64, FixedBuf, StandardPadding};
+//! MD4 (Message-Digest Algorithm version 4)
+//!
+//! # WARNING!!!
+//!
+//! This hash function has been severely compromised. **Do not use!**
+//!
+//! Instead you should use SHA-2 or SHA-3 family (if security required) or Tiger (if speed required).
+//!
+//! # General info
+//!
+//! | Name | Digest size | Block size | Rounds | Structure            | Reference           |
+//! | ---- | ----------: | ---------: | ------:| -------------------- | ------------------- |
+//! | MD4  |    128 bits |   512 bits |      3 | [Merkle–Damgård][md] | [RFC 1320][rfc1320] |
+//!
+//! [rfc1320]: https://tools.ietf.org/html/rfc1320 "The MD4 Message-Digest Algorithm"
+//! [md]: https://en.wikipedia.org/wiki/Merkle%E2%80%93Damg%C3%A5rd_construction
 
 use byteorder::{ByteOrder, LittleEndian};
 use typenum::consts::{U16, U64, U128};
+
+use digest;
+use utils::buffer::{FixedBuffer64, FixedBuf, StandardPadding};
 
 #[derive(Copy, Clone, Debug)]
 struct State {
@@ -53,6 +70,7 @@ impl State {
         let mut c = self.s2;
         let mut d = self.s3;
 
+        // Round 1
         a = op_f(a, b, c, d, x[0], 3);
         d = op_f(d, a, b, c, x[1], 7);
         c = op_f(c, d, a, b, x[2], 11);
@@ -70,6 +88,7 @@ impl State {
         c = op_f(c, d, a, b, x[14], 11);
         b = op_f(b, c, d, a, x[15], 19);
 
+        // Round 2
         a = op_g(a, b, c, d, x[0], 3);
         d = op_g(d, a, b, c, x[4], 5);
         c = op_g(c, d, a, b, x[8], 9);
@@ -87,6 +106,7 @@ impl State {
         c = op_g(c, d, a, b, x[11], 9);
         b = op_g(b, c, d, a, x[15], 13);
 
+        // Round 3
         a = op_h(a, b, c, d, x[0], 3);
         d = op_h(d, a, b, c, x[8], 9);
         c = op_h(c, d, a, b, x[4], 11);
@@ -111,6 +131,9 @@ impl State {
     }
 }
 
+/// MD4 implementation
+///
+/// For more details check [module docs](index.html)
 #[derive(Clone)]
 pub struct Md4 {
     state: State,

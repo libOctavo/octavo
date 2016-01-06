@@ -34,16 +34,34 @@
 //! table presents key-sizes equivalence between types of algorithms:
 //!
 //! | Symmetric | Factoring Modulus | Discrete Logarithm | Elliptic Curves |
-//! | --------- | ----------------- | ------------------ | --------------- |
-//! | 48        | 480               | 480/96             | 96              |
-//! | 56        | 640               | 640/112            | 112             |
-//! | 64        | 816               | 816/128            | 128             |
-//! | 80        | 1248              | 1248/160           | 160             |
-//! | 112       | 2432              | 2432/224           | 224             |
-//! | 128       | 3248              | 3248/256           | 256             |
-//! | 160       | 5312              | 5312/320           | 320             |
-//! | 192       | 7936              | 7936/384           | 384             |
-//! | 256       | 15424             | 15424/512          | 512             |
+//! | --------: | ----------------: | -----------------: | --------------: |
+//! |        48 |               480 |             480/96 |              96 |
+//! |        56 |               640 |            640/112 |             112 |
+//! |        64 |               816 |            816/128 |             128 |
+//! |        80 |              1248 |           1248/160 |             160 |
+//! |       112 |              2432 |           2432/224 |             224 |
+//! |       128 |              3248 |           3248/256 |             256 |
+//! |       160 |              5312 |           5312/320 |             320 |
+//! |       192 |              7936 |           7936/384 |             384 |
+//! |       256 |             15424 |          15424/512 |             512 |
+//!
+//! # Security table
+//!
+//! Levels of security according to [ECRYPT II][ecrypt] [Yearly Report on Algorithms and
+//! Keysizes][d.spa.20]
+//!
+//! | Security Level | Security (bits) | Protection                                                                                            | Comment                                                                    |
+//! | -------------- | --------------: | ----------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+//! | 1.             |              32 | Attacks in "real-time" by individuals                                                                 | Only acceptable for auth. tag size                                         |
+//! | 2.             |              64 | Very short-term protection against small organizations                                                | Should not be used for confidentiality in new systems                      |
+//! | 3.             |              72 | Short-term protection against medium organizations, mediumterm protection against small organizations |                                                                            |
+//! | 4.             |              80 | Very short-term protection against agencies, long-term prot. against small organizations              | Smallest general-purpose level, <= 4 years protection                      |
+//! | 5.             |              96 | Legacy standard level                                                                                 | 2-key 3DES restricted to ~10^6 plaintext/ciphertexts, ~10 years protection |
+//! | 6.             |             112 | Medium-term protection                                                                                | ~20 years protection                                                       |
+//! | 7.             |             128 | Long-term protection                                                                                  | Good, generic application-indep. recommendation, ~30 years protection      |
+//! | 8.             |             256 | "Foreseeable future"                                                                                  | Good protection against quantum computers unless Shor's algorithm applies  |
+//!
+//! We recommend at least 128-bit security for general purpose.
 //!
 //! [ecrypt]: http://www.ecrypt.eu.org/ "European Network of Excellence in Cryptology II "
 //! [d.spa.20]: http://www.ecrypt.eu.org/ecrypt2/documents/D.SPA.20.pdf "ECRYPT II Yearly Report on Algorithms and Keysizes"

@@ -54,6 +54,9 @@
 //! }
 //! ```
 
+#![doc(html_logo_url = "https://raw.githubusercontent.com/libOctavo/octavo/master/docs/logo.png",
+       html_foot_url = "http://libOctavo.github.io/")]
+
 #![cfg_attr(feature = "clippy", feature(plugin))]
 #![cfg_attr(feature = "clippy", plugin(clippy))]
 #![cfg_attr(not(feature = "clippy"), allow(unknown_lints))]
