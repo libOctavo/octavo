@@ -9,7 +9,7 @@
 [![GetBadges Game](https://img.shields.io/badge/game-GetBadges-blue.svg?style=flat-square)](https://liboctavo-octavo.getbadges.io)
 [![Gratipay](https://img.shields.io/gratipay/liboctavo.svg?style=flat-square)](https://gratipay.com/liboctavo/)
 
-<center>![Octavo's logo](docs/logo.png)</center>
+<div style="text-align: center; width: 100%">![Octavo's logo](docs/logo.png)</div>
 
 Highly modular & configurable hash & crypto library written in pure Rust.
 
