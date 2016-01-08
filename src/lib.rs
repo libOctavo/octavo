@@ -23,39 +23,9 @@
 //!
 //! [^authors]: Text of this paragraph is copied from [OpenSSL website][openssl].
 //! [openssl]: http://www.openssl.org/ "OpenSSL - Cryptography and SSL/TLS Toolkit"
-//!
-//! # Examples
-//!
-//! Calculate SHA-512 sum:
-//!
-//! ```rust
-//! extern crate octavo;
-//!
-//! use octavo::digest::Digest;
-//! use octavo::digest::sha2::Sha512;
-//!
-//! fn main() {
-//!     let data = "Hello World!";
-//!     let result = {
-//!         let mut sha = Sha512::default();
-//!         sha.update(data);
-//!
-//!         let mut result = vec![0; Sha512::output_bytes()];
-//!
-//!         sha.result(&mut result[..]);
-//!
-//!         result
-//!     };
-//!
-//!     for byte in result {
-//!         print!("{:2x}", byte);
-//!     }
-//!     println!(" {}", data);
-//! }
-//! ```
 
 #![doc(html_logo_url = "https://raw.githubusercontent.com/libOctavo/octavo/master/docs/logo.png",
-       html_foot_url = "http://libOctavo.github.io/")]
+       html_root_url = "http://libOctavo.github.io/")]
 
 #![cfg_attr(feature = "clippy", feature(plugin))]
 #![cfg_attr(feature = "clippy", plugin(clippy))]

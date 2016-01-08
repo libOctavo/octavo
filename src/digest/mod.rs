@@ -11,16 +11,42 @@
 //!
 //! **WARNING**: If you want to use one of this functions as password hash then
 //! you are evil human being and I really hope that I'm not using any of your services.
+//!
+//! # Example
+//!
+//! Calculate SHA-512 sum:
+//!
+//! ```rust
+//! # extern crate octavo;
+//! use octavo::digest::Digest;
+//! use octavo::digest::sha2::Sha512;
+//!
+//! # fn main() {
+//! # let data = "Hello World!";
+//! let mut result = vec![0; Sha512::output_bytes()];
+//! let mut sha = Sha512::default();
+//!
+//! sha.update(data);
+//! sha.result(&mut result);
+//!
+//! for byte in result {
+//!     print!("{:2x}", byte);
+//! }
+//! println!(" {}", data);
+//! # }
+//! ```
 
 use generic_array::ArrayLength;
 use typenum::uint::Unsigned;
 
+/// Hash function digest definition
 pub trait Digest: Clone {
     /// Output size in bits
     type OutputBits: Unsigned + ArrayLength<u8>;
     /// Output size in bytes
     type OutputBytes: Unsigned + ArrayLength<u8>;
 
+    /// Block size in bytes
     type BlockSize: Unsigned + ArrayLength<u8>;
 
     /// Update digest with data.
