@@ -9,8 +9,12 @@
 //! > - it is infeasible to modify a message without changing the hash
 //! > - it is infeasible to find two different messages with the same hash.
 //!
-//! **WARNING**: If you want to use one of this functions as password hash then
-//! you are evil human being and I really hope that I'm not using any of your services.
+//! # WARNING
+//!
+//! Under any circumstances you should not use this functions to hash users passwords. Instead you
+//! should check [`octavo::kdf`][kdf] module.
+//!
+//! [kdf]: /octavo/kdf/ "Key Derivation Functions"
 //!
 //! # Example
 //!
@@ -52,12 +56,15 @@ pub trait Digest: Clone {
     /// Update digest with data.
     fn update<T>(&mut self, input: T) where T: AsRef<[u8]>;
 
+    /// Output size in bits
     fn output_bits() -> usize {
         Self::OutputBits::to_usize()
     }
+    /// Output size in bytes
     fn output_bytes() -> usize {
         Self::OutputBytes::to_usize()
     }
+    /// Block size in bytes
     fn block_size() -> usize {
         Self::BlockSize::to_usize()
     }

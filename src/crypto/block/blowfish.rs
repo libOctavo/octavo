@@ -1,6 +1,7 @@
 use std::iter::Iterator;
 
 use byteorder::{ByteOrder, BigEndian};
+use typenum::consts::U8;
 
 use super::{BlockEncrypt, BlockDecrypt};
 
@@ -299,9 +300,7 @@ impl Blowfish {
 }
 
 impl BlockEncrypt<u8> for Blowfish {
-    fn block_size() -> usize {
-        8
-    }
+    type BlockSize = U8;
 
     fn encrypt_block<I, O>(&self, input: I, mut output: O)
         where I: AsRef<[u8]>,
@@ -320,9 +319,7 @@ impl BlockEncrypt<u8> for Blowfish {
 }
 
 impl BlockDecrypt<u8> for Blowfish {
-    fn block_size() -> usize {
-        8
-    }
+    type BlockSize = U8;
 
     fn decrypt_block<I, O>(&self, input: I, mut output: O)
         where I: AsRef<[u8]>,
