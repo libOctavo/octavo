@@ -101,8 +101,6 @@ impl ChaCha20 {
     }
 
     fn crypt(&mut self, input: &[u8], output: &mut [u8]) {
-        assert_eq!(input.len(), output.len());
-
         if self.index == STATE_BYTES {
             self.update()
         }
@@ -125,10 +123,18 @@ impl StreamEncrypt for ChaCha20 {
               O: AsMut<[u8]>
     {
         assert_eq!(input.as_ref().len(), output.as_mut().len());
+        let input = input.as_ref();
+        let output = output.as_mut();
 
-        let input = input.as_ref().chunks(STATE_BYTES);
-        let output = output.as_mut().chunks_mut(STATE_BYTES);
-        for (i, o) in input.zip(output) {
+        let from = STATE_BYTES - self.index;
+
+        if from > 0 {
+            self.crypt(&input[..from], &mut output[..from]);
+        }
+
+        for (i, o) in input[from..]
+                          .chunks(STATE_BYTES)
+                          .zip(output[from..].chunks_mut(STATE_BYTES)) {
             self.crypt(i, o)
         }
     }
