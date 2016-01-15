@@ -202,29 +202,6 @@ const U64_ROUNDS: [W<u64>; 80] = [W(0x428a2f98d728ae22),
                                   W(0x5fcb6fab3ad6faec),
                                   W(0x6c44198c4a475817)];
 
-trait Sigma {
-    fn sigma0(self) -> Self;
-    fn sigma1(self) -> Self;
-}
-
-impl Sigma for W<u32> {
-    fn sigma0(self) -> Self {
-        W(self.0.rotate_right(2) ^ self.0.rotate_right(13) ^ self.0.rotate_right(22))
-    }
-    fn sigma1(self) -> Self {
-        W(self.0.rotate_right(6) ^ self.0.rotate_right(11) ^ self.0.rotate_right(25))
-    }
-}
-
-impl Sigma for W<u64> {
-    fn sigma0(self) -> Self {
-        W(self.0.rotate_right(28) ^ self.0.rotate_right(34) ^ self.0.rotate_right(39))
-    }
-    fn sigma1(self) -> Self {
-        W(self.0.rotate_right(14) ^ self.0.rotate_right(18) ^ self.0.rotate_right(41))
-    }
-}
-
 #[derive(Copy, Clone, Debug)]
 struct State<T: Copy> {
     state: [W<T>; 8],
@@ -232,31 +209,10 @@ struct State<T: Copy> {
 
 macro_rules! impl_state {
     ($typ:ty, $consts:ident, $bsize:expr, $chunk:expr, $size:expr, $read:ident,
-         $s1:expr, $s2:expr) => {
+         $s1:expr, $s2:expr, $s3:expr, $s4:expr) => {
         impl State<$typ> {
-            fn load(data: &[u8]) -> [W<$typ>; $size] {
-                debug_assert!(data.len() == $bsize);
-
-                let mut words = [W(0); $size];
-
-                for (d, w) in data.chunks($chunk).zip(words.iter_mut()) {
-                    *w = W(BigEndian::$read(d));
-                }
-                for i in 16..$size {
-                    let s0 = words[i - 15].0.rotate_right($s1.0) ^
-                             words[i - 15].0.rotate_right($s1.1) ^
-                             (words[i - 15].0 >> $s1.2);
-                    let s1 = words[i - 2].0.rotate_right($s2.0) ^
-                             words[i - 2].0.rotate_right($s2.1) ^
-                             (words[i - 2].0 >> $s2.2);
-                    words[i] = words[i - 16] + W(s0) + words[i - 7] + W(s1);
-                }
-
-                words
-            }
-
             fn process_block(&mut self, data: &[u8]) {
-                let words = Self::load(data);
+                debug_assert!(data.len() == $bsize);
 
                 let mut a = self.state[0];
                 let mut b = self.state[1];
@@ -266,23 +222,47 @@ macro_rules! impl_state {
                 let mut f = self.state[5];
                 let mut g = self.state[6];
                 let mut h = self.state[7];
+                let mut w = [W(0); 16];
 
-                for (&word, &round) in words.iter().zip($consts.iter()) {
-                    let s0 = a.sigma0();
-                    let s1 = e.sigma1();
-                    let ch = (e & f) ^ (!e & g);
-                    let maj = (a & b) ^ (a & c) ^ (b & c);
-                    let tmp1 = h + s1 + ch + word + round;
-                    let tmp2 = s0 + maj;
+                for (x, y) in data.chunks($chunk).zip(w.iter_mut()) {
+                    *y = W(BigEndian::$read(x));
+                }
 
-                    h = g;
-                    g = f;
-                    f = e;
-                    e = d + tmp1;
-                    d = c;
-                    c = b;
-                    b = a;
-                    a = tmp1 + tmp2;
+                Self::round(w[0], a, b, c, &mut d, e, f, g, &mut h, 0);
+                Self::round(w[1], h, a, b, &mut c, d, e, f, &mut g, 1);
+                Self::round(w[2], g, h, a, &mut b, c, d, e, &mut f, 2);
+                Self::round(w[3], f, g, h, &mut a, b, c, d, &mut e, 3);
+                Self::round(w[4], e, f, g, &mut h, a, b, c, &mut d, 4);
+                Self::round(w[5], d, e, f, &mut g, h, a, b, &mut c, 5);
+                Self::round(w[6], c, d, e, &mut f, g, h, a, &mut b, 6);
+                Self::round(w[7], b, c, d, &mut e, f, g, h, &mut a, 7);
+                Self::round(w[8], a, b, c, &mut d, e, f, g, &mut h, 8);
+                Self::round(w[9], h, a, b, &mut c, d, e, f, &mut g, 9);
+                Self::round(w[10], g, h, a, &mut b, c, d, e, &mut f, 10);
+                Self::round(w[11], f, g, h, &mut a, b, c, d, &mut e, 11);
+                Self::round(w[12], e, f, g, &mut h, a, b, c, &mut d, 12);
+                Self::round(w[13], d, e, f, &mut g, h, a, b, &mut c, 13);
+                Self::round(w[14], c, d, e, &mut f, g, h, a, &mut b, 14);
+                Self::round(w[15], b, c, d, &mut e, f, g, h, &mut a, 15);
+
+                for j in 1..($consts.len() / 16) {
+                    let i = j * 16;
+                    Self::round_with_msg_scheduling(a, b, c, &mut d, e, f, g, &mut h, i + 0, &mut w);
+                    Self::round_with_msg_scheduling(h, a, b, &mut c, d, e, f, &mut g, i + 1, &mut w);
+                    Self::round_with_msg_scheduling(g, h, a, &mut b, c, d, e, &mut f, i + 2, &mut w);
+                    Self::round_with_msg_scheduling(f, g, h, &mut a, b, c, d, &mut e, i + 3, &mut w);
+                    Self::round_with_msg_scheduling(e, f, g, &mut h, a, b, c, &mut d, i + 4, &mut w);
+                    Self::round_with_msg_scheduling(d, e, f, &mut g, h, a, b, &mut c, i + 5, &mut w);
+                    Self::round_with_msg_scheduling(c, d, e, &mut f, g, h, a, &mut b, i + 6, &mut w);
+                    Self::round_with_msg_scheduling(b, c, d, &mut e, f, g, h, &mut a, i + 7, &mut w);
+                    Self::round_with_msg_scheduling(a, b, c, &mut d, e, f, g, &mut h, i + 8, &mut w);
+                    Self::round_with_msg_scheduling(h, a, b, &mut c, d, e, f, &mut g, i + 9, &mut w);
+                    Self::round_with_msg_scheduling(g, h, a, &mut b, c, d, e, &mut f, i + 10, &mut w);
+                    Self::round_with_msg_scheduling(f, g, h, &mut a, b, c, d, &mut e, i + 11, &mut w);
+                    Self::round_with_msg_scheduling(e, f, g, &mut h, a, b, c, &mut d, i + 12, &mut w);
+                    Self::round_with_msg_scheduling(d, e, f, &mut g, h, a, b, &mut c, i + 13, &mut w);
+                    Self::round_with_msg_scheduling(c, d, e, &mut f, g, h, a, &mut b, i + 14, &mut w);
+                    Self::round_with_msg_scheduling(b, c, d, &mut e, f, g, h, &mut a, i + 15, &mut w);
                 }
 
                 self.state[0] = self.state[0] + a;
@@ -294,14 +274,42 @@ macro_rules! impl_state {
                 self.state[6] = self.state[6] + g;
                 self.state[7] = self.state[7] + h;
             }
+
+            #[inline(always)]
+            fn round(t: W<$typ>, a: W<$typ>, b: W<$typ>, c: W<$typ>, d: &mut W<$typ>,
+                     e: W<$typ>, f: W<$typ>, g: W<$typ>, h: &mut W<$typ>, i: usize) {
+                let t = t + *h +
+                    W(e.0.rotate_right($s3.0) ^ e.0.rotate_right($s3.1) ^ e.0.rotate_right($s3.2)) +
+                    ((e & f) ^ (!e & g)) + $consts[i];
+                *h = W(a.0.rotate_right($s4.0) ^ a.0.rotate_right($s4.1) ^ a.0.rotate_right($s4.2)) +
+                    ((a & b) ^ (a & c) ^ (b & c));
+                *d = *d + t;
+                *h = *h + t;
+            }
+
+            #[inline(always)]
+            fn round_with_msg_scheduling(a: W<$typ>, b: W<$typ>, c: W<$typ>,
+                                         d: &mut W<$typ>, e: W<$typ>, f: W<$typ>,
+                                         g: W<$typ>, h: &mut W<$typ>, i: usize,
+                                         w: &mut [W<$typ>; 16]) {
+                let w0 = w[(i + 1) & 0xf];
+                let w1 = w[(i + 14) & 0xf];
+                let s0 = W(w0.0.rotate_right($s1.0) ^ w0.0.rotate_right($s1.1)) ^ (w0 >> $s1.2);
+                let s1 = W(w1.0.rotate_right($s2.0) ^ w1.0.rotate_right($s2.1)) ^ (w1 >> $s2.2);
+                let t = w[i & 0xf] + s0 + s1 + w[(i + 9) & 0xf];
+                w[i & 0xf] = t;
+                Self::round(t, a, b, c, d, e, f, g, h, i);
+            }
         }
     }
 }
 
 impl_state!(u32, U32_ROUNDS,  64, 4, 64, read_u32,
-            (7, 18,  3), (17, 19, 10));
+            (7, 18,  3), (17, 19, 10),
+            (6, 11, 25), ( 2, 13, 22));
 impl_state!(u64, U64_ROUNDS, 128, 8, 80, read_u64,
-            ( 1,  8,  7), (19, 61,  6));
+            ( 1,  8,  7), (19, 61,  6),
+            (14, 18, 41), (28, 34, 39));
 
 macro_rules! impl_sha(
     (low $name:ident, $init:ident, $bits:ty) => {
