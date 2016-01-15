@@ -49,9 +49,6 @@ const ROUND_CONSTS: [u64; 24] = [0x0000000000000001,
                                  0x0000000080000001,
                                  0x8000000080008008];
 
-const SHIFTS: [u32; 25] = [0, 1, 62, 28, 27, 36, 44, 6, 55, 20, 3, 10, 43, 25, 39, 41, 45, 15, 21,
-                           8, 18, 2, 61, 56, 14];
-
 impl State {
     fn init(bits: usize) -> Self {
         let rate = 1600 - bits * 2;
@@ -63,88 +60,111 @@ impl State {
         }
     }
 
-    #[allow(needless_range_loop)]
-    fn theta(&mut self) {
-        let mut a = [0u64; 5];
-        let mut b = [0u64; 5];
-
-        for i in 0..5 {
-            a[i] = self.hash[i] ^ self.hash[i + 5] ^ self.hash[i + 10] ^ self.hash[i + 15] ^
-                   self.hash[i + 20];
-        }
-
-        for i in 0..5 {
-            b[i] = a[(i + 1) % 5].rotate_left(1) ^ a[(i + 4) % 5];
-        }
-
-        for i in 0..5 {
-            self.hash[i] ^= b[i];
-            self.hash[i + 5] ^= b[i];
-            self.hash[i + 10] ^= b[i];
-            self.hash[i + 15] ^= b[i];
-            self.hash[i + 20] ^= b[i];
-        }
-    }
-
-    fn rho(&mut self) {
-        for (i, shift) in SHIFTS.iter().enumerate() {
-            self.hash[i] = self.hash[i].rotate_left(*shift);
-        }
-    }
-
-    fn pi(&mut self) {
-        let tmp = self.hash[1];
-        self.hash[1] = self.hash[6];
-        self.hash[6] = self.hash[9];
-        self.hash[9] = self.hash[22];
-        self.hash[22] = self.hash[14];
-        self.hash[14] = self.hash[20];
-        self.hash[20] = self.hash[2];
-        self.hash[2] = self.hash[12];
-        self.hash[12] = self.hash[13];
-        self.hash[13] = self.hash[19];
-        self.hash[19] = self.hash[23];
-        self.hash[23] = self.hash[15];
-        self.hash[15] = self.hash[4];
-        self.hash[4] = self.hash[24];
-        self.hash[24] = self.hash[21];
-        self.hash[21] = self.hash[8];
-        self.hash[8] = self.hash[16];
-        self.hash[16] = self.hash[5];
-        self.hash[5] = self.hash[3];
-        self.hash[3] = self.hash[18];
-        self.hash[18] = self.hash[17];
-        self.hash[17] = self.hash[11];
-        self.hash[11] = self.hash[7];
-        self.hash[7] = self.hash[10];
-        self.hash[10] = tmp;
-        // NOTE: self.hash[0] is left untouched
-    }
-
-    fn chi(&mut self) {
-        for i in 0..5 {
-            let i = i * 5;
-            let tmp_0 = self.hash[i];
-            let tmp_1 = self.hash[i + 1];
-
-            self.hash[i] ^= !tmp_1 & self.hash[i + 2];
-            self.hash[i + 1] ^= !self.hash[i + 2] & self.hash[i + 3];
-            self.hash[i + 2] ^= !self.hash[i + 3] & self.hash[i + 4];
-            self.hash[i + 3] ^= !self.hash[i + 4] & tmp_0;
-            self.hash[i + 4] ^= !tmp_0 & tmp_1;
-        }
-    }
-
     fn permutation(&mut self) {
-        for round in &ROUND_CONSTS {
-            self.theta();
-            self.rho();
-            self.pi();
-            self.chi();
-
-            // iota
-            self.hash[0] ^= *round;
+        let mut a: [u64; 25] = self.hash;
+        let mut c: [u64; 5] = [
+            a[0] ^ a[5] ^ a[10] ^ a[15] ^ a[20],
+            a[1] ^ a[6] ^ a[11] ^ a[16] ^ a[21],
+            a[2] ^ a[7] ^ a[12] ^ a[17] ^ a[22],
+            a[3] ^ a[8] ^ a[13] ^ a[18] ^ a[23],
+            a[4] ^ a[9] ^ a[14] ^ a[19] ^ a[24]
+        ];
+        for i in 0..12 {
+            self.round(i * 2, &mut a, &mut c);
+            self.round(i * 2 + 1, &mut a, &mut c);
         }
+        self.hash = a;
+    }
+
+    #[inline(always)]
+    fn round(&self, i: usize, a: &mut [u64;25], c: &mut [u64;5])
+    {
+        let d0 = c[4] ^ c[1].rotate_left(1);
+        let d1 = c[0] ^ c[2].rotate_left(1);
+        let d2 = c[1] ^ c[3].rotate_left(1);
+        let d3 = c[2] ^ c[4].rotate_left(1);
+        let d4 = c[3] ^ c[0].rotate_left(1);
+
+        let b0  =  a[ 0] ^ d0;
+        let b10 = (a[ 1] ^ d1).rotate_left(1);
+        let b20 = (a[ 2] ^ d2).rotate_left(62);
+        let b5  = (a[ 3] ^ d3).rotate_left(28);
+        let b15 = (a[ 4] ^ d4).rotate_left(27);
+        let b16 = (a[ 5] ^ d0).rotate_left(36);
+        let b1  = (a[ 6] ^ d1).rotate_left(44);
+        let b11 = (a[ 7] ^ d2).rotate_left(6);
+        let b21 = (a[ 8] ^ d3).rotate_left(55);
+        let b6  = (a[ 9] ^ d4).rotate_left(20);
+        let b7  = (a[10] ^ d0).rotate_left(3);
+        let b17 = (a[11] ^ d1).rotate_left(10);
+        let b2  = (a[12] ^ d2).rotate_left(43);
+        let b12 = (a[13] ^ d3).rotate_left(25);
+        let b22 = (a[14] ^ d4).rotate_left(39);
+        let b23 = (a[15] ^ d0).rotate_left(41);
+        let b8  = (a[16] ^ d1).rotate_left(45);
+        let b18 = (a[17] ^ d2).rotate_left(15);
+        let b3  = (a[18] ^ d3).rotate_left(21);
+        let b13 = (a[19] ^ d4).rotate_left(8);
+        let b14 = (a[20] ^ d0).rotate_left(18);
+        let b24 = (a[21] ^ d1).rotate_left(2);
+        let b9  = (a[22] ^ d2).rotate_left(61);
+        let b19 = (a[23] ^ d3).rotate_left(56);
+        let b4  = (a[24] ^ d4).rotate_left(14);
+
+        a[0] = (b0 ^ ((!b1) & b2)) ^ ROUND_CONSTS[i];
+        c[0] = a[0];
+        a[1] = b1 ^ ((!b2) & b3);
+        c[1] = a[1];
+        a[2] = b2 ^ ((!b3) & b4);
+        c[2] = a[2];
+        a[3] = b3 ^ ((!b4) & b0);
+        c[3] = a[3];
+        a[4] = b4 ^ ((!b0) & b1);
+        c[4] = a[4];
+
+        a[5] = b5 ^ ((!b6) & b7);
+        c[0] ^= a[5];
+        a[6] = b6 ^ ((!b7) & b8);
+        c[1] ^= a[6];
+        a[7] = b7 ^ ((!b8) & b9);
+        c[2] ^= a[7];
+        a[8] = b8 ^ ((!b9) & b5);
+        c[3] ^= a[8];
+        a[9] = b9 ^ ((!b5) & b6);
+        c[4] ^= a[9];
+
+        a[10] = b10 ^ ((!b11) & b12);
+        c[0] ^= a[10];
+        a[11] = b11 ^ ((!b12) & b13);
+        c[1] ^= a[11];
+        a[12] = b12 ^ ((!b13) & b14);
+        c[2] ^= a[12];
+        a[13] = b13 ^ ((!b14) & b10);
+        c[3] ^= a[13];
+        a[14] = b14 ^ ((!b10) & b11);
+        c[4] ^= a[14];
+
+        a[15] = b15 ^ ((!b16) & b17);
+        c[0] ^= a[15];
+        a[16] = b16 ^ ((!b17) & b18);
+        c[1] ^= a[16];
+        a[17] = b17 ^ ((!b18) & b19);
+        c[2] ^= a[17];
+        a[18] = b18 ^ ((!b19) & b15);
+        c[3] ^= a[18];
+        a[19] = b19 ^ ((!b15) & b16);
+        c[4] ^= a[19];
+
+        a[20] = b20 ^ ((!b21) & b22);
+        c[0] ^= a[20];
+        a[21] = b21 ^ ((!b22) & b23);
+        c[1] ^= a[21];
+        a[22] = b22 ^ ((!b23) & b24);
+        c[2] ^= a[22];
+        a[23] = b23 ^ ((!b24) & b20);
+        c[3] ^= a[23];
+        a[24] = b24 ^ ((!b20) & b21);
+        c[4] ^= a[24];
     }
 
     fn process(&mut self, data: &[u8]) {
