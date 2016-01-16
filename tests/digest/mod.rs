@@ -36,7 +36,7 @@ impl<T> Testable for T where T: Digest + Sized
 
         self.result(&mut output[..]);
         assert!(test.output == &output[..],
-                "Input: {:?} (str: {})\nExpected: {:?}\nGot: {:?}",
+                "Input: {:?} (str: \"{}\")\nExpected: {:?}\nGot: {:?}",
                 test.input,
                 str::from_utf8(test.input).unwrap_or("<non-UTF8>"),
                 test.output,
