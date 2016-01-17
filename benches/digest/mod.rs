@@ -1,28 +1,26 @@
 macro_rules! bench_digest {
-    ($name:ident, $engine:path, $blocks:expr) => {
+    ($name:ident, $engine:path, $bs:expr) => {
         #[bench]
         fn $name(b: &mut Bencher) {
-            use octavo::digest::Digest;
-
-            let bs = <$engine>::block_size();
+            use octavo::digest::Digest;;
 
             let mut d = <$engine>::default();
-            let data = vec![0; bs];
+            let data = vec![0; $bs];
 
             b.iter(|| {
-                for _ in 0..$blocks {
-                    d.update(&data);
-                }
+                d.update(&data);
             });
 
-            b.bytes = bs as u64 * $blocks;
+            b.bytes = $bs;
         }
     };
 
     ($engine:path) => {
-        bench_digest!(_1x_block_size,   $engine,   1);
-        bench_digest!(_10x_block_size,  $engine,  10);
-        bench_digest!(_100x_block_size, $engine, 100);
+        bench_digest!(_16_block_size,   $engine,   16);
+        bench_digest!(_64_block_size,   $engine,   64);
+        bench_digest!(_256_block_size,  $engine,  256);
+        bench_digest!(_1024_block_size, $engine, 1024);
+        bench_digest!(_8192_block_size, $engine, 8192);
     }
 }
 
