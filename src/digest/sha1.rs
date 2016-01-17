@@ -219,9 +219,9 @@ impl Digest for Sha1 {
 
         let mut out = out.as_mut();
         assert!(out.len() >= Self::output_bytes());
-        BigEndian::write_u32(&mut out[0..4],   state.a);
-        BigEndian::write_u32(&mut out[4..8],   state.b);
-        BigEndian::write_u32(&mut out[8..12],  state.c);
+        BigEndian::write_u32(&mut out[0..4], state.a);
+        BigEndian::write_u32(&mut out[4..8], state.b);
+        BigEndian::write_u32(&mut out[8..12], state.c);
         BigEndian::write_u32(&mut out[12..16], state.d);
         BigEndian::write_u32(&mut out[16..20], state.e);
     }

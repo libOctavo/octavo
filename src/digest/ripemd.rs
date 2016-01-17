@@ -155,13 +155,13 @@ impl Digest for Ripemd160 {
 
     fn update<T>(&mut self, update: T)
         where T: AsRef<[u8]>
-        {
-            let update = update.as_ref();
-            self.length += update.len() as u64;
+    {
+        let update = update.as_ref();
+        self.length += update.len() as u64;
 
-            let state = &mut self.state;
-            self.buffer.input(update, |d| state.process_block(d));
-        }
+        let state = &mut self.state;
+        self.buffer.input(update, |d| state.process_block(d));
+    }
 
     fn result<T: AsMut<[u8]>>(mut self, mut out: T) {
         let state = &mut self.state;

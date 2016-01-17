@@ -62,13 +62,11 @@ impl State {
 
     fn permutation(&mut self) {
         let mut a: [u64; 25] = self.hash;
-        let mut c: [u64; 5] = [
-            a[0] ^ a[5] ^ a[10] ^ a[15] ^ a[20],
-            a[1] ^ a[6] ^ a[11] ^ a[16] ^ a[21],
-            a[2] ^ a[7] ^ a[12] ^ a[17] ^ a[22],
-            a[3] ^ a[8] ^ a[13] ^ a[18] ^ a[23],
-            a[4] ^ a[9] ^ a[14] ^ a[19] ^ a[24]
-        ];
+        let mut c: [u64; 5] = [a[0] ^ a[5] ^ a[10] ^ a[15] ^ a[20],
+                               a[1] ^ a[6] ^ a[11] ^ a[16] ^ a[21],
+                               a[2] ^ a[7] ^ a[12] ^ a[17] ^ a[22],
+                               a[3] ^ a[8] ^ a[13] ^ a[18] ^ a[23],
+                               a[4] ^ a[9] ^ a[14] ^ a[19] ^ a[24]];
         for i in 0..12 {
             self.round(i * 2, &mut a, &mut c);
             self.round(i * 2 + 1, &mut a, &mut c);
@@ -77,39 +75,38 @@ impl State {
     }
 
     #[inline(always)]
-    fn round(&self, i: usize, a: &mut [u64;25], c: &mut [u64;5])
-    {
+    fn round(&self, i: usize, a: &mut [u64; 25], c: &mut [u64; 5]) {
         let d0 = c[4] ^ c[1].rotate_left(1);
         let d1 = c[0] ^ c[2].rotate_left(1);
         let d2 = c[1] ^ c[3].rotate_left(1);
         let d3 = c[2] ^ c[4].rotate_left(1);
         let d4 = c[3] ^ c[0].rotate_left(1);
 
-        let b0  =  a[ 0] ^ d0;
-        let b10 = (a[ 1] ^ d1).rotate_left(1);
-        let b20 = (a[ 2] ^ d2).rotate_left(62);
-        let b5  = (a[ 3] ^ d3).rotate_left(28);
-        let b15 = (a[ 4] ^ d4).rotate_left(27);
-        let b16 = (a[ 5] ^ d0).rotate_left(36);
-        let b1  = (a[ 6] ^ d1).rotate_left(44);
-        let b11 = (a[ 7] ^ d2).rotate_left(6);
-        let b21 = (a[ 8] ^ d3).rotate_left(55);
-        let b6  = (a[ 9] ^ d4).rotate_left(20);
-        let b7  = (a[10] ^ d0).rotate_left(3);
+        let b0 = a[0] ^ d0;
+        let b10 = (a[1] ^ d1).rotate_left(1);
+        let b20 = (a[2] ^ d2).rotate_left(62);
+        let b5 = (a[3] ^ d3).rotate_left(28);
+        let b15 = (a[4] ^ d4).rotate_left(27);
+        let b16 = (a[5] ^ d0).rotate_left(36);
+        let b1 = (a[6] ^ d1).rotate_left(44);
+        let b11 = (a[7] ^ d2).rotate_left(6);
+        let b21 = (a[8] ^ d3).rotate_left(55);
+        let b6 = (a[9] ^ d4).rotate_left(20);
+        let b7 = (a[10] ^ d0).rotate_left(3);
         let b17 = (a[11] ^ d1).rotate_left(10);
-        let b2  = (a[12] ^ d2).rotate_left(43);
+        let b2 = (a[12] ^ d2).rotate_left(43);
         let b12 = (a[13] ^ d3).rotate_left(25);
         let b22 = (a[14] ^ d4).rotate_left(39);
         let b23 = (a[15] ^ d0).rotate_left(41);
-        let b8  = (a[16] ^ d1).rotate_left(45);
+        let b8 = (a[16] ^ d1).rotate_left(45);
         let b18 = (a[17] ^ d2).rotate_left(15);
-        let b3  = (a[18] ^ d3).rotate_left(21);
+        let b3 = (a[18] ^ d3).rotate_left(21);
         let b13 = (a[19] ^ d4).rotate_left(8);
         let b14 = (a[20] ^ d0).rotate_left(18);
         let b24 = (a[21] ^ d1).rotate_left(2);
-        let b9  = (a[22] ^ d2).rotate_left(61);
+        let b9 = (a[22] ^ d2).rotate_left(61);
         let b19 = (a[23] ^ d3).rotate_left(56);
-        let b4  = (a[24] ^ d4).rotate_left(14);
+        let b4 = (a[24] ^ d4).rotate_left(14);
 
         a[0] = (b0 ^ ((!b1) & b2)) ^ ROUND_CONSTS[i];
         c[0] = a[0];
