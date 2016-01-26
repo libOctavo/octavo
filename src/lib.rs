@@ -27,31 +27,12 @@
 #![doc(html_logo_url = "https://raw.githubusercontent.com/libOctavo/octavo/master/docs/logo.png",
        html_root_url = "http://libOctavo.github.io/")]
 
-#![cfg_attr(feature = "clippy", feature(plugin))]
-#![cfg_attr(feature = "clippy", plugin(clippy))]
-#![cfg_attr(not(feature = "clippy"), allow(unknown_lints))]
+extern crate octavo_digest;
+extern crate octavo_mac;
+extern crate octavo_kdf;
+extern crate octavo_crypto;
 
-#![deny(unreachable_code, while_true, unused_mut, unused_variables, unused_imports)]
-#![cfg_attr(not(test), deny(trivial_casts))]
-#![warn(missing_docs)]
-
-// Support Redox (http://www.redox-os.org/). This is temporary fix until `redox` crate will be
-// renamed as `std`.
-#![cfg_attr(feature = "no-std", no_std)]
-#[cfg(target_os = "redox")]
-extern crate redox as std;
-
-extern crate byteorder;
-extern crate generic_array;
-extern crate typenum;
-#[cfg(feature = "num")]
-extern crate num;
-#[cfg(feature = "rand")]
-extern crate rand;
-
-pub mod crypto;
-pub mod digest;
-pub mod mac;
-pub mod kdf;
-
-mod utils;
+pub mod digest { pub use octavo_digest::*; }
+pub mod mac { pub use octavo_mac::*; }
+pub mod kdf { pub use octavo_kdf::*; }
+pub mod crypto { pub use octavo_crypto::*; }

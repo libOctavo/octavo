@@ -1,0 +1,29 @@
+[package]
+authors = ["Łukasz Jan Niemier <lukasz@niemier.pl>"]
+name = "octavo-digest"
+version = "0.1.0"
+
+[dependencies]
+generic-array = "0.2.0"
+static-buffer = "0.1.0"
+typenum = "1.2.0"
+
+[dependencies.byteorder]
+features = ["no-std"]
+version = "0.4.2"
+
+[dev-dependencies]
+rustc-serialize = "0.3.16"
+toml = "0.1.27"
+
+[features]
+default = ["deprecated", "safe"]
+deprecated = ["md4", "md5", "ripemd", "sha1", "tiger"]
+md4 = []
+md5 = []
+ripemd = []
+safe = ["sha2", "sha3"]
+sha1 = []
+sha2 = []
+sha3 = []
+tiger = []

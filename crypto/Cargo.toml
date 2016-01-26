@@ -1,0 +1,11 @@
+[package]
+authors = ["Łukasz Jan Niemier <lukasz@niemier.pl>"]
+name = "octavo-crypto"
+version = "0.1.0"
+
+[dependencies]
+byteorder = "0.4.2"
+generic-array = "0.2.0"
+num = "0.1.30"
+rand = "0.3.13"
+typenum = "1.2.0"

@@ -1,0 +1,28 @@
+[[tests]]
+input = ""
+output = "hex:60ef6c0dbc077b9c175ffb7771008c253bacea024c9d01ab"
+[[tests]]
+input = "abc"
+output = "hex:c79e799e14b53e7df935d83477fa4df939d18c44f76b73cd"
+[[tests]]
+input = "Tiger"
+output = "hex:a24ee9540c41d71b6a626f9ddf41d12e3031272b6aabbd9a"
+[[tests]]
+input = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-"
+output = "hex:af58f9c05b886048c16f48bc904beffda838f005ff74035e"
+[[tests]]
+input = "ABCDEFGHIJKLMNOPQRSTUVWXYZ=abcdefghijklmnopqrstuvwxyz+0123456789"
+output = "hex:76aa092e589b0f0b8b780944ad1f0c41c9a5ceb307d2fde0"
+[[tests]]
+input = "Tiger - A Fast New Hash Function, by Ross Anderson and Eli Biham"
+output = "hex:82815d8924e2f11a88c0f292914c6cfdbfd8e78e2cf29ad0"
+[[tests]]
+input = "Tiger - A Fast New Hash Function, by Ross Anderson and Eli Biham, proceedings of Fast Software Encryption 3, Cambridge."
+output = "hex:481f6dd0df57e103d7de0b663adb05f503b877f276adb286"
+[[tests]]
+input = "Tiger - A Fast New Hash Function, by Ross Anderson and Eli Biham, proceedings of Fast Software Encryption 3, Cambridge, 1996."
+output = "hex:696d9960618847259f2fa580db2f955596d7bea2046f46d7"
+[[tests]]
+input = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-"
+output = "hex:2720a38d7f0875545fd9614f48f7e67a92d37469da2ef378"
+
