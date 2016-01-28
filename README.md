@@ -6,7 +6,7 @@
 [![License](https://img.shields.io/crates/l/octavo.svg?style=flat-square)](LICENSE)
 [![Build Status](https://img.shields.io/travis/libOctavo/octavo.svg?style=flat-square)](https://travis-ci.org/libOctavo/octavo)
 [![Coverage Status](https://img.shields.io/coveralls/libOctavo/octavo.svg?style=flat-square)](https://coveralls.io/github/libOctavo/octavo?branch=master)
-[![GetBadges Game](https://img.shields.io/badge/game-GetBadges-blue.svg?style=flat-square)](https://liboctavo-octavo.getbadges.io)
+[![GetBadges Game](https://liboctavo-octavo.getbadges.io/shield/company/liboctavo-octavo)](https://getbadges.io/?ref=shield-game)
 [![Gratipay](https://img.shields.io/gratipay/liboctavo.svg?style=flat-square)](https://gratipay.com/liboctavo/)
 
 <p align="center">
