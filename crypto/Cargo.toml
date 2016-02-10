@@ -9,3 +9,6 @@ generic-array = "0.2.0"
 num = "0.1.30"
 rand = "0.3.13"
 typenum = "1.2.0"
+
+[features]
+unstable = []
