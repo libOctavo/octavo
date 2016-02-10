@@ -37,3 +37,4 @@ macro_rules! bench_digest {
 #[cfg(feature = "sha3")] #[macro_use]mod sha3;
 #[cfg(feature = "tiger")] #[macro_use]mod tiger;
 #[cfg(feature = "ripemd")] #[macro_use]mod ripemd;
+#[cfg(feature = "blake2")] #[macro_use]mod blake2;

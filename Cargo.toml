@@ -24,3 +24,6 @@ path = "./mac"
 [dev-dependencies]
 openssl = "0.7.5"
 quickcheck = "0.2.24"
+
+[features]
+unstable = []

@@ -35,6 +35,8 @@
 
 #![no_std]
 
+#![forbid(overflowing_literals)]
+
 extern crate generic_array;
 extern crate static_buffer;
 extern crate typenum;
@@ -79,10 +81,12 @@ pub trait Digest: Clone {
     fn result<T>(self, output: T) where T: AsMut<[u8]>;
 }
 
+/// Digest prelude
 pub mod prelude {
     pub use Digest;
 }
 
+pub mod blake2;
 pub mod md4;
 pub mod md5;
 pub mod ripemd;
