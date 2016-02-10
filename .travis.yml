@@ -13,14 +13,13 @@ rust:
 before_script:
   - pip install 'travis-cargo<0.2' --user && export PATH=$HOME/.local/bin:$PATH
 script:
-  - |
-      travis-cargo build &&
-      travis-cargo test &&
-      travis-cargo bench &&
-      travis-cargo --only stable doc
+  - bash ./tools/test.sh crypto
+  - bash ./tools/test.sh digest
+  - bash ./tools/test.sh kdf
+  - bash ./tools/test.sh mac
 after_success:
+  - travis-cargo --only stable doc
   - travis-cargo --only stable doc-upload
-  - travis-cargo --only stable coveralls --no-sudo
 notifications:
   webhooks:
     urls:

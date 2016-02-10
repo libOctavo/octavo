@@ -1,0 +1,13 @@
+[package]
+authors = ["Łukasz Jan Niemier <lukasz@niemier.pl>"]
+name = "octavo-kdf"
+version = "0.1.0"
+
+[dependencies]
+byteorder = "0.4.2"
+
+[dependencies.octavo-crypto]
+path = "../crypto"
+
+[features]
+unstable = []

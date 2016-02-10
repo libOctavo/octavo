@@ -1,0 +1,13 @@
+[package]
+authors = ["Łukasz Jan Niemier <lukasz@niemier.pl>"]
+name = "octavo-mac"
+version = "0.1.0"
+
+[dependencies]
+generic-array = "0.2.0"
+
+[dependencies.octavo-digest]
+path = "../digest"
+
+[features]
+unstable = []

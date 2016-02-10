@@ -7,58 +7,20 @@ name = "octavo"
 repository = "https://github.com/libOctavo/octavo"
 version = "0.1.0"
 
-[profile.bench]
-debug = true
-
 [dependencies]
-generic-array = "0.1"
-rustc-serialize = "0.3"
-typenum = "1.0"
 
-[dependencies.byteorder]
-version = "0.4"
-features = ["no-std"]
+[dependencies.octavo-crypto]
+path = "./crypto"
 
-[dependencies.clippy]
-optional = true
-version = "0.0"
+[dependencies.octavo-digest]
+path = "./digest"
 
-[dependencies.num]
-optional = true
-version = "*"
+[dependencies.octavo-kdf]
+path = "./kdf"
 
-[dependencies.rand]
-optional = true
-version = "*"
+[dependencies.octavo-mac]
+path = "./mac"
 
 [dev-dependencies]
-openssl = "0.7"
-quickcheck = "0.2"
-
-[features]
-bcrypt = ["blowfish"]
-block = ["blowfish"]
-blowfish = []
-chacha20 = []
-crypto = ["symmetric", "public-key"]
-default = ["digest", "crypto", "ssl", "kdf", "mac"]
-digest = ["digest-deprecated", "digest-safe"]
-digest-deprecated = ["md4", "md5", "ripemd", "sha1", "tiger"]
-digest-safe = ["sha2", "sha3"]
-hmac = []
-kdf = ["bcrypt"]
-mac = ["hmac"]
-md4 = []
-md5 = []
-no-std = []
-public-key = ["rsa"]
-ripemd = []
-rsa = ["num", "rand"]
-sha1 = []
-sha2 = []
-sha3 = []
-ssl = []
-stream = ["chacha20"]
-symmetric = ["block", "stream"]
-tiger = []
-unstable = ["clippy"]
+openssl = "0.7.5"
+quickcheck = "0.2.24"
