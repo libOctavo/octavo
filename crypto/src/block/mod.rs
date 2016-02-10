@@ -4,6 +4,7 @@ use generic_array::ArrayLength;
 use typenum::uint::Unsigned;
 
 pub mod blowfish;
+pub mod aes;
 
 /// Block encryptor definition
 pub trait BlockEncrypt {
