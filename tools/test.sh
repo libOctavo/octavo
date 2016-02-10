@@ -1,11 +1,6 @@
-#!/bin/sh
+#!/bin/bash
 
-set -e
-
-MODULES="crypto digest kdf mac"
-
-for crate in $MODULES
-do
-  travis-cargo test -- --manifest-path "$crate/Cargo.toml" && \
-  travis-cargo --only stable coveralls --no-sudo --manifest-path "$crate/Cargo.toml"
-done
+pushd "$1"
+travis-cargo test && \
+  travis-cargo --only stable coveralls --no-sudo
+popd
