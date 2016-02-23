@@ -4,23 +4,22 @@ use std::ops::*;
 /// vectorise this.
 #[allow(non_camel_case_types)]
 #[derive(Copy, Clone, Debug)]
+#[repr(C)]
 pub struct u32x4(pub u32, pub u32, pub u32, pub u32);
 
 impl u32x4 {
-    pub fn lsh(self, s: u32) -> u32x4 {
-        let u32x4(a0, a1, a2, a3) = self;
-        u32x4(a0 << s,
-              (a1 << s) | (a0 >> (32 - s)),
-              (a2 << s) | (a1 >> (32 - s)),
-              (a3 << s) | (a2 >> (32 - s)))
+    pub fn rotate_left(self, s: u32) -> u32x4 {
+        u32x4(self.0 << s,
+              (self.1 << s) | (self.0 >> (32 - s)),
+              (self.2 << s) | (self.1 >> (32 - s)),
+              (self.3 << s) | (self.2 >> (32 - s)))
     }
 
-    pub fn rsh(self, s: u32) -> u32x4 {
-        let u32x4(a0, a1, a2, a3) = self;
-        u32x4((a0 >> s) | (a1 << (32 - s)),
-              (a1 >> s) | (a2 << (32 - s)),
-              (a2 >> s) | (a3 << (32 - s)),
-              a3 >> s)
+    pub fn rotate_right(self, s: u32) -> u32x4 {
+        u32x4((self.0 >> s) | (self.1 << (32 - s)),
+              (self.1 >> s) | (self.2 << (32 - s)),
+              (self.2 >> s) | (self.3 << (32 - s)),
+              self.3 >> s)
     }
 }
 

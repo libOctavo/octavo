@@ -429,7 +429,7 @@ fn decrypt_core<S: AesOps + Copy>(state: &S, sk: &[S]) -> S {
     tmp
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 struct Bs8State<T>(T, T, T, T, T, T, T, T);
 
 impl<T: Copy> Bs8State<T> {
@@ -787,30 +787,38 @@ fn bit_slice_1x128_with_u32x4(data: &[u8]) -> Bs8State<u32x4> {
     let t6 = read_row_major(&data[96..112]);
     let t7 = read_row_major(&data[112..128]);
 
-    let x0 = (t0 & bit0) | (t1.lsh(1) & bit1) | (t2.lsh(2) & bit2) | (t3.lsh(3) & bit3) |
-             (t4.lsh(4) & bit4) | (t5.lsh(5) & bit5) | (t6.lsh(6) & bit6) |
-             (t7.lsh(7) & bit7);
-    let x1 = (t0.rsh(1) & bit0) | (t1 & bit1) | (t2.lsh(1) & bit2) | (t3.lsh(2) & bit3) |
-             (t4.lsh(3) & bit4) | (t5.lsh(4) & bit5) | (t6.lsh(5) & bit6) |
-             (t7.lsh(6) & bit7);
-    let x2 = (t0.rsh(2) & bit0) | (t1.rsh(1) & bit1) | (t2 & bit2) | (t3.lsh(1) & bit3) |
-             (t4.lsh(2) & bit4) | (t5.lsh(3) & bit5) | (t6.lsh(4) & bit6) |
-             (t7.lsh(5) & bit7);
-    let x3 = (t0.rsh(3) & bit0) | (t1.rsh(2) & bit1) | (t2.rsh(1) & bit2) | (t3 & bit3) |
-             (t4.lsh(1) & bit4) | (t5.lsh(2) & bit5) | (t6.lsh(3) & bit6) |
-             (t7.lsh(4) & bit7);
-    let x4 = (t0.rsh(4) & bit0) | (t1.rsh(3) & bit1) | (t2.rsh(2) & bit2) | (t3.rsh(1) & bit3) |
-             (t4 & bit4) | (t5.lsh(1) & bit5) |
-             (t6.lsh(2) & bit6) | (t7.lsh(3) & bit7);
-    let x5 = (t0.rsh(5) & bit0) | (t1.rsh(4) & bit1) | (t2.rsh(3) & bit2) | (t3.rsh(2) & bit3) |
-             (t4.rsh(1) & bit4) | (t5 & bit5) |
-             (t6.lsh(1) & bit6) | (t7.lsh(2) & bit7);
-    let x6 = (t0.rsh(6) & bit0) | (t1.rsh(5) & bit1) | (t2.rsh(4) & bit2) | (t3.rsh(3) & bit3) |
-             (t4.rsh(2) & bit4) | (t5.rsh(1) & bit5) |
-             (t6 & bit6) | (t7.lsh(1) & bit7);
-    let x7 = (t0.rsh(7) & bit0) | (t1.rsh(6) & bit1) | (t2.rsh(5) & bit2) | (t3.rsh(4) & bit3) |
-             (t4.rsh(3) & bit4) | (t5.rsh(2) & bit5) |
-             (t6.rsh(1) & bit6) | (t7 & bit7);
+    let x0 = (t0 & bit0) | (t1.rotate_left(1) & bit1) | (t2.rotate_left(2) & bit2) |
+             (t3.rotate_left(3) & bit3) | (t4.rotate_left(4) & bit4) |
+             (t5.rotate_left(5) & bit5) | (t6.rotate_left(6) & bit6) |
+             (t7.rotate_left(7) & bit7);
+    let x1 = (t0.rotate_right(1) & bit0) | (t1 & bit1) | (t2.rotate_left(1) & bit2) |
+             (t3.rotate_left(2) & bit3) | (t4.rotate_left(3) & bit4) |
+             (t5.rotate_left(4) & bit5) | (t6.rotate_left(5) & bit6) |
+             (t7.rotate_left(6) & bit7);
+    let x2 = (t0.rotate_right(2) & bit0) | (t1.rotate_right(1) & bit1) | (t2 & bit2) |
+             (t3.rotate_left(1) & bit3) | (t4.rotate_left(2) & bit4) |
+             (t5.rotate_left(3) & bit5) | (t6.rotate_left(4) & bit6) |
+             (t7.rotate_left(5) & bit7);
+    let x3 = (t0.rotate_right(3) & bit0) | (t1.rotate_right(2) & bit1) |
+             (t2.rotate_right(1) & bit2) | (t3 & bit3) | (t4.rotate_left(1) & bit4) |
+             (t5.rotate_left(2) & bit5) |
+             (t6.rotate_left(3) & bit6) | (t7.rotate_left(4) & bit7);
+    let x4 = (t0.rotate_right(4) & bit0) | (t1.rotate_right(3) & bit1) |
+             (t2.rotate_right(2) & bit2) | (t3.rotate_right(1) & bit3) |
+             (t4 & bit4) | (t5.rotate_left(1) & bit5) | (t6.rotate_left(2) & bit6) |
+             (t7.rotate_left(3) & bit7);
+    let x5 = (t0.rotate_right(5) & bit0) | (t1.rotate_right(4) & bit1) |
+             (t2.rotate_right(3) & bit2) | (t3.rotate_right(2) & bit3) |
+             (t4.rotate_right(1) & bit4) | (t5 & bit5) | (t6.rotate_left(1) & bit6) |
+             (t7.rotate_left(2) & bit7);
+    let x6 = (t0.rotate_right(6) & bit0) | (t1.rotate_right(5) & bit1) |
+             (t2.rotate_right(4) & bit2) | (t3.rotate_right(3) & bit3) |
+             (t4.rotate_right(2) & bit4) | (t5.rotate_right(1) & bit5) | (t6 & bit6) |
+             (t7.rotate_left(1) & bit7);
+    let x7 = (t0.rotate_right(7) & bit0) | (t1.rotate_right(6) & bit1) |
+             (t2.rotate_right(5) & bit2) | (t3.rotate_right(4) & bit3) |
+             (t4.rotate_right(3) & bit4) | (t5.rotate_right(2) & bit5) |
+             (t6.rotate_right(1) & bit6) | (t7 & bit7);
 
     Bs8State(x0, x1, x2, x3, x4, x5, x6, x7)
 }
@@ -843,30 +851,38 @@ fn un_bit_slice_1x128_with_u32x4(bs: Bs8State<u32x4>, output: &mut [u8]) {
 
     // decode the individual blocks, in row-major order
     // TODO: this is identical to the same block in bit_slice_1x128_with_u32x4
-    let x0 = (t0 & bit0) | (t1.lsh(1) & bit1) | (t2.lsh(2) & bit2) | (t3.lsh(3) & bit3) |
-             (t4.lsh(4) & bit4) | (t5.lsh(5) & bit5) | (t6.lsh(6) & bit6) |
-             (t7.lsh(7) & bit7);
-    let x1 = (t0.rsh(1) & bit0) | (t1 & bit1) | (t2.lsh(1) & bit2) | (t3.lsh(2) & bit3) |
-             (t4.lsh(3) & bit4) | (t5.lsh(4) & bit5) | (t6.lsh(5) & bit6) |
-             (t7.lsh(6) & bit7);
-    let x2 = (t0.rsh(2) & bit0) | (t1.rsh(1) & bit1) | (t2 & bit2) | (t3.lsh(1) & bit3) |
-             (t4.lsh(2) & bit4) | (t5.lsh(3) & bit5) | (t6.lsh(4) & bit6) |
-             (t7.lsh(5) & bit7);
-    let x3 = (t0.rsh(3) & bit0) | (t1.rsh(2) & bit1) | (t2.rsh(1) & bit2) | (t3 & bit3) |
-             (t4.lsh(1) & bit4) | (t5.lsh(2) & bit5) | (t6.lsh(3) & bit6) |
-             (t7.lsh(4) & bit7);
-    let x4 = (t0.rsh(4) & bit0) | (t1.rsh(3) & bit1) | (t2.rsh(2) & bit2) | (t3.rsh(1) & bit3) |
-             (t4 & bit4) | (t5.lsh(1) & bit5) |
-             (t6.lsh(2) & bit6) | (t7.lsh(3) & bit7);
-    let x5 = (t0.rsh(5) & bit0) | (t1.rsh(4) & bit1) | (t2.rsh(3) & bit2) | (t3.rsh(2) & bit3) |
-             (t4.rsh(1) & bit4) | (t5 & bit5) |
-             (t6.lsh(1) & bit6) | (t7.lsh(2) & bit7);
-    let x6 = (t0.rsh(6) & bit0) | (t1.rsh(5) & bit1) | (t2.rsh(4) & bit2) | (t3.rsh(3) & bit3) |
-             (t4.rsh(2) & bit4) | (t5.rsh(1) & bit5) |
-             (t6 & bit6) | (t7.lsh(1) & bit7);
-    let x7 = (t0.rsh(7) & bit0) | (t1.rsh(6) & bit1) | (t2.rsh(5) & bit2) | (t3.rsh(4) & bit3) |
-             (t4.rsh(3) & bit4) | (t5.rsh(2) & bit5) |
-             (t6.rsh(1) & bit6) | (t7 & bit7);
+    let x0 = (t0 & bit0) | (t1.rotate_left(1) & bit1) | (t2.rotate_left(2) & bit2) |
+             (t3.rotate_left(3) & bit3) | (t4.rotate_left(4) & bit4) |
+             (t5.rotate_left(5) & bit5) | (t6.rotate_left(6) & bit6) |
+             (t7.rotate_left(7) & bit7);
+    let x1 = (t0.rotate_right(1) & bit0) | (t1 & bit1) | (t2.rotate_left(1) & bit2) |
+             (t3.rotate_left(2) & bit3) | (t4.rotate_left(3) & bit4) |
+             (t5.rotate_left(4) & bit5) | (t6.rotate_left(5) & bit6) |
+             (t7.rotate_left(6) & bit7);
+    let x2 = (t0.rotate_right(2) & bit0) | (t1.rotate_right(1) & bit1) | (t2 & bit2) |
+             (t3.rotate_left(1) & bit3) | (t4.rotate_left(2) & bit4) |
+             (t5.rotate_left(3) & bit5) | (t6.rotate_left(4) & bit6) |
+             (t7.rotate_left(5) & bit7);
+    let x3 = (t0.rotate_right(3) & bit0) | (t1.rotate_right(2) & bit1) |
+             (t2.rotate_right(1) & bit2) | (t3 & bit3) | (t4.rotate_left(1) & bit4) |
+             (t5.rotate_left(2) & bit5) |
+             (t6.rotate_left(3) & bit6) | (t7.rotate_left(4) & bit7);
+    let x4 = (t0.rotate_right(4) & bit0) | (t1.rotate_right(3) & bit1) |
+             (t2.rotate_right(2) & bit2) | (t3.rotate_right(1) & bit3) |
+             (t4 & bit4) | (t5.rotate_left(1) & bit5) | (t6.rotate_left(2) & bit6) |
+             (t7.rotate_left(3) & bit7);
+    let x5 = (t0.rotate_right(5) & bit0) | (t1.rotate_right(4) & bit1) |
+             (t2.rotate_right(3) & bit2) | (t3.rotate_right(2) & bit3) |
+             (t4.rotate_right(1) & bit4) | (t5 & bit5) | (t6.rotate_left(1) & bit6) |
+             (t7.rotate_left(2) & bit7);
+    let x6 = (t0.rotate_right(6) & bit0) | (t1.rotate_right(5) & bit1) |
+             (t2.rotate_right(4) & bit2) | (t3.rotate_right(3) & bit3) |
+             (t4.rotate_right(2) & bit4) | (t5.rotate_right(1) & bit5) | (t6 & bit6) |
+             (t7.rotate_left(1) & bit7);
+    let x7 = (t0.rotate_right(7) & bit0) | (t1.rotate_right(6) & bit1) |
+             (t2.rotate_right(5) & bit2) | (t3.rotate_right(4) & bit3) |
+             (t4.rotate_right(3) & bit4) | (t5.rotate_right(2) & bit5) |
+             (t6.rotate_right(1) & bit6) | (t7 & bit7);
 
     fn write_row_major(block: u32x4, output: &mut [u8]) {
         let u32x4(a0, a1, a2, a3) = block;
@@ -1105,29 +1121,29 @@ trait AesBitValueOps: BitXor<Output = Self> + BitAnd<Output = Self> + Not<Output
 }
 
 impl AesBitValueOps for u16 {
-    fn shift_row(self) -> u16 {
+    fn shift_row(self) -> Self {
         // first 4 bits represent first row - don't shift
         (self & 0x000f) | ((self & 0x00e0) >> 1) | ((self & 0x0010) << 3) |
         ((self & 0x0c00) >> 2) | ((self & 0x0300) << 2) | ((self & 0x8000) >> 3) |
         ((self & 0x7000) << 1)
     }
 
-    fn inv_shift_row(self) -> u16 {
+    fn inv_shift_row(self) -> Self {
         // first 4 bits represent first row - don't shift
         (self & 0x000f) | ((self & 0x0080) >> 3) | ((self & 0x0070) << 1) |
         ((self & 0x0c00) >> 2) | ((self & 0x0300) << 2) | ((self & 0xe000) >> 1) |
         ((self & 0x1000) << 3)
     }
 
-    fn ror1(self) -> u16 {
+    fn ror1(self) -> Self {
         self.rotate_right(4)
     }
 
-    fn ror2(self) -> u16 {
+    fn ror2(self) -> Self {
         self.rotate_right(8)
     }
 
-    fn ror3(self) -> u16 {
+    fn ror3(self) -> Self {
         self.rotate_right(12)
     }
 }
