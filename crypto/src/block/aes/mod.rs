@@ -1,7 +1,7 @@
 use self::safe::*;
 use super::{BlockEncrypt, BlockDecrypt};
 
-mod safe;
+pub mod safe;
 
 pub struct Aes128 {
     enc: AesSafe128Encryptor,

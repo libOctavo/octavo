@@ -15,16 +15,16 @@
 //!
 //! ## AES Algorithm
 //!
-//! There are lots of places to go to on the internet for an involved description of how AES works. For
-//! the purposes of this description, it sufficies to say that AES is just a block cipher that takes
-//! a key of 16, 24, or 32 bytes and uses that to either encrypt or decrypt a block of 16 bytes. An
-//! encryption or decryption operation consists of a number of rounds which involve some combination of
-//! the following 4 basic operations:
+//! There are lots of places to go to on the internet for an involved description of how AES works.
+//! For the purposes of this description, it sufficies to say that AES is just a block cipher that
+//! takes a key of 16, 24, or 32 bytes and uses that to either encrypt or decrypt a block
+//! of 16 bytes. An encryption or decryption operation consists of a number of rounds which involve
+//! some combination of the following 4 basic operations:
 //!
-//! ShiftRows
-//! MixColumns
-//! SubBytes
-//! AddRoundKey
+//! - ShiftRows
+//! - MixColumns
+//! - SubBytes
+//! - AddRoundKey
 //!
 //! ## Timing problems
 //!
@@ -99,27 +99,18 @@
 //! necessary for processing a collection or bit values and the AesOps trait relies heavily on this
 //! trait to perform its operations.
 //!
-//! The Bs4State and Bs2State struct implement operations of various subfields of the full GF(2^8)
+//! The Bs4State and Bs2State struct implement operations of various subfields of the full GF(2^(8))
 //! finite field which allows for efficient computation of the AES S-Boxes. See [7] for details.
 //!
 //! ## References
 //!
-//! [1] - "Cache-Collision Timing Attacks Against AES". Joseph Bonneau and Ilya Mironov.
-//! http://www.jbonneau.com/doc/BM06-CHES-aes_cache_timing.pdf
-//! [2] - "Software mitigations to hedge AES against cache-based software side channel vulnerabilities".
-//! Ernie Brickell, et al. http://eprint.iacr.org/2006/052.pdf.
-//! [3] - "Cache Attacks and Countermeasures: the Case of AES (Extended Version)".
-//! Dag Arne Osvik, et al. tau.ac.il/~tromer/papers/cache.pdf‎.
-//! [4] - "A Fast New DES Implementation in Software". Eli Biham.
-//! http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.52.5429&rep=rep1&type=pdf.
-//! [5] - "Faster and Timing-Attack Resistant AES-GCM". Emilia K ̈asper and Peter Schwabe.
-//! http://www.chesworkshop.org/ches2009/presentations/01_Session_1/CHES2009_ekasper.pdf.
-//! [6] - "FAST AES DECRYPTION". Vinit Azad. http://webcache.googleusercontent.com/
-//! search?q=cache:ld_f8pSgURcJ:csusdspace.calstate.edu/bitstream/handle/10211.9/1224/
-//! Vinit_Azad_MS_Report.doc%3Fsequence%3D2+&cd=4&hl=en&ct=clnk&gl=us&client=ubuntu.
-//! [7] - "A Very Compact Rijndael S-box". D. Canright.
-//! http://www.dtic.mil/cgi-bin/GetTRDoc?AD=ADA434781.
-//!
+//! [1]: http://www.jbonneau.com/doc/BM06-CHES-aes_cache_timing.pdf '"Cache-Collision Timing Attacks Against AES". Joseph Bonneau and Ilya Mironov.'
+//! [2]: http://eprint.iacr.org/2006/052.pdf '"Software mitigations to hedge AES against cache-based software side channel vulnerabilities". Ernie Brickell, et al.'
+//! [3]: http://tau.ac.il/~tromer/papers/cache.pdf '"Cache Attacks and Countermeasures: the Case of AES (Extended Version)". Dag Arne Osvik, et al.'
+//! [4]: http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.52.5429&rep=rep1&type=pdf '"A Fast New DES Implementation in Software". Eli Biham.'
+//! [5]: http://www.chesworkshop.org/ches2009/presentations/01_Session_1/CHES2009_ekasper.pdf '"Faster and Timing-Attack Resistant AES-GCM". Emilia K ̈asper and Peter Schwabe.'
+//! [6]: http://webcache.googleusercontent.com/search?q=cache:ld_f8pSgURcJ:csusdspace.calstate.edu/bitstream/handle/10211.9/1224/Vinit_Azad_MS_Report.doc%3Fsequence%3D2+&cd=4&hl=en&ct=clnk&gl=us&client=ubuntu '"FAST AES DECRYPTION". Vinit Azad.'
+//! [7]: http://www.dtic.mil/cgi-bin/GetTRDoc?AD=ADA434781 '"A Very Compact Rijndael S-box". D. Canright.'
 
 use std::ops::{BitAnd, BitXor, Not};
 
@@ -129,71 +120,74 @@ use typenum::consts::U16;
 use block::{BlockEncrypt, BlockDecrypt};
 
 use self::simd::*;
+use self::gf::*;
 
 mod simd;
+mod gf;
 
 const U32X4_0: u32x4 = u32x4(0, 0, 0, 0);
 const U32X4_1: u32x4 = u32x4(0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff);
 
-macro_rules! define_aes_struct(
-    ($name:ident, $rounds:expr) => (
+macro_rules! define_aes_struct {
+    ($name:ident, $rounds:expr) => {
         #[derive(Clone, Copy)]
         pub struct $name {
-            sk: [Bs8State<u16>; ($rounds + 1)]
+            sk: [Gf8<u16>; ($rounds + 1)]
         }
-        )
-    );
+    }
+}
 
-macro_rules! define_aes_impl(
-    ($name:ident, $mode:ident, $rounds:expr, $key_size:expr) => (
+macro_rules! define_aes_impl {
+    ($name:ident, $mode:ident, $rounds:expr, $key_size:expr) => {
         impl $name {
             pub fn new(key: &[u8]) -> $name {
                 let mut a = $name {
-                    sk: [Bs8State(0, 0, 0, 0, 0, 0, 0, 0); ($rounds + 1)]
+                    sk: [Gf8::default(); ($rounds + 1)]
                 };
                 let mut tmp = [[0u32; 4]; ($rounds + 1)];
                 create_round_keys(key, KeyType::$mode, &mut tmp);
-                for i in 0..$rounds + 1 {
-                    a.sk[i] = bit_slice_4x4_with_u16(tmp[i][0], tmp[i][1], tmp[i][2], tmp[i][3]);
+                for (subkey, tmp) in a.sk.iter_mut().zip(&tmp) {
+                    *subkey = bit_slice_4x4_with_u16(tmp[0], tmp[1], tmp[2], tmp[3]);
                 }
                 a
             }
         }
-        )
-    );
+    }
+}
 
-macro_rules! define_aes_enc(
-    ($name:ident, $rounds:expr) => (
+macro_rules! define_aes_enc {
+    ($name:ident, $rounds:expr) => {
         impl BlockEncrypt for $name {
             type BlockSize = U16;
+
             fn encrypt_block<I, O>(&self, input: I, mut output: O)
                 where I: AsRef<[u8]>,
                       O: AsMut<[u8]>
-            {
-                let mut bs = bit_slice_1x16_with_u16(input.as_ref());
-                bs = encrypt_core(&bs, &self.sk);
-                un_bit_slice_1x16_with_u16(&bs, output.as_mut());
-            }
+                {
+                    let mut bs = bit_slice_1x16_with_u16(input.as_ref());
+                    bs = encrypt_core(&bs, &self.sk);
+                    un_bit_slice_1x16_with_u16(&bs, output.as_mut());
+                }
         }
-        )
-    );
+    }
+}
 
-macro_rules! define_aes_dec(
-    ($name:ident, $rounds:expr) => (
+macro_rules! define_aes_dec {
+    ($name:ident, $rounds:expr) => {
         impl BlockDecrypt for $name {
             type BlockSize = U16;
 
             fn decrypt_block<I, O>(&self, input: I, mut output: O)
                 where I: AsRef<[u8]>,
                       O: AsMut<[u8]>
-            {
-                let mut bs = bit_slice_1x16_with_u16(input.as_ref());
-                bs = decrypt_core(&bs, &self.sk);
-                un_bit_slice_1x16_with_u16(&bs, output.as_mut());
-            }
+                {
+                    let mut bs = bit_slice_1x16_with_u16(input.as_ref());
+                    bs = decrypt_core(&bs, &self.sk);
+                    un_bit_slice_1x16_with_u16(&bs, output.as_mut());
+                }
         }
-        )
-    );
+    }
+}
 
 define_aes_struct!(AesSafe128Encryptor, 10);
 define_aes_struct!(AesSafe128Decryptor, 10);
@@ -216,31 +210,21 @@ define_aes_impl!(AesSafe256Decryptor, Decryption, 14, 32);
 define_aes_enc!(AesSafe256Encryptor, 14);
 define_aes_dec!(AesSafe256Decryptor, 14);
 
-macro_rules! define_aes_struct_x8(
-    ($name:ident, $rounds:expr) => (
+macro_rules! define_aes_struct_x8 {
+    ($name:ident, $rounds:expr) => {
         #[derive(Clone, Copy)]
         pub struct $name {
-            sk: [Bs8State<u32x4>; ($rounds + 1)]
+            sk: [Gf8<u32x4>; ($rounds + 1)]
         }
-    )
-);
+    }
+}
 
-macro_rules! define_aes_impl_x8(
-    ($name:ident, $mode:ident, $rounds:expr, $key_size:expr) => (
+macro_rules! define_aes_impl_x8 {
+    ($name:ident, $mode:ident, $rounds:expr, $key_size:expr) => {
         impl $name {
             pub fn new(key: &[u8]) -> $name {
                 let mut a =  $name {
-                    sk: [
-                        Bs8State(
-                            U32X4_0,
-                            U32X4_0,
-                            U32X4_0,
-                            U32X4_0,
-                            U32X4_0,
-                            U32X4_0,
-                            U32X4_0,
-                            U32X4_0);
-                        ($rounds + 1)]
+                    sk: [Gf8::default(); ($rounds + 1)]
                 };
                 let mut tmp = [[0u32; 4]; ($rounds + 1)];
                 create_round_keys(key, KeyType::$mode, &mut tmp);
@@ -254,11 +238,11 @@ macro_rules! define_aes_impl_x8(
                 a
             }
         }
-    )
-);
+    }
+}
 
-macro_rules! define_aes_enc_x8(
-    ($name:ident, $rounds:expr) => (
+macro_rules! define_aes_enc_x8 {
+    ($name:ident, $rounds:expr) => {
         impl BlockEncryptorX8 for $name {
             fn block_size(&self) -> usize { 16 }
             fn encrypt_block_x8(&self, input: &[u8], output: &mut [u8]) {
@@ -267,11 +251,11 @@ macro_rules! define_aes_enc_x8(
                 un_bit_slice_1x128_with_u32x4(bs2, output);
             }
         }
-    )
-);
+    }
+}
 
-macro_rules! define_aes_dec_x8(
-    ( $name:ident, $rounds:expr) => (
+macro_rules! define_aes_dec_x8 {
+    ( $name:ident, $rounds:expr) => {
         impl BlockDecryptorX8 for $name {
             fn block_size(&self) -> usize { 16 }
             fn decrypt_block_x8(&self, input: &[u8], output: &mut [u8]) {
@@ -280,8 +264,8 @@ macro_rules! define_aes_dec_x8(
                 un_bit_slice_1x128_with_u32x4(bs2, output);
             }
         }
-    )
-);
+    }
+}
 
 // define_aes_struct_x8!(AesSafe128EncryptorX8, 10);
 // define_aes_struct_x8!(AesSafe128DecryptorX8, 10);
@@ -373,7 +357,7 @@ fn create_round_keys(key: &[u8], key_type: KeyType, round_keys: &mut [[u32; 4]])
                 }
             }
         }
-        KeyType::Encryption => {}
+        _ => ()
     }
 }
 
@@ -382,10 +366,13 @@ fn create_round_keys(key: &[u8], key_type: KeyType, round_keys: &mut [[u32; 4]])
 trait AesOps {
     fn sub_bytes(self) -> Self;
     fn inv_sub_bytes(self) -> Self;
+
     fn shift_rows(self) -> Self;
     fn inv_shift_rows(self) -> Self;
+
     fn mix_columns(self) -> Self;
     fn inv_mix_columns(self) -> Self;
+
     fn add_round_key(self, rk: &Self) -> Self;
 }
 
@@ -429,241 +416,8 @@ fn decrypt_core<S: AesOps + Copy>(state: &S, sk: &[S]) -> S {
     tmp
 }
 
-#[derive(Clone, Copy, Debug)]
-struct Bs8State<T>(T, T, T, T, T, T, T, T);
-
-impl<T: Copy> Bs8State<T> {
-    fn split(self) -> (Bs4State<T>, Bs4State<T>) {
-        let Bs8State(x0, x1, x2, x3, x4, x5, x6, x7) = self;
-        (Bs4State(x0, x1, x2, x3), Bs4State(x4, x5, x6, x7))
-    }
-}
-
-impl<T: BitXor<Output = T> + Copy> Bs8State<T> {
-    fn xor(self, rhs: Bs8State<T>) -> Bs8State<T> {
-        Bs8State(self.0 ^ rhs.0,
-                 self.1 ^ rhs.1,
-                 self.2 ^ rhs.2,
-                 self.3 ^ rhs.3,
-                 self.4 ^ rhs.4,
-                 self.5 ^ rhs.5,
-                 self.6 ^ rhs.6,
-                 self.7 ^ rhs.7)
-    }
-
-    // We need to be able to convert a Bs8State to and from a polynomial basis and a normal
-    // basis. That transformation could be done via pseudocode that roughly looks like the
-    // following:
-    //
-    // for x in 0..8 {
-    //     for y in 0..8 {
-    //         result.x ^= input.y & MATRIX[7 - y][x]
-    //     }
-    // }
-    //
-    // Where the MATRIX is one of the following depending on the conversion being done.
-    // (The affine transformation step is included in all of these matrices):
-    //
-    // A2X = [
-    //     [ 0,  0,  0, -1, -1,  0,  0, -1],
-    //     [-1, -1,  0,  0, -1, -1, -1, -1],
-    //     [ 0, -1,  0,  0, -1, -1, -1, -1],
-    //     [ 0,  0,  0, -1,  0,  0, -1,  0],
-    //     [-1,  0,  0, -1,  0,  0,  0,  0],
-    //     [-1,  0,  0,  0,  0,  0,  0, -1],
-    //     [-1,  0,  0, -1,  0, -1,  0, -1],
-    //     [-1, -1, -1, -1, -1, -1, -1, -1]
-    // ];
-    //
-    // X2A = [
-    //     [ 0,  0, -1,  0,  0, -1, -1,  0],
-    //     [ 0,  0,  0, -1, -1, -1, -1,  0],
-    //     [ 0, -1, -1, -1,  0, -1, -1,  0],
-    //     [ 0,  0, -1, -1,  0,  0,  0, -1],
-    //     [ 0,  0,  0, -1,  0, -1, -1,  0],
-    //     [-1,  0,  0, -1,  0, -1,  0,  0],
-    //     [ 0, -1, -1, -1, -1,  0, -1, -1],
-    //     [ 0,  0,  0,  0,  0, -1, -1,  0],
-    // ];
-    //
-    // X2S = [
-    //     [ 0,  0,  0, -1, -1,  0, -1,  0],
-    //     [-1,  0, -1, -1,  0, -1,  0,  0],
-    //     [ 0, -1, -1, -1, -1,  0,  0, -1],
-    //     [-1, -1,  0, -1,  0,  0,  0,  0],
-    //     [ 0,  0, -1, -1, -1,  0, -1, -1],
-    //     [ 0,  0, -1,  0,  0,  0,  0,  0],
-    //     [-1, -1,  0,  0,  0,  0,  0,  0],
-    //     [ 0,  0, -1,  0,  0, -1,  0,  0],
-    // ];
-    //
-    // S2X = [
-    //     [ 0,  0, -1, -1,  0,  0,  0, -1],
-    //     [-1,  0,  0, -1, -1, -1, -1,  0],
-    //     [-1,  0, -1,  0,  0,  0,  0,  0],
-    //     [-1, -1,  0, -1,  0, -1, -1, -1],
-    //     [ 0, -1,  0,  0, -1,  0,  0,  0],
-    //     [ 0,  0, -1,  0,  0,  0,  0,  0],
-    //     [-1,  0,  0,  0, -1,  0, -1,  0],
-    //     [-1, -1,  0,  0, -1,  0, -1,  0],
-    // ];
-    //
-    // Looking at the pseudocode implementation, we see that there is no point
-    // in processing any of the elements in those matrices that have zero values
-    // since a logical AND with 0 will produce 0 which will have no effect when it
-    // is XORed into the result.
-    //
-    // LLVM doesn't appear to be able to fully unroll the loops in the pseudocode
-    // above and to eliminate processing of the 0 elements. So, each transformation is
-    // implemented independently directly in fully unrolled form with the 0 elements
-    // removed.
-    //
-    // As an optimization, elements that are XORed together multiple times are
-    // XORed just once and then used multiple times. I wrote a simple program that
-    // greedily looked for terms to combine to create the implementations below.
-    // It is likely that this could be optimized more.
-
-    fn change_basis_a2x(&self) -> Bs8State<T> {
-        let t06 = self.6 ^ self.0;
-        let t056 = self.5 ^ t06;
-        let t0156 = t056 ^ self.1;
-        let t13 = self.1 ^ self.3;
-
-        let x0 = self.2 ^ t06 ^ t13;
-        let x1 = t056;
-        let x2 = self.0;
-        let x3 = self.0 ^ self.4 ^ self.7 ^ t13;
-        let x4 = self.7 ^ t056;
-        let x5 = t0156;
-        let x6 = self.4 ^ t056;
-        let x7 = self.2 ^ self.7 ^ t0156;
-
-        Bs8State(x0, x1, x2, x3, x4, x5, x6, x7)
-    }
-
-    fn change_basis_x2s(&self) -> Bs8State<T> {
-        let t46 = self.4 ^ self.6;
-        let t35 = self.3 ^ self.5;
-        let t06 = self.0 ^ self.6;
-        let t357 = t35 ^ self.7;
-
-        let x0 = self.1 ^ t46;
-        let x1 = self.1 ^ self.4 ^ self.5;
-        let x2 = self.2 ^ t35 ^ t06;
-        let x3 = t46 ^ t357;
-        let x4 = t357;
-        let x5 = t06;
-        let x6 = self.3 ^ self.7;
-        let x7 = t35;
-
-        Bs8State(x0, x1, x2, x3, x4, x5, x6, x7)
-    }
-
-    fn change_basis_x2a(&self) -> Bs8State<T> {
-        let t15 = self.1 ^ self.5;
-        let t36 = self.3 ^ self.6;
-        let t1356 = t15 ^ t36;
-        let t07 = self.0 ^ self.7;
-
-        let x0 = self.2;
-        let x1 = t15;
-        let x2 = self.4 ^ self.7 ^ t15;
-        let x3 = self.2 ^ self.4 ^ t1356;
-        let x4 = self.1 ^ self.6;
-        let x5 = self.2 ^ self.5 ^ t36 ^ t07;
-        let x6 = t1356 ^ t07;
-        let x7 = self.1 ^ self.4;
-
-        Bs8State(x0, x1, x2, x3, x4, x5, x6, x7)
-    }
-
-    fn change_basis_s2x(&self) -> Bs8State<T> {
-        let t46 = self.4 ^ self.6;
-        let t01 = self.0 ^ self.1;
-        let t0146 = t01 ^ t46;
-
-        let x0 = self.5 ^ t0146;
-        let x1 = self.0 ^ self.3 ^ self.4;
-        let x2 = self.2 ^ self.5 ^ self.7;
-        let x3 = self.7 ^ t46;
-        let x4 = self.3 ^ self.6 ^ t01;
-        let x5 = t46;
-        let x6 = t0146;
-        let x7 = self.4 ^ self.7;
-
-        Bs8State(x0, x1, x2, x3, x4, x5, x6, x7)
-    }
-}
-
-impl<T: Not<Output = T> + Copy> Bs8State<T> {
-    // The special value "x63" is used as part of the sub_bytes and inv_sub_bytes
-    // steps. It is conceptually a Bs8State value where the 0th, 1st, 5th, and 6th
-    // elements are all 1s and the other elements are all 0s. The only thing that
-    // we do with the "x63" value is to XOR a Bs8State with it. We optimize that XOR
-    // below into just inverting 4 of the elements and leaving the other 4 elements
-    // untouched.
-    fn xor_x63(self) -> Bs8State<T> {
-        Bs8State(!self.0,
-                 !self.1,
-                 self.2,
-                 self.3,
-                 self.4,
-                 !self.5,
-                 !self.6,
-                 self.7)
-    }
-}
-
-#[derive(Clone, Copy)]
-struct Bs4State<T>(T, T, T, T);
-
-impl<T: Copy> Bs4State<T> {
-    fn split(self) -> (Bs2State<T>, Bs2State<T>) {
-        let Bs4State(x0, x1, x2, x3) = self;
-        (Bs2State(x0, x1), Bs2State(x2, x3))
-    }
-
-    fn join(self, rhs: Bs4State<T>) -> Bs8State<T> {
-        let Bs4State(a0, a1, a2, a3) = self;
-        let Bs4State(b0, b1, b2, b3) = rhs;
-        Bs8State(a0, a1, a2, a3, b0, b1, b2, b3)
-    }
-}
-
-impl<T: BitXor<Output = T> + Copy> Bs4State<T> {
-    fn xor(self, rhs: Bs4State<T>) -> Bs4State<T> {
-        let Bs4State(a0, a1, a2, a3) = self;
-        let Bs4State(b0, b1, b2, b3) = rhs;
-        Bs4State(a0 ^ b0, a1 ^ b1, a2 ^ b2, a3 ^ b3)
-    }
-}
-
-#[derive(Clone, Copy)]
-struct Bs2State<T>(T, T);
-
-impl<T> Bs2State<T> {
-    fn split(self) -> (T, T) {
-        let Bs2State(x0, x1) = self;
-        (x0, x1)
-    }
-
-    fn join(self, rhs: Bs2State<T>) -> Bs4State<T> {
-        let Bs2State(a0, a1) = self;
-        let Bs2State(b0, b1) = rhs;
-        Bs4State(a0, a1, b0, b1)
-    }
-}
-
-impl<T: BitXor<Output = T> + Copy> Bs2State<T> {
-    fn xor(self, rhs: Bs2State<T>) -> Bs2State<T> {
-        let Bs2State(a0, a1) = self;
-        let Bs2State(b0, b1) = rhs;
-        Bs2State(a0 ^ b0, a1 ^ b1)
-    }
-}
-
 // Bit Slice data in the form of 4 u32s in column-major order
-fn bit_slice_4x4_with_u16(a: u32, b: u32, c: u32, d: u32) -> Bs8State<u16> {
+fn bit_slice_4x4_with_u16(a: u32, b: u32, c: u32, d: u32) -> Gf8<u16> {
     fn pb(x: u32, bit: u32, shift: u32) -> u16 {
         (((x >> bit) & 1) as u16) << shift
     }
@@ -685,17 +439,17 @@ fn bit_slice_4x4_with_u16(a: u32, b: u32, c: u32, d: u32) -> Bs8State<u16> {
     let x6 = construct(a, b, c, d, 6);
     let x7 = construct(a, b, c, d, 7);
 
-    Bs8State(x0, x1, x2, x3, x4, x5, x6, x7)
+    Gf8(x0, x1, x2, x3, x4, x5, x6, x7)
 }
 
 // Bit slice a single u32 value - this is used to calculate the SubBytes step when creating the
 // round keys.
-fn bit_slice_4x1_with_u16(a: u32) -> Bs8State<u16> {
+fn bit_slice_4x1_with_u16(a: u32) -> Gf8<u16> {
     bit_slice_4x4_with_u16(a, 0, 0, 0)
 }
 
 // Bit slice a 16 byte array in column major order
-fn bit_slice_1x16_with_u16(data: &[u8]) -> Bs8State<u16> {
+fn bit_slice_1x16_with_u16(data: &[u8]) -> Gf8<u16> {
     let n = [LittleEndian::read_u32(&data[0..4]),
              LittleEndian::read_u32(&data[4..8]),
              LittleEndian::read_u32(&data[8..12]),
@@ -710,13 +464,13 @@ fn bit_slice_1x16_with_u16(data: &[u8]) -> Bs8State<u16> {
 }
 
 // Un Bit Slice into a set of 4 u32s
-fn un_bit_slice_4x4_with_u16(bs: &Bs8State<u16>) -> (u32, u32, u32, u32) {
+fn un_bit_slice_4x4_with_u16(bs: &Gf8<u16>) -> (u32, u32, u32, u32) {
     fn pb(x: u16, bit: u32, shift: u32) -> u32 {
         (((x >> bit) & 1) as u32) << shift
     }
 
-    fn deconstruct(bs: &Bs8State<u16>, bit: u32) -> u32 {
-        let Bs8State(x0, x1, x2, x3, x4, x5, x6, x7) = *bs;
+    fn deconstruct(bs: &Gf8<u16>, bit: u32) -> u32 {
+        let Gf8(x0, x1, x2, x3, x4, x5, x6, x7) = *bs;
 
         pb(x0, bit, 0) | pb(x1, bit, 1) | pb(x2, bit, 2) | pb(x3, bit, 3) | pb(x4, bit, 4) |
         pb(x5, bit, 5) | pb(x6, bit, 6) | pb(x7, bit, 7) |
@@ -741,13 +495,13 @@ fn un_bit_slice_4x4_with_u16(bs: &Bs8State<u16>) -> (u32, u32, u32, u32) {
 }
 
 // Un Bit Slice into a single u32. This is used when creating the round keys.
-fn un_bit_slice_4x1_with_u16(bs: &Bs8State<u16>) -> u32 {
+fn un_bit_slice_4x1_with_u16(bs: &Gf8<u16>) -> u32 {
     let (a, _, _, _) = un_bit_slice_4x4_with_u16(bs);
     a
 }
 
 // Un Bit Slice into a 16 byte array
-fn un_bit_slice_1x16_with_u16(bs: &Bs8State<u16>, output: &mut [u8]) {
+fn un_bit_slice_1x16_with_u16(bs: &Gf8<u16>, output: &mut [u8]) {
     let (a, b, c, d) = un_bit_slice_4x4_with_u16(bs);
 
     LittleEndian::write_u32(&mut output[0..4], a);
@@ -757,15 +511,15 @@ fn un_bit_slice_1x16_with_u16(bs: &Bs8State<u16>, output: &mut [u8]) {
 }
 
 // Bit Slice a 128 byte array of eight 16 byte blocks. Each block is in column major order.
-fn bit_slice_1x128_with_u32x4(data: &[u8]) -> Bs8State<u32x4> {
-    let bit0 = u32x4(0x01010101, 0x01010101, 0x01010101, 0x01010101);
-    let bit1 = u32x4(0x02020202, 0x02020202, 0x02020202, 0x02020202);
-    let bit2 = u32x4(0x04040404, 0x04040404, 0x04040404, 0x04040404);
-    let bit3 = u32x4(0x08080808, 0x08080808, 0x08080808, 0x08080808);
-    let bit4 = u32x4(0x10101010, 0x10101010, 0x10101010, 0x10101010);
-    let bit5 = u32x4(0x20202020, 0x20202020, 0x20202020, 0x20202020);
-    let bit6 = u32x4(0x40404040, 0x40404040, 0x40404040, 0x40404040);
-    let bit7 = u32x4(0x80808080, 0x80808080, 0x80808080, 0x80808080);
+fn bit_slice_1x128_with_u32x4(data: &[u8]) -> Gf8<u32x4> {
+    let bit0 = u32x4::filled(0x01010101);
+    let bit1 = u32x4::filled(0x02020202);
+    let bit2 = u32x4::filled(0x04040404);
+    let bit3 = u32x4::filled(0x08080808);
+    let bit4 = u32x4::filled(0x10101010);
+    let bit5 = u32x4::filled(0x20202020);
+    let bit6 = u32x4::filled(0x40404040);
+    let bit7 = u32x4::filled(0x80808080);
 
     fn read_row_major(data: &[u8]) -> u32x4 {
         u32x4((data[0] as u32) | ((data[4] as u32) << 8) | ((data[8] as u32) << 16) |
@@ -820,12 +574,12 @@ fn bit_slice_1x128_with_u32x4(data: &[u8]) -> Bs8State<u32x4> {
              (t4.rotate_right(3) & bit4) | (t5.rotate_right(2) & bit5) |
              (t6.rotate_right(1) & bit6) | (t7 & bit7);
 
-    Bs8State(x0, x1, x2, x3, x4, x5, x6, x7)
+    Gf8(x0, x1, x2, x3, x4, x5, x6, x7)
 }
 
 // Bit slice a set of 4 u32s by filling a full 128 byte data block with those repeated values. This
 // is used as part of bit slicing the round keys.
-fn bit_slice_fill_4x4_with_u32x4(a: u32, b: u32, c: u32, d: u32) -> Bs8State<u32x4> {
+fn bit_slice_fill_4x4_with_u32x4(a: u32, b: u32, c: u32, d: u32) -> Gf8<u32x4> {
     let mut tmp = [0u8; 128];
     for i in 0..8 {
         LittleEndian::write_u32(&mut tmp[i * 16..i * 16 + 4], a);
@@ -837,17 +591,17 @@ fn bit_slice_fill_4x4_with_u32x4(a: u32, b: u32, c: u32, d: u32) -> Bs8State<u32
 }
 
 // Un bit slice into a 128 byte buffer.
-fn un_bit_slice_1x128_with_u32x4(bs: Bs8State<u32x4>, output: &mut [u8]) {
-    let Bs8State(t0, t1, t2, t3, t4, t5, t6, t7) = bs;
+fn un_bit_slice_1x128_with_u32x4(bs: Gf8<u32x4>, output: &mut [u8]) {
+    let Gf8(t0, t1, t2, t3, t4, t5, t6, t7) = bs;
 
-    let bit0 = u32x4(0x01010101, 0x01010101, 0x01010101, 0x01010101);
-    let bit1 = u32x4(0x02020202, 0x02020202, 0x02020202, 0x02020202);
-    let bit2 = u32x4(0x04040404, 0x04040404, 0x04040404, 0x04040404);
-    let bit3 = u32x4(0x08080808, 0x08080808, 0x08080808, 0x08080808);
-    let bit4 = u32x4(0x10101010, 0x10101010, 0x10101010, 0x10101010);
-    let bit5 = u32x4(0x20202020, 0x20202020, 0x20202020, 0x20202020);
-    let bit6 = u32x4(0x40404040, 0x40404040, 0x40404040, 0x40404040);
-    let bit7 = u32x4(0x80808080, 0x80808080, 0x80808080, 0x80808080);
+    let bit0 = u32x4::filled(0x01010101);
+    let bit1 = u32x4::filled(0x02020202);
+    let bit2 = u32x4::filled(0x04040404);
+    let bit3 = u32x4::filled(0x08080808);
+    let bit4 = u32x4::filled(0x10101010);
+    let bit5 = u32x4::filled(0x20202020);
+    let bit6 = u32x4::filled(0x40404040);
+    let bit7 = u32x4::filled(0x80808080);
 
     // decode the individual blocks, in row-major order
     // TODO: this is identical to the same block in bit_slice_1x128_with_u32x4
@@ -914,138 +668,29 @@ fn un_bit_slice_1x128_with_u32x4(bs: Bs8State<u32x4>, output: &mut [u8]) {
     write_row_major(x7, &mut output[112..128])
 }
 
-// The Gf2Ops, Gf4Ops, and Gf8Ops traits specify the functions needed to calculate the AES S-Box
-// values. This particuar implementation of those S-Box values is taken from [7], so that is where
-// to look for details on how all that all works. This includes the transformations matrices defined
-// below for the change_basis operation on the u32 and u32x4 types.
+// // The Gf2Ops, Gf4Ops, and Gf8Ops traits specify the functions needed to calculate the AES S-Box
+// // values. This particuar implementation of those S-Box values is taken from [7], so that is where
+// // to look for details on how all that all works. This includes the transformations matrices defined
+// // below for the change_basis operation on the u32 and u32x4 types.
 
-// Operations in GF(2^2) using normal basis (Omega^2,Omega)
-trait Gf2Ops: Sized {
-    // multiply
-    fn mul(self, y: Self) -> Self;
-
-    // scale by N = Omega^2
-    fn scl_n(self) -> Self;
-
-    // scale by N^2 = Omega
-    fn scl_n2(self) -> Self;
-
-    // square
-    fn sq(self) -> Self;
-
-    // Same as sqaure
-    fn inv(self) -> Self {
-        self.sq()
-    }
-}
-
-impl<T: BitXor<Output = T> + BitAnd<Output = T> + Copy> Gf2Ops for Bs2State<T> {
-    fn mul(self, y: Bs2State<T>) -> Bs2State<T> {
-        let (b, a) = self.split();
-        let (d, c) = y.split();
-        let e = (a ^ b) & (c ^ d);
-        let p = (a & c) ^ e;
-        let q = (b & d) ^ e;
-        Bs2State(q, p)
-    }
-
-    fn scl_n(self) -> Bs2State<T> {
-        let (b, a) = self.split();
-        let q = a ^ b;
-        Bs2State(q, b)
-    }
-
-    fn scl_n2(self) -> Bs2State<T> {
-        let (b, a) = self.split();
-        let p = a ^ b;
-        let q = a;
-        Bs2State(q, p)
-    }
-
-    fn sq(self) -> Bs2State<T> {
-        let (b, a) = self.split();
-        Bs2State(a, b)
-    }
-}
-
-// Operations in GF(2^4) using normal basis (alpha^8,alpha^2)
-trait Gf4Ops {
-    // multiply
-    fn mul(self, y: Self) -> Self;
-
-    // square & scale by nu
-    // nu = beta^8 = N^2*alpha^2, N = w^2
-    fn sq_scl(self) -> Self;
-
-    // inverse
-    fn inv(self) -> Self;
-}
-
-impl<T: BitXor<Output = T> + BitAnd<Output = T> + Copy> Gf4Ops for Bs4State<T> {
-    fn mul(self, y: Bs4State<T>) -> Bs4State<T> {
-        let (b, a) = self.split();
-        let (d, c) = y.split();
-        let f = c.xor(d);
-        let e = a.xor(b).mul(f).scl_n();
-        let p = a.mul(c).xor(e);
-        let q = b.mul(d).xor(e);
-        q.join(p)
-    }
-
-    fn sq_scl(self) -> Bs4State<T> {
-        let (b, a) = self.split();
-        let p = a.xor(b).sq();
-        let q = b.sq().scl_n2();
-        q.join(p)
-    }
-
-    fn inv(self) -> Bs4State<T> {
-        let (b, a) = self.split();
-        let c = a.xor(b).sq().scl_n();
-        let d = a.mul(b);
-        let e = c.xor(d).inv();
-        let p = e.mul(b);
-        let q = e.mul(a);
-        q.join(p)
-    }
-}
-
-// Operations in GF(2^8) using normal basis (d^16,d)
-trait Gf8Ops {
-    // inverse
-    fn inv(&self) -> Self;
-}
-
-impl<T: BitXor<Output = T> + BitAnd<Output = T> + Copy + Default> Gf8Ops for Bs8State<T> {
-    fn inv(&self) -> Bs8State<T> {
-        let (b, a) = self.split();
-        let c = a.xor(b).sq_scl();
-        let d = a.mul(b);
-        let e = c.xor(d).inv();
-        let p = e.mul(b);
-        let q = e.mul(a);
-        q.join(p)
-    }
-}
-
-impl<T: AesBitValueOps + Copy + 'static> AesOps for Bs8State<T> {
-    fn sub_bytes(self) -> Bs8State<T> {
-        let nb: Bs8State<T> = self.change_basis_a2x();
+impl<T: AesBitValueOps + Copy> AesOps for Gf8<T> {
+    fn sub_bytes(self) -> Self {
+        let nb  = self.rebase::<A2X>();
         let inv = nb.inv();
-        let nb2: Bs8State<T> = inv.change_basis_x2s();
+        let nb2 = inv.rebase::<X2S>();
         nb2.xor_x63()
     }
 
-    fn inv_sub_bytes(self) -> Bs8State<T> {
+    fn inv_sub_bytes(self) -> Self {
         let t = self.xor_x63();
-        let nb: Bs8State<T> = t.change_basis_s2x();
+        let nb = t.rebase::<S2X>();
         let inv = nb.inv();
-        inv.change_basis_x2a()
+        inv.rebase::<X2A>()
     }
 
-    fn shift_rows(self) -> Bs8State<T> {
-        let Bs8State(x0, x1, x2, x3, x4, x5, x6, x7) = self;
-        Bs8State(x0.shift_row(),
+    fn shift_rows(self) -> Self {
+        let Gf8(x0, x1, x2, x3, x4, x5, x6, x7) = self;
+        Gf8(x0.shift_row(),
                  x1.shift_row(),
                  x2.shift_row(),
                  x3.shift_row(),
@@ -1055,9 +700,9 @@ impl<T: AesBitValueOps + Copy + 'static> AesOps for Bs8State<T> {
                  x7.shift_row())
     }
 
-    fn inv_shift_rows(self) -> Bs8State<T> {
-        let Bs8State(x0, x1, x2, x3, x4, x5, x6, x7) = self;
-        Bs8State(x0.inv_shift_row(),
+    fn inv_shift_rows(self) -> Self {
+        let Gf8(x0, x1, x2, x3, x4, x5, x6, x7) = self;
+        Gf8(x0.inv_shift_row(),
                  x1.inv_shift_row(),
                  x2.inv_shift_row(),
                  x3.inv_shift_row(),
@@ -1068,8 +713,8 @@ impl<T: AesBitValueOps + Copy + 'static> AesOps for Bs8State<T> {
     }
 
     // Formula from [5]
-    fn mix_columns(self) -> Bs8State<T> {
-        let Bs8State(x0, x1, x2, x3, x4, x5, x6, x7) = self;
+    fn mix_columns(self) -> Self {
+        let Gf8(x0, x1, x2, x3, x4, x5, x6, x7) = self;
 
         let x0out = x7 ^ x7.ror1() ^ x0.ror1() ^ (x0 ^ x0.ror1()).ror2();
         let x1out = x0 ^ x0.ror1() ^ x7 ^ x7.ror1() ^ x1.ror1() ^ (x1 ^ x1.ror1()).ror2();
@@ -1080,12 +725,12 @@ impl<T: AesBitValueOps + Copy + 'static> AesOps for Bs8State<T> {
         let x6out = x5 ^ x5.ror1() ^ x6.ror1() ^ (x6 ^ x6.ror1()).ror2();
         let x7out = x6 ^ x6.ror1() ^ x7.ror1() ^ (x7 ^ x7.ror1()).ror2();
 
-        Bs8State(x0out, x1out, x2out, x3out, x4out, x5out, x6out, x7out)
+        Gf8(x0out, x1out, x2out, x3out, x4out, x5out, x6out, x7out)
     }
 
     // Formula from [6]
-    fn inv_mix_columns(self) -> Bs8State<T> {
-        let Bs8State(x0, x1, x2, x3, x4, x5, x6, x7) = self;
+    fn inv_mix_columns(self) -> Self {
+        let Gf8(x0, x1, x2, x3, x4, x5, x6, x7) = self;
 
         let x0out = x5 ^ x6 ^ x7 ^ (x5 ^ x7 ^ x0).ror1() ^ (x0 ^ x5 ^ x6).ror2() ^ (x5 ^ x0).ror3();
         let x1out = x5 ^ x0 ^ (x6 ^ x5 ^ x0 ^ x7 ^ x1).ror1() ^ (x1 ^ x7 ^ x5).ror2() ^
@@ -1104,11 +749,11 @@ impl<T: AesBitValueOps + Copy + 'static> AesOps for Bs8State<T> {
                     (x3 ^ x7 ^ x6).ror3();
         let x7out = x4 ^ x5 ^ x6 ^ (x4 ^ x6 ^ x7).ror1() ^ (x4 ^ x5 ^ x7).ror2() ^ (x4 ^ x7).ror3();
 
-        Bs8State(x0out, x1out, x2out, x3out, x4out, x5out, x6out, x7out)
+        Gf8(x0out, x1out, x2out, x3out, x4out, x5out, x6out, x7out)
     }
 
-    fn add_round_key(self, rk: &Bs8State<T>) -> Bs8State<T> {
-        self.xor(*rk)
+    fn add_round_key(self, rk: &Self) -> Self {
+        self + *rk
     }
 }
 

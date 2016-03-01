@@ -7,15 +7,28 @@ use std::ops::*;
 #[repr(C)]
 pub struct u32x4(pub u32, pub u32, pub u32, pub u32);
 
+impl Default for u32x4 {
+    fn default() -> Self {
+        u32x4(Default::default(),
+              Default::default(),
+              Default::default(),
+              Default::default())
+    }
+}
+
 impl u32x4 {
-    pub fn rotate_left(self, s: u32) -> u32x4 {
+    pub fn filled(val: u32) -> Self {
+        u32x4(val, val, val, val)
+    }
+
+    pub fn rotate_left(self, s: u32) -> Self {
         u32x4(self.0 << s,
               (self.1 << s) | (self.0 >> (32 - s)),
               (self.2 << s) | (self.1 >> (32 - s)),
               (self.3 << s) | (self.2 >> (32 - s)))
     }
 
-    pub fn rotate_right(self, s: u32) -> u32x4 {
+    pub fn rotate_right(self, s: u32) -> Self {
         u32x4((self.0 >> s) | (self.1 << (32 - s)),
               (self.1 >> s) | (self.2 << (32 - s)),
               (self.2 >> s) | (self.3 << (32 - s)),
@@ -55,11 +68,5 @@ impl Not for u32x4 {
 
     fn not(self) -> u32x4 {
         self ^ u32x4(0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff)
-    }
-}
-
-impl Default for u32x4 {
-    fn default() -> u32x4 {
-        u32x4(0, 0, 0, 0)
     }
 }
