@@ -125,9 +125,6 @@ use self::gf::*;
 mod simd;
 mod gf;
 
-const U32X4_0: u32x4 = u32x4(0, 0, 0, 0);
-const U32X4_1: u32x4 = u32x4(0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff);
-
 macro_rules! define_aes_struct {
     ($name:ident, $rounds:expr) => {
         #[derive(Clone, Copy)]
@@ -349,15 +346,12 @@ fn create_round_keys(key: &[u8], key_type: KeyType, round_keys: &mut [[u32; 4]])
     }
 
     // Decryption round keys require extra processing
-    match key_type {
-        KeyType::Decryption => {
+    if let KeyType::Decryption = key_type {
             for key in &mut round_keys[1..rounds] {
                 for v in &mut key[..] {
                     *v = inv_mcol(*v);
                 }
             }
-        }
-        _ => ()
     }
 }
 
@@ -377,11 +371,13 @@ trait AesOps {
 }
 
 fn encrypt_core<S: AesOps + Copy>(state: &S, sk: &[S]) -> S {
+    let last = sk.len() - 1;
+
     // Round 0 - add round key
     let mut tmp = state.add_round_key(&sk[0]);
 
     // Remaining rounds (except last round)
-    for subkey in &sk[1..sk.len() - 1] {
+    for subkey in &sk[1..last] {
         tmp = tmp.sub_bytes();
         tmp = tmp.shift_rows();
         tmp = tmp.mix_columns();
@@ -391,21 +387,23 @@ fn encrypt_core<S: AesOps + Copy>(state: &S, sk: &[S]) -> S {
     // Last round
     tmp = tmp.sub_bytes();
     tmp = tmp.shift_rows();
-    tmp = tmp.add_round_key(&sk[sk.len() - 1]);
+    tmp = tmp.add_round_key(&sk[last]);
 
     tmp
 }
 
 fn decrypt_core<S: AesOps + Copy>(state: &S, sk: &[S]) -> S {
+    let last = sk.len() - 1;
+
     // Round 0 - add round key
-    let mut tmp = state.add_round_key(&sk[sk.len() - 1]);
+    let mut tmp = state.add_round_key(&sk[last]);
 
     // Remaining rounds (except last round)
-    for i in 1..sk.len() - 1 {
+    for subkey in sk[1..last].iter().rev() {
         tmp = tmp.inv_sub_bytes();
         tmp = tmp.inv_shift_rows();
         tmp = tmp.inv_mix_columns();
-        tmp = tmp.add_round_key(&sk[sk.len() - 1 - i]);
+        tmp = tmp.add_round_key(subkey);
     }
 
     // Last round
@@ -450,15 +448,10 @@ fn bit_slice_4x1_with_u16(a: u32) -> Gf8<u16> {
 
 // Bit slice a 16 byte array in column major order
 fn bit_slice_1x16_with_u16(data: &[u8]) -> Gf8<u16> {
-    let n = [LittleEndian::read_u32(&data[0..4]),
-             LittleEndian::read_u32(&data[4..8]),
-             LittleEndian::read_u32(&data[8..12]),
-             LittleEndian::read_u32(&data[12..16])];
-
-    let a = n[0];
-    let b = n[1];
-    let c = n[2];
-    let d = n[3];
+    let a = LittleEndian::read_u32(&data[0..4]);
+    let b = LittleEndian::read_u32(&data[4..8]);
+    let c = LittleEndian::read_u32(&data[8..12]);
+    let d = LittleEndian::read_u32(&data[12..16]);
 
     bit_slice_4x4_with_u16(a, b, c, d)
 }
@@ -496,8 +489,7 @@ fn un_bit_slice_4x4_with_u16(bs: &Gf8<u16>) -> (u32, u32, u32, u32) {
 
 // Un Bit Slice into a single u32. This is used when creating the round keys.
 fn un_bit_slice_4x1_with_u16(bs: &Gf8<u16>) -> u32 {
-    let (a, _, _, _) = un_bit_slice_4x4_with_u16(bs);
-    a
+    un_bit_slice_4x4_with_u16(bs).0
 }
 
 // Un Bit Slice into a 16 byte array
@@ -521,25 +513,14 @@ fn bit_slice_1x128_with_u32x4(data: &[u8]) -> Gf8<u32x4> {
     let bit6 = u32x4::filled(0x40404040);
     let bit7 = u32x4::filled(0x80808080);
 
-    fn read_row_major(data: &[u8]) -> u32x4 {
-        u32x4((data[0] as u32) | ((data[4] as u32) << 8) | ((data[8] as u32) << 16) |
-              ((data[12] as u32) << 24),
-              (data[1] as u32) | ((data[5] as u32) << 8) | ((data[9] as u32) << 16) |
-              ((data[13] as u32) << 24),
-              (data[2] as u32) | ((data[6] as u32) << 8) | ((data[10] as u32) << 16) |
-              ((data[14] as u32) << 24),
-              (data[3] as u32) | ((data[7] as u32) << 8) | ((data[11] as u32) << 16) |
-              ((data[15] as u32) << 24))
-    }
-
-    let t0 = read_row_major(&data[0..16]);
-    let t1 = read_row_major(&data[16..32]);
-    let t2 = read_row_major(&data[32..48]);
-    let t3 = read_row_major(&data[48..64]);
-    let t4 = read_row_major(&data[64..80]);
-    let t5 = read_row_major(&data[80..96]);
-    let t6 = read_row_major(&data[96..112]);
-    let t7 = read_row_major(&data[112..128]);
+    let t0 = u32x4::read_row_major(&data[0..16]);
+    let t1 = u32x4::read_row_major(&data[16..32]);
+    let t2 = u32x4::read_row_major(&data[32..48]);
+    let t3 = u32x4::read_row_major(&data[48..64]);
+    let t4 = u32x4::read_row_major(&data[64..80]);
+    let t5 = u32x4::read_row_major(&data[80..96]);
+    let t6 = u32x4::read_row_major(&data[96..112]);
+    let t7 = u32x4::read_row_major(&data[112..128]);
 
     let x0 = (t0 & bit0) | (t1.rotate_left(1) & bit1) | (t2.rotate_left(2) & bit2) |
              (t3.rotate_left(3) & bit3) | (t4.rotate_left(4) & bit4) |
@@ -638,34 +619,14 @@ fn un_bit_slice_1x128_with_u32x4(bs: Gf8<u32x4>, output: &mut [u8]) {
              (t4.rotate_right(3) & bit4) | (t5.rotate_right(2) & bit5) |
              (t6.rotate_right(1) & bit6) | (t7 & bit7);
 
-    fn write_row_major(block: u32x4, output: &mut [u8]) {
-        let u32x4(a0, a1, a2, a3) = block;
-        output[0] = a0 as u8;
-        output[1] = a1 as u8;
-        output[2] = a2 as u8;
-        output[3] = a3 as u8;
-        output[4] = (a0 >> 8) as u8;
-        output[5] = (a1 >> 8) as u8;
-        output[6] = (a2 >> 8) as u8;
-        output[7] = (a3 >> 8) as u8;
-        output[8] = (a0 >> 16) as u8;
-        output[9] = (a1 >> 16) as u8;
-        output[10] = (a2 >> 16) as u8;
-        output[11] = (a3 >> 16) as u8;
-        output[12] = (a0 >> 24) as u8;
-        output[13] = (a1 >> 24) as u8;
-        output[14] = (a2 >> 24) as u8;
-        output[15] = (a3 >> 24) as u8;
-    }
-
-    write_row_major(x0, &mut output[0..16]);
-    write_row_major(x1, &mut output[16..32]);
-    write_row_major(x2, &mut output[32..48]);
-    write_row_major(x3, &mut output[48..64]);
-    write_row_major(x4, &mut output[64..80]);
-    write_row_major(x5, &mut output[80..96]);
-    write_row_major(x6, &mut output[96..112]);
-    write_row_major(x7, &mut output[112..128])
+    x0.write_row_major(&mut output[0..16]);
+    x1.write_row_major(&mut output[16..32]);
+    x2.write_row_major(&mut output[32..48]);
+    x3.write_row_major(&mut output[48..64]);
+    x4.write_row_major(&mut output[64..80]);
+    x5.write_row_major(&mut output[80..96]);
+    x6.write_row_major(&mut output[96..112]);
+    x7.write_row_major(&mut output[112..128])
 }
 
 // // The Gf2Ops, Gf4Ops, and Gf8Ops traits specify the functions needed to calculate the AES S-Box

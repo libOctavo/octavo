@@ -1,4 +1,4 @@
-//! Cryptosystems primitives
+//! # Cryptosystems primitives
 //!
 //! Cryptosystem is a suite of algorithms that describe particular security service, in most cases
 //! used for achieving confidentiality. Typically this is set of three algorithms: key generation,

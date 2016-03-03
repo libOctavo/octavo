@@ -33,8 +33,8 @@ production code (yet)!
 You can help with this project in 3 ways:
 
 1. Help me code this up! Just fork, create branch, code & pull-request. Yay!
-2. Audit code or use it. If you find bug just fill the issue, it is great help also.
-3. Support us at [Gratipay](https://gratipay.com/liboctavo/).
+1. Audit code or use it. If you find bug just fill the issue, it is great help also.
+1. Support us at [Gratipay](https://gratipay.com/liboctavo/).
 
 ## Full disclosure
 
