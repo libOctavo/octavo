@@ -4,11 +4,13 @@ use std::io::Write;
 
 use octavo::digest::Digest;
 
+use octavo::digest::blake2;
 use octavo::digest::md4::Md4;
 use octavo::digest::md5::Md5;
 use octavo::digest::ripemd::Ripemd160;
 use octavo::digest::sha1::Sha1;
-use octavo::digest::{sha2, sha3};
+use octavo::digest::sha2;
+use octavo::digest::sha3;
 use octavo::digest::tiger::Tiger;
 
 fn hex<T: AsRef<[u8]>, D: Digest>(data: T, mut digest: D) -> String {
@@ -44,5 +46,13 @@ fn main() {
     println!("SHA3-256:    {}", hex(&data, sha3::Sha256::default()));
     println!("SHA3-384:    {}", hex(&data, sha3::Sha384::default()));
     println!("SHA3-512:    {}", hex(&data, sha3::Sha512::default()));
+    println!("Blake2s128:  {}", hex(&data, blake2::Blake2s128::default()));
+    println!("Blake2s160:  {}", hex(&data, blake2::Blake2s160::default()));
+    println!("Blake2s224:  {}", hex(&data, blake2::Blake2s224::default()));
+    println!("Blake2s256:  {}", hex(&data, blake2::Blake2s256::default()));
+    println!("Blake2b160:  {}", hex(&data, blake2::Blake2b160::default()));
+    println!("Blake2b256:  {}", hex(&data, blake2::Blake2b256::default()));
+    println!("Blake2b384:  {}", hex(&data, blake2::Blake2b384::default()));
+    println!("Blake2b512:  {}", hex(&data, blake2::Blake2b512::default()));
     println!("Tiger:       {}", hex(&data, Tiger::default()));
 }
