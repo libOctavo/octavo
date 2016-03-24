@@ -124,23 +124,16 @@ blake2_state!(u64, read_u64, BLAKE2B_INIT, 12, 32, 24, 16, 63);
 #[derive(Copy, Clone, Debug)]
 struct Length<T>(T, T);
 
+
 impl Length<u32> {
     fn increment(&mut self, val: usize) {
-        let (val, over) = self.0.overflowing_add(val as u32);
-        self.0 = val;
-        if over {
-            self.1 += 1
-        }
+        self.0.wrapping_add( val as u32 );
     }
 }
 
 impl Length<u64> {
     fn increment(&mut self, val: usize) {
-        let (val, over) = self.0.overflowing_add(val as u64);
-        self.0 = val;
-        if over {
-            self.1 += 1
-        }
+        self.0.wrapping_add(val as u64);
     }
 }
 
