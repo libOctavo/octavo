@@ -7,7 +7,7 @@ rust:
 before_script:
   - pip install 'travis-cargo<0.2' --user && export PATH=$HOME/.local/bin:$PATH
 script:
-  - make all TASK=test CARGO_CMD=travis-cargo
+  - make all TASK=test
 after_success:
   - travis-cargo --only stable doc
   - travis-cargo --only stable doc-upload
