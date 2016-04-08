@@ -12,6 +12,7 @@ generic-array = "0.2.0"
 
 [dependencies.octavo-digest]
 path = "../digest"
+version = "0.1.0"
 
 [features]
 unstable = []

@@ -11,15 +11,19 @@ version = "0.1.1"
 
 [dependencies.octavo-crypto]
 path = "./crypto"
+version = "0.1.0"
 
 [dependencies.octavo-digest]
 path = "./digest"
+version = "0.1.0"
 
 [dependencies.octavo-kdf]
 path = "./kdf"
+version = "0.1.0"
 
 [dependencies.octavo-mac]
 path = "./mac"
+version = "0.1.0"
 
 [dev-dependencies]
 openssl = "0.7.5"

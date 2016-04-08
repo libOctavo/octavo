@@ -12,6 +12,7 @@ byteorder = "0.4.2"
 
 [dependencies.octavo-crypto]
 path = "../crypto"
+version = "0.1.0"
 
 [features]
 unstable = []
