@@ -4,8 +4,10 @@ TASK ?= test
 
 packages = digest crypto kdf mac
 
-all: $(packages)
-	$(CARGO_CMD) test
+all: $(packages) octavo
+
+octavo:
+	$(CARGO_CMD) $(TASK)
 
 $(packages):
 	$(CARGO_CMD) $(TASK) --manifest-path "$@/Cargo.toml"
