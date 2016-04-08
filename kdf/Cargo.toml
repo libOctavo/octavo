@@ -1,6 +1,10 @@
 [package]
 authors = ["Łukasz Jan Niemier <lukasz@niemier.pl>"]
+documentation = "http://liboctavo.github.io/octavo"
+repository = "https://github.com/libOctavo/octavo"
 name = "octavo-kdf"
+description = "Octavo - Key Derivation Functions. WARNING!!! Not suitable for production"
+license = "MIT"
 version = "0.1.0"
 
 [dependencies]
