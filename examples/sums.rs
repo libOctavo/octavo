@@ -2,15 +2,7 @@ extern crate octavo;
 
 use std::io::Write;
 
-use octavo::digest::Digest;
-
-use octavo::digest::blake2;
-use octavo::digest::md5::Md5;
-use octavo::digest::ripemd::Ripemd160;
-use octavo::digest::sha1::Sha1;
-use octavo::digest::sha2;
-use octavo::digest::sha3;
-use octavo::digest::tiger::Tiger;
+use octavo::digest::prelude::*;
 
 fn hex<T: AsRef<[u8]>, D: Digest>(data: T, mut digest: D) -> String {
     digest.update(data);
@@ -52,5 +44,6 @@ fn main() {
     println!("Blake2b256:  {}", hex(&data, blake2::Blake2b256::default()));
     println!("Blake2b384:  {}", hex(&data, blake2::Blake2b384::default()));
     println!("Blake2b512:  {}", hex(&data, blake2::Blake2b512::default()));
-    println!("Tiger:       {}", hex(&data, Tiger::default()));
+    println!("Tiger:       {}", hex(&data, tiger::Tiger::default()));
+    println!("Tiger2:      {}", hex(&data, tiger::Tiger2::default()));
 }

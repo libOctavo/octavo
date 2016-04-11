@@ -84,6 +84,14 @@ pub trait Digest: Clone {
 /// Digest prelude
 pub mod prelude {
     pub use Digest;
+
+    pub use blake2;
+    pub use md5::Md5;
+    pub use ripemd::Ripemd160;
+    pub use sha1::Sha1;
+    pub use sha2;
+    pub use sha3;
+    pub use tiger;
 }
 
 pub mod blake2;
