@@ -5,7 +5,6 @@ use std::io::Write;
 use octavo::digest::Digest;
 
 use octavo::digest::blake2;
-use octavo::digest::md4::Md4;
 use octavo::digest::md5::Md5;
 use octavo::digest::ripemd::Ripemd160;
 use octavo::digest::sha1::Sha1;
@@ -32,7 +31,6 @@ fn hex<T: AsRef<[u8]>, D: Digest>(data: T, mut digest: D) -> String {
 fn main() {
     let data = "octavo";
 
-    println!("MD4:         {}", hex(&data, Md4::default()));
     println!("MD5:         {}", hex(&data, Md5::default()));
     println!("RIPEMD-160:  {}", hex(&data, Ripemd160::default()));
     println!("SHA-1:       {}", hex(&data, Sha1::default()));

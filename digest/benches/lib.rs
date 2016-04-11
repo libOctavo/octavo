@@ -30,7 +30,6 @@ macro_rules! bench_digest {
     }
 }
 
-#[cfg(feature = "md4")] #[macro_use]mod md4;
 #[cfg(feature = "md5")] #[macro_use]mod md5;
 #[cfg(feature = "sha1")] #[macro_use]mod sha1;
 #[cfg(feature = "sha2")] #[macro_use]mod sha2;
