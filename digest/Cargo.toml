@@ -21,15 +21,17 @@ rustc-serialize = "0.3.16"
 toml = "0.1.27"
 
 [features]
-default = ["deprecated", "safe"]
+default = ["all"]
 unstable = []
-deprecated = ["md4", "md5", "ripemd", "sha1", "tiger"]
-md4 = []
+
+all = ["md5", "ripemd", "sha1", "sha2", "sha3", "tiger", "blake2"]
+deprecated = ["md5", "ripemd", "sha1"]
+safe = ["blake2", "sha2", "sha3"]
+
+blake2 = []
 md5 = []
 ripemd = []
-safe = ["blake2", "sha2", "sha3"]
 sha1 = []
 sha2 = []
 sha3 = []
 tiger = []
-blake2 = []

@@ -87,7 +87,6 @@ pub mod prelude {
 }
 
 pub mod blake2;
-pub mod md4;
 pub mod md5;
 pub mod ripemd;
 pub mod sha1;
