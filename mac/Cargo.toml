@@ -1,11 +1,11 @@
 [package]
 authors = ["Łukasz Jan Niemier <lukasz@niemier.pl>"]
-documentation = "http://liboctavo.github.io/octavo"
+documentation = "http://liboctavo.github.io/octavo/octavo_kdf"
 repository = "https://github.com/libOctavo/octavo"
 name = "octavo-mac"
 description = "Octavo - Message Authentication Codes. WARNING!!! Not suitable for production"
 license = "MIT"
-version = "0.1.0"
+version = "0.1.1"
 
 [dependencies]
 generic-array = "0.2.0"
