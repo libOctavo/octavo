@@ -2,3 +2,4 @@
 repository = "https://github.com/libOctavo/octavo"
 
 changelog = "CHANGELOG.md"
+from-latest-tag = true
