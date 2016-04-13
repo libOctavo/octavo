@@ -1,9 +1,14 @@
 [package]
 authors = ["Łukasz Jan Niemier <lukasz@niemier.pl>"]
+homepage = "http://liboctavo.github.io/"
 documentation = "http://liboctavo.github.io/octavo/octavo_crypto"
 repository = "https://github.com/libOctavo/octavo"
+readme = "README.md"
 name = "octavo-crypto"
 description = "Octavo - Cryptosystems. WARNING!!! Not suitable for production"
+keywords = [
+  "chacha20", "blowfish", "cryptography", "ciphers"
+]
 license = "MIT"
 version = "0.1.1"
 

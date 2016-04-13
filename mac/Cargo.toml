@@ -1,9 +1,14 @@
 [package]
 authors = ["Łukasz Jan Niemier <lukasz@niemier.pl>"]
+homepage = "http://liboctavo.github.io/"
 documentation = "http://liboctavo.github.io/octavo/octavo_kdf"
 repository = "https://github.com/libOctavo/octavo"
+readme = "README.md"
 name = "octavo-mac"
 description = "Octavo - Message Authentication Codes. WARNING!!! Not suitable for production"
+keywords = [
+  "mac", "hmac", "authentication"
+]
 license = "MIT"
 version = "0.1.1"
 

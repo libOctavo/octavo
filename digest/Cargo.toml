@@ -1,9 +1,14 @@
 [package]
 authors = ["Łukasz Jan Niemier <lukasz@niemier.pl>"]
+homepage = "http://liboctavo.github.io/"
 documentation = "http://liboctavo.github.io/octavo/octavo_digest"
 repository = "https://github.com/libOctavo/octavo"
+readme = "README.md"
 name = "octavo-digest"
 description = "Octavo - Cryptographic Hash Functions. WARNING!!! Not suitable for production"
+keywords = [
+  "md5", "sha", "sha1", "sha2", "sha3", "tiger", "blake2", "hash", "ripemd"
+]
 license = "MIT"
 version = "0.1.2"
 
@@ -25,8 +30,8 @@ default = ["all"]
 unstable = []
 
 all = ["md5", "ripemd", "sha1", "sha2", "sha3", "tiger", "blake2"]
+safe = ["blake2", "sha2", "sha3", "tiger"]
 deprecated = ["md5", "ripemd", "sha1"]
-safe = ["blake2", "sha2", "sha3"]
 
 blake2 = []
 md5 = []
