@@ -1,3 +1,20 @@
+//! BLAKE2 family
+//!
+//! # General info
+//!
+//! | Name        | Digest size | Block size | Rounds | Structure            | Reference               |
+//! | ----------- | ----------: | ---------: | -----: | -------------------- | ----------------------- |
+//! | BLAKE2s-128 |    128 bits |   512 bits |     10 | [Merkle–Damgård][md] | [FIPS 180-4][fips180-4] |
+//! | BLAKE2s-160 |    160 bits |   512 bits |     10 | [Merkle–Damgård][md] | [FIPS 180-4][fips180-4] |
+//! | BLAKE2s-224 |    224 bits |   512 bits |     10 | [Merkle–Damgård][md] | [FIPS 180-4][fips180-4] |
+//! | BLAKE2s-256 |    256 bits |   512 bits |     10 | [Merkle–Damgård][md] | [FIPS 180-4][fips180-4] |
+//! | BLAKE2b-160 |    160 bits |  1024 bits |     12 | [Merkle–Damgård][md] | [FIPS 180-4][fips180-4] |
+//! | BLAKE2b-256 |    256 bits |  1024 bits |     12 | [Merkle–Damgård][md] | [FIPS 180-4][fips180-4] |
+//! | BLAKE2b-384 |    384 bits |  1024 bits |     12 | [Merkle–Damgård][md] | [FIPS 180-4][fips180-4] |
+//! | BLAKE2b-512 |    512 bits |  1024 bits |     12 | [Merkle–Damgård][md] | [FIPS 180-4][fips180-4] |
+//!
+//! [md]: https://en.wikipedia.org/wiki/Merkle%E2%80%93Damg%C3%A5rd_construction
+
 use core::marker::PhantomData;
 use core::{mem, ptr};
 use core::num::Wrapping as W;
@@ -127,7 +144,7 @@ struct Length<T>(T, T);
 
 impl Length<u32> {
     fn increment(&mut self, val: usize) {
-        self.0.wrapping_add( val as u32 );
+        self.0.wrapping_add(val as u32);
     }
 }
 
@@ -138,8 +155,9 @@ impl Length<u64> {
 }
 
 macro_rules! blake2 {
-    ($name:ident<$word:ty>, $init:ident, $buf:ty, $bsize:ty) => {
+    ($(#[$attr:meta])* struct $name:ident<$word:ty>, $init:ident, $buf:ty, $bsize:ty) => {
         #[derive(Clone)]
+        $(#[$attr])*
         pub struct $name<Size: Unsigned + Clone> {
             state: State<$word>,
             len: Length<$word>,
@@ -148,6 +166,7 @@ macro_rules! blake2 {
         }
 
         impl<Size: Unsigned + Clone> $name<Size> {
+            /// Initialize BLAKE2 hash function with custom key
             pub fn with_key<K: AsRef<[u8]>>(key: K) -> Self {
                 let key = key.as_ref();
 
@@ -219,15 +238,29 @@ macro_rules! blake2 {
     }
 }
 
-blake2!(Blake2s<u32>, BLAKE2S_INIT, FixedBuffer64, U64);
-blake2!(Blake2b<u64>, BLAKE2B_INIT, FixedBuffer128, U128);
+blake2! {
+    /// General BLAKE2s implementation
+    struct Blake2s<u32>, BLAKE2S_INIT, FixedBuffer64, U64
+}
+blake2! {
+    /// General BLAKE2b implementation
+    struct Blake2b<u64>, BLAKE2B_INIT, FixedBuffer128, U128
+}
 
-pub type Blake2b160 = Blake2b<U20>;
-pub type Blake2b256 = Blake2b<U32>;
-pub type Blake2b384 = Blake2b<U48>;
-pub type Blake2b512 = Blake2b<U64>;
-
+/// BLAKE2s-128 implementation
 pub type Blake2s128 = Blake2s<U16>;
+/// BLAKE2s-160 implementation
 pub type Blake2s160 = Blake2s<U20>;
+/// BLAKE2s-224 implementation
 pub type Blake2s224 = Blake2s<U28>;
+/// BLAKE2s-256 implementation
 pub type Blake2s256 = Blake2s<U32>;
+
+/// BLAKE2b-160 implementation
+pub type Blake2b160 = Blake2b<U20>;
+/// BLAKE2b-256 implementation
+pub type Blake2b256 = Blake2b<U32>;
+/// BLAKE2b-384 implementation
+pub type Blake2b384 = Blake2b<U48>;
+/// BLAKE2b-512 implementation
+pub type Blake2b512 = Blake2b<U64>;

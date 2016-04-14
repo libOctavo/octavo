@@ -15,13 +15,12 @@
 //!
 //! ```rust
 //! # extern crate octavo_digest;
-//! use octavo_digest::Digest;
-//! use octavo_digest::sha2::Sha512;
+//! use octavo_digest::prelude::*;
 //!
 //! # fn main() {
 //! # let data = "Hello World!";
-//! let mut result = vec![0; Sha512::output_bytes()];
-//! let mut sha = Sha512::default();
+//! let mut result = vec![0; sha2::Sha512::output_bytes()];
+//! let mut sha = sha2::Sha512::default();
 //!
 //! sha.update(data);
 //! sha.result(&mut result);
@@ -33,9 +32,12 @@
 //! # }
 //! ```
 
+#![doc(html_logo_url = "https://raw.githubusercontent.com/libOctavo/octavo/master/docs/logo.png",
+       html_root_url = "http://libOctavo.github.io/")]
+
 #![no_std]
 
-#![forbid(overflowing_literals)]
+#![forbid(overflowing_literals, missing_docs)]
 
 extern crate generic_array;
 extern crate static_buffer;
@@ -85,20 +87,37 @@ pub trait Digest: Clone {
 pub mod prelude {
     pub use Digest;
 
+#[cfg(feature = "blake2")]
     pub use blake2;
+#[cfg(feature = "md5")]
     pub use md5::Md5;
+#[cfg(feature = "ripemd")]
     pub use ripemd::Ripemd160;
+#[cfg(feature = "sha1")]
     pub use sha1::Sha1;
+#[cfg(feature = "sha2")]
     pub use sha2;
+#[cfg(feature = "sha3")]
     pub use sha3;
+#[cfg(feature = "tiger")]
     pub use tiger;
+#[cfg(feature = "whirlpool")]
+    pub use whirlpool;
 }
 
+#[cfg(feature = "blake2")]
 pub mod blake2;
+#[cfg(feature = "md5")]
 pub mod md5;
+#[cfg(feature = "ripemd")]
 pub mod ripemd;
+#[cfg(feature = "sha1")]
 pub mod sha1;
+#[cfg(feature = "sha2")]
 pub mod sha2;
+#[cfg(feature = "sha3")]
 pub mod sha3;
+#[cfg(feature = "tiger")]
 pub mod tiger;
+#[cfg(feature = "whirlpool")]
 pub mod whirlpool;
