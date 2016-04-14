@@ -27,7 +27,12 @@
 #![doc(html_logo_url = "https://raw.githubusercontent.com/libOctavo/octavo/master/docs/logo.png",
        html_root_url = "http://libOctavo.github.io/")]
 
-pub extern crate octavo_crypto as crypto;
-pub extern crate octavo_digest as digest;
-pub extern crate octavo_kdf as kdf;
-pub extern crate octavo_mac as mac;
+pub extern crate octavo_crypto;
+pub extern crate octavo_digest;
+pub extern crate octavo_kdf;
+pub extern crate octavo_mac;
+
+pub use octavo_crypto as crypto;
+pub use octavo_digest as digest;
+pub use octavo_kdf as kdf;
+pub use octavo_mac as mac;
