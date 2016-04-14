@@ -66,6 +66,9 @@
 //! [ecrypt]: http://www.ecrypt.eu.org/ "European Network of Excellence in Cryptology II "
 //! [d.spa.20]: http://www.ecrypt.eu.org/ecrypt2/documents/D.SPA.20.pdf "ECRYPT II Yearly Report on Algorithms and Keysizes"
 
+#![doc(html_logo_url = "https://raw.githubusercontent.com/libOctavo/octavo/master/docs/logo.png",
+       html_root_url = "http://libOctavo.github.io/")]
+
 extern crate byteorder;
 extern crate generic_array;
 extern crate num;

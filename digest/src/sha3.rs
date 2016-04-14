@@ -192,6 +192,7 @@ impl State {
 macro_rules! sha3_impl {
     ($(#[$attr:meta])* struct $name:ident -> $size:ty, $bsize:ty) => {
         #[derive(Clone)]
+        $(#[$attr])*
         pub struct $name {
             state: State,
             buffer: FixedBuffer<$bsize>,

@@ -1,3 +1,6 @@
+#![doc(html_logo_url = "https://raw.githubusercontent.com/libOctavo/octavo/master/docs/logo.png",
+       html_root_url = "http://libOctavo.github.io/")]
+
 extern crate octavo_digest as digest;
 extern crate generic_array;
 
