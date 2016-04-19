@@ -102,7 +102,7 @@ pub mod prelude {
 #[cfg(feature = "tiger")]
     pub use tiger;
 #[cfg(feature = "whirlpool")]
-    pub use whirlpool;
+    pub use whirlpool::Whirlpool;
 }
 
 #[cfg(feature = "blake2")]

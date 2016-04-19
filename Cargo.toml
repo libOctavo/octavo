@@ -1,15 +1,13 @@
 [package]
 authors = ["Łukasz Jan Niemier <lukasz@niemier.pl>"]
-homepage = "http://liboctavo.github.io/"
-documentation = "http://liboctavo.github.io/octavo"
-repository = "https://github.com/libOctavo/octavo"
-readme = "README.md"
-name = "octavo"
 description = "Highly modular crypto & hash library written in pure Rust. WARNING!!! Not suitable for production."
-keywords = [
-  "cryptography", "hash", "meta"
-]
+documentation = "http://liboctavo.github.io/octavo"
+homepage = "http://liboctavo.github.io/"
+keywords = ["cryptography", "hash", "meta"]
 license = "MIT"
+name = "octavo"
+readme = "README.md"
+repository = "https://github.com/libOctavo/octavo"
 version = "0.1.1"
 
 [dependencies]
