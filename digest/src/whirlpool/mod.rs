@@ -150,7 +150,8 @@ impl Digest for Whirlpool {
             {
                 let state = &mut self.state;
 
-                self.buffer.standard_padding(8, |d| state.process_block(d));
+                self.buffer.standard_padding(32, |d| state.process_block(d));
+                self.buffer.zero_until(56);
                 BigEndian::write_u64(self.buffer.next(8), self.length << 3);
                 state.process_block(self.buffer.full_buffer());
             }

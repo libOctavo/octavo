@@ -25,4 +25,3 @@ output = "hex:696d9960618847259f2fa580db2f955596d7bea2046f46d7"
 [[tests]]
 input = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-"
 output = "hex:2720a38d7f0875545fd9614f48f7e67a92d37469da2ef378"
-

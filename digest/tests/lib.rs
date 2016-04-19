@@ -18,5 +18,5 @@ mod sha2;
 // mod sha3;
 #[cfg(feature = "tiger")]
 mod tiger;
-// #[cfg(feature = "whirlpool")]
-// mod whirlpool;
+#[cfg(feature = "whirlpool")]
+mod whirlpool;
