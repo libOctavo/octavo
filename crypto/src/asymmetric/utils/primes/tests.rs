@@ -105,7 +105,7 @@ mod tests {
     }
 
     mod fermat {
-        use num::bigint::ToBigUint;
+        use bigint::ToBigUint;
 
         use super::rng;
         use super::super::{PrimeTest, Type, Fermat};
@@ -130,7 +130,7 @@ mod tests {
     }
 
     mod miller_rabin {
-        use num::bigint::ToBigUint;
+        use bigint::ToBigUint;
 
         use super::rng;
         use super::super::{PrimeTest, Type, MillerRabin};

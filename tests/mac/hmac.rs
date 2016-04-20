@@ -83,10 +83,10 @@ mod quickcheck {
         }
     }
 
-    quickcheck!(md5    => md5::Md5,     Type::MD5);
-    quickcheck!(sha1   => sha1::Sha1,   Type::SHA1);
-    quickcheck!(sha224 => sha2::Sha224, Type::SHA224);
-    quickcheck!(sha256 => sha2::Sha256, Type::SHA256);
-    quickcheck!(sha384 => sha2::Sha384, Type::SHA384);
-    quickcheck!(sha512 => sha2::Sha512, Type::SHA512);
+    quickcheck!(md5    => Md5,           Type::MD5);
+    quickcheck!(sha1   => Sha1,          Type::SHA1);
+    quickcheck!(sha224 => sha2::Sha224,  Type::SHA224);
+    quickcheck!(sha256 => sha2::Sha256,  Type::SHA256);
+    quickcheck!(sha384 => sha2::Sha384,  Type::SHA384);
+    quickcheck!(sha512 => sha2::Sha512,  Type::SHA512);
 }
