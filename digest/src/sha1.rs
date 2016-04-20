@@ -30,15 +30,34 @@ struct State {
     e: u32,
 }
 
+macro_rules! schedule {
+    ($schedule:ident[$i:expr] = $data:ident) => {
+        $schedule[$i] =
+              ($data[$i * 4 + 0] as u32) << 24
+            | ($data[$i * 4 + 1] as u32) << 16
+            | ($data[$i * 4 + 2] as u32) << 8
+            | ($data[$i * 4 + 3] as u32);
+    };
+
+    ($schedule:ident[$i:expr]) => {
+        $schedule[$i & 0xf] = {
+              $schedule[($i - 3) & 0xf]
+            ^ $schedule[($i - 8) & 0xf]
+            ^ $schedule[($i - 14) & 0xf]
+            ^ $schedule[($i - 16) & 0xf]
+        }.rotate_left(1);
+    }
+}
+
 macro_rules! process {
     () => ();
-    (proc $state:ident, $f:block, $c:expr, $word:expr) => {{
+    (proc $state:ident, $f:block, $c:expr, $schedule:ident, $i:expr) => {{
         let tmp = $state.a
                       .rotate_left(5)
                       .wrapping_add($f)
                       .wrapping_add($state.e)
                       .wrapping_add($c)
-                      .wrapping_add($word);
+                      .wrapping_add($schedule[$i & 0xf]);
 
         $state.e = $state.d;
         $state.d = $state.c;
@@ -47,28 +66,39 @@ macro_rules! process {
         $state.a = tmp;
     }};
 
-    (ff($state:ident, $word:expr); $($rest:tt)*) => {
+    (ff($state:ident, $schedule:ident[$i:expr] , $data:ident); $($rest:tt)*) => {
+        schedule!($schedule[$i] = $data);
         process!(proc $state, {
             $state.d ^ ($state.b & ($state.c ^ $state.d))
-        }, 0x5a827999, $word);
+        }, 0x5a827999, $schedule, $i);
         process!($($rest)*);
     };
-    (gg($state:ident, $word:expr); $($rest:tt)*) => {
+    (ff($state:ident, $schedule:ident[$i:expr]); $($rest:tt)*) => {
+        schedule!($schedule[$i]);
+        process!(proc $state, {
+            $state.d ^ ($state.b & ($state.c ^ $state.d))
+        }, 0x5a827999, $schedule, $i);
+        process!($($rest)*);
+    };
+    (gg($state:ident, $schedule:ident[$i:expr]); $($rest:tt)*) => {
+        schedule!($schedule[$i]);
         process!(proc $state, {
             $state.b ^ $state.c ^ $state.d
-        }, 0x6ed9eba1, $word);
+        }, 0x6ed9eba1, $schedule, $i);
         process!($($rest)*);
     };
-    (hh($state:ident, $word:expr); $($rest:tt)*) => {
+    (hh($state:ident, $schedule:ident[$i:expr]); $($rest:tt)*) => {
+        schedule!($schedule[$i]);
         process!(proc $state, {
             ($state.b & $state.c) | ($state.d & ($state.b | $state.c))
-        }, 0x8f1bbcdc, $word);
+        }, 0x8f1bbcdc, $schedule, $i);
         process!($($rest)*);
     };
-    (ii($state:ident, $word:expr); $($rest:tt)*) => {
+    (ii($state:ident, $schedule:ident[$i:expr]); $($rest:tt)*) => {
+        schedule!($schedule[$i]);
         process!(proc $state, {
             $state.b ^ $state.c ^ $state.d
-        }, 0xca62c1d6, $word);
+        }, 0xca62c1d6, $schedule, $i);
         process!($($rest)*);
     };
 }
@@ -87,34 +117,26 @@ impl State {
     fn process_block(&mut self, data: &[u8]) {
         debug_assert!(data.len() == 64);
 
-        let mut words = [0u32; 80];
-
-        for (c, w) in data.chunks(4).zip(words.iter_mut()) {
-            *w = BigEndian::read_u32(c);
-        }
-        for i in 16..80 {
-            words[i] = (words[i - 3] ^ words[i - 8] ^ words[i - 14] ^ words[i - 16]).rotate_left(1);
-        }
-
+        let mut words = [0u32; 16];
         let mut state = self.clone();
 
         process! {
-            ff(state, words[0]);
-            ff(state, words[1]);
-            ff(state, words[2]);
-            ff(state, words[3]);
-            ff(state, words[4]);
-            ff(state, words[5]);
-            ff(state, words[6]);
-            ff(state, words[7]);
-            ff(state, words[8]);
-            ff(state, words[9]);
-            ff(state, words[10]);
-            ff(state, words[11]);
-            ff(state, words[12]);
-            ff(state, words[13]);
-            ff(state, words[14]);
-            ff(state, words[15]);
+            ff(state, words[0],  data);
+            ff(state, words[1],  data);
+            ff(state, words[2],  data);
+            ff(state, words[3],  data);
+            ff(state, words[4],  data);
+            ff(state, words[5],  data);
+            ff(state, words[6],  data);
+            ff(state, words[7],  data);
+            ff(state, words[8],  data);
+            ff(state, words[9],  data);
+            ff(state, words[10], data);
+            ff(state, words[11], data);
+            ff(state, words[12], data);
+            ff(state, words[13], data);
+            ff(state, words[14], data);
+            ff(state, words[15], data);
             ff(state, words[16]);
             ff(state, words[17]);
             ff(state, words[18]);
