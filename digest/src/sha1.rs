@@ -32,20 +32,24 @@ struct State {
 
 macro_rules! schedule {
     ($schedule:ident[$i:expr] = $data:ident) => {
-        $schedule[$i] =
-              ($data[$i * 4 + 0] as u32) << 24
-            | ($data[$i * 4 + 1] as u32) << 16
-            | ($data[$i * 4 + 2] as u32) << 8
-            | ($data[$i * 4 + 3] as u32);
+        unsafe {
+            *$schedule.get_unchecked_mut($i) =
+                  (*$data.get_unchecked($i * 4 + 0) as u32) << 24
+                | (*$data.get_unchecked($i * 4 + 1) as u32) << 16
+                | (*$data.get_unchecked($i * 4 + 2) as u32) << 8
+                | (*$data.get_unchecked($i * 4 + 3) as u32);
+        }
     };
 
     ($schedule:ident[$i:expr]) => {
-        $schedule[$i & 0xf] = {
-              $schedule[($i - 3) & 0xf]
-            ^ $schedule[($i - 8) & 0xf]
-            ^ $schedule[($i - 14) & 0xf]
-            ^ $schedule[($i - 16) & 0xf]
-        }.rotate_left(1);
+        unsafe {
+            *$schedule.get_unchecked_mut($i & 0xf) = {
+                  *$schedule.get_unchecked(($i - 3) & 0xf)
+                ^ *$schedule.get_unchecked(($i - 8) & 0xf)
+                ^ *$schedule.get_unchecked(($i - 14) & 0xf)
+                ^ *$schedule.get_unchecked(($i - 16) & 0xf)
+            }.rotate_left(1);
+        }
     }
 }
 
@@ -57,7 +61,7 @@ macro_rules! process {
                       .wrapping_add($f)
                       .wrapping_add($state.e)
                       .wrapping_add($c)
-                      .wrapping_add($schedule[$i & 0xf]);
+                      .wrapping_add(unsafe { *$schedule.get_unchecked($i & 0xf) });
 
         $state.e = $state.d;
         $state.d = $state.c;
