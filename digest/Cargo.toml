@@ -33,7 +33,7 @@ toml = "0.1.27"
 default = ["all"]
 unstable = []
 
-all = ["md5", "ripemd", "sha1", "sha2", "sha3", "tiger", "blake2"]
+all = ["md5", "ripemd", "sha1", "sha2", "sha3", "tiger", "blake2", "whirlpool"]
 safe = ["blake2", "sha2", "sha3", "tiger"]
 deprecated = ["md5", "ripemd", "sha1"]
 
@@ -44,3 +44,4 @@ sha1 = []
 sha2 = []
 sha3 = []
 tiger = []
+whirlpool = []

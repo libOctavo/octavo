@@ -37,3 +37,4 @@ macro_rules! bench_digest {
 #[cfg(feature = "tiger")] #[macro_use]mod tiger;
 #[cfg(feature = "ripemd")] #[macro_use]mod ripemd;
 #[cfg(feature = "blake2")] #[macro_use]mod blake2;
+#[cfg(feature = "whirlpool")] #[macro_use]mod whirlpool;

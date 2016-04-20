@@ -46,4 +46,5 @@ fn main() {
     println!("Blake2b512:  {}", hex(&data, blake2::Blake2b512::default()));
     println!("Tiger:       {}", hex(&data, tiger::Tiger::default()));
     println!("Tiger2:      {}", hex(&data, tiger::Tiger2::default()));
+    println!("WHIRLPOOL:   {}", hex(&data, Whirlpool::default()));
 }
