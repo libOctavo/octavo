@@ -1,4 +1,6 @@
-use num::{one, zero, BigUint, Integer};
+use num::{One, Zero};
+use bigint::BigUint;
+use integer::Integer;
 
 pub trait Power<T> {
     type Output;
@@ -21,17 +23,17 @@ impl<'a> Power<&'a BigUint> for &'a BigUint {
         let mut base = self % modulus;
         let mut exp = exp.clone();
 
-        if exp == one() {
+        if exp == One::one() {
             return base;
         }
 
-        let mut acc: BigUint = one();
+        let mut acc: BigUint = One::one();
 
-        while exp > zero() {
+        while exp > Zero::zero() {
             if exp.is_odd() {
                 acc = (acc * &base) % modulus
             }
-            if exp > one() {
+            if exp > One::one() {
                 base = (&base * &base) % modulus
             }
             exp = exp >> 1;

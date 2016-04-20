@@ -23,22 +23,32 @@ lto = true
 [dependencies.octavo-crypto]
 path = "./crypto"
 version = "0.1.0"
+optional = true
 
 [dependencies.octavo-digest]
 path = "./digest"
 version = "0.1.0"
+optional = true
 
 [dependencies.octavo-kdf]
 path = "./kdf"
 version = "0.1.0"
+optional = true
 
 [dependencies.octavo-mac]
 path = "./mac"
 version = "0.1.0"
+optional = true
 
 [dev-dependencies]
 openssl = "0.7.5"
 quickcheck = "0.2.24"
 
 [features]
+default = ["crypto", "digest", "kdf", "mac"]
 unstable = []
+
+crypto = ["octavo-crypto"]
+digest = ["octavo-digest"]
+kdf = ["octavo-kdf"]
+mac = ["octavo-mac"]

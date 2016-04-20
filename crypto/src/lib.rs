@@ -71,7 +71,9 @@
 
 extern crate byteorder;
 extern crate generic_array;
-extern crate num;
+extern crate num_bigint as bigint;
+extern crate num_traits as num;
+extern crate num_integer as integer;
 extern crate rand;
 extern crate typenum;
 

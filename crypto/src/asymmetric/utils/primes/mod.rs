@@ -1,5 +1,6 @@
-use num::{One, Integer};
-use num::bigint::{BigUint, RandBigInt};
+use num::One;
+use integer::Integer;
+use bigint::{BigUint, RandBigInt};
 use rand::Rng;
 
 use asymmetric::utils::primes::tests::PrimeTest;

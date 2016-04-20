@@ -15,7 +15,9 @@ version = "0.1.1"
 [dependencies]
 byteorder = "0.4.2"
 generic-array = "0.2.0"
-num = "0.1.30"
+num-bigint = "0.1.30"
+num-traits = "0.1.30"
+num-integer = "0.1.30"
 rand = "0.3.13"
 typenum = "1.2.0"
 

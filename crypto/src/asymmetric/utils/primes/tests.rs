@@ -1,5 +1,6 @@
-use num::{one, One, Integer, BigUint};
-use num::bigint::ToBigUint;
+use num::One;
+use integer::Integer;
+use bigint::{ToBigUint, BigUint};
 use rand::Rng;
 
 use asymmetric::utils::modular::power::Power;
@@ -40,7 +41,7 @@ impl<'a, T: Rng + 'a> PrimeTest for Fermat<'a, T> {
         let base = self.0.next_u64().to_biguint().unwrap();
         let num_1 = num - BigUint::one();
 
-        if (&base).pow_mod(&num_1, num) != one() {
+        if (&base).pow_mod(&num_1, num) != BigUint::one() {
             Type::Composite
         } else {
             Type::PropablyPrime
@@ -66,13 +67,13 @@ impl<'a, T: Rng + 'a> MillerRabin<'a, T> {
         let mut x = (&a).pow_mod(d, num);
         let num_1 = num - BigUint::one();
 
-        if x == one() || x == num_1 {
+        if x == BigUint::one() || x == num_1 {
             return Type::PropablyPrime;
         }
 
         for _ in 0..s {
             x = (&x * &x) % num;
-            if x == one() {
+            if x == BigUint::one() {
                 return Type::Composite;
             }
             if x == num_1 {

@@ -16,6 +16,10 @@ version = "0.1.2"
 debug = true
 lto = true
 
+[profile.release]
+lto = true
+opt-level = 3
+
 [dependencies]
 generic-array = "0.2.0"
 static-buffer = "0.1.0"

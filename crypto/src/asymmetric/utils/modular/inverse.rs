@@ -1,5 +1,5 @@
-use num::{Zero, One, Signed, BigUint, BigInt};
-use num::bigint::Sign;
+use num::{Zero, One, Signed};
+use bigint::{BigUint, BigInt, Sign};
 
 pub trait Inverse {
     type Output;

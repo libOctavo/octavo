@@ -1,4 +1,4 @@
-use num::bigint::{BigUint, RandBigInt};
+use bigint::{BigUint, RandBigInt};
 use num::One;
 
 use rand::Rng;
