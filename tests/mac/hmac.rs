@@ -2,7 +2,7 @@ mod md5 {
     use octavo::mac::Mac;
     use octavo::mac::hmac::Hmac;
 
-    use octavo::digest::md5::Md5;
+    use octavo::digest::prelude::*;
 
     #[test]
     fn rfc2104_test_vector_1() {
@@ -55,7 +55,7 @@ mod quickcheck {
     use openssl::crypto::hash::Type;
     use openssl::crypto::hmac::hmac;
 
-    use octavo::digest::*;
+    use octavo::digest::prelude::*;
 
     use octavo::mac::Mac;
     use octavo::mac::hmac::Hmac;

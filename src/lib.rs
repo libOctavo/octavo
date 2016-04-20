@@ -27,20 +27,20 @@
 #![doc(html_logo_url = "https://raw.githubusercontent.com/libOctavo/octavo/master/docs/logo.png",
        html_root_url = "http://libOctavo.github.io/")]
 
-#[cfg(features = "octavo-crypto")]
+#[cfg(feature = "octavo-crypto")]
 pub extern crate octavo_crypto;
-#[cfg(features = "octavo-digest")]
+#[cfg(feature = "octavo-digest")]
 pub extern crate octavo_digest;
-#[cfg(features = "octavo-kdf")]
+#[cfg(feature = "octavo-kdf")]
 pub extern crate octavo_kdf;
-#[cfg(features = "octavo-mac")]
+#[cfg(feature = "octavo-mac")]
 pub extern crate octavo_mac;
 
-#[cfg(features = "octavo-crypto")]
+#[cfg(feature = "octavo-crypto")]
 pub use octavo_crypto as crypto;
-#[cfg(features = "octavo-digest")]
+#[cfg(feature = "octavo-digest")]
 pub use octavo_digest as digest;
-#[cfg(features = "octavo-kdf")]
+#[cfg(feature = "octavo-kdf")]
 pub use octavo_kdf as kdf;
-#[cfg(features = "octavo-mac")]
+#[cfg(feature = "octavo-mac")]
 pub use octavo_mac as mac;
