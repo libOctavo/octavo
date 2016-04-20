@@ -38,14 +38,14 @@ const RC: [u64; ROUNDS] = [
 macro_rules! op {
     ($src:expr, $shift:expr) => {
         W(
-            SBOXES[0][($src[($shift + 0) & 7].0) as usize >> 56] ^
-            SBOXES[1][($src[($shift + 7) & 7].0) as usize >> 48] ^
-            SBOXES[2][($src[($shift + 6) & 7].0) as usize >> 40] ^
-            SBOXES[3][($src[($shift + 5) & 7].0) as usize >> 32] ^
-            SBOXES[4][($src[($shift + 4) & 7].0) as usize >> 24] ^
-            SBOXES[5][($src[($shift + 3) & 7].0) as usize >> 16] ^
-            SBOXES[6][($src[($shift + 2) & 7].0) as usize >>  8] ^
-            SBOXES[7][($src[($shift + 1) & 7].0) as usize >>  0]
+            SBOXES[0][($src[($shift + 0) & 7] >> 56).0 as u8 as usize] ^
+            SBOXES[1][($src[($shift + 7) & 7] >> 48).0 as u8 as usize] ^
+            SBOXES[2][($src[($shift + 6) & 7] >> 40).0 as u8 as usize] ^
+            SBOXES[3][($src[($shift + 5) & 7] >> 32).0 as u8 as usize] ^
+            SBOXES[4][($src[($shift + 4) & 7] >> 24).0 as u8 as usize] ^
+            SBOXES[5][($src[($shift + 3) & 7] >> 16).0 as u8 as usize] ^
+            SBOXES[6][($src[($shift + 2) & 7] >>  8).0 as u8 as usize] ^
+            SBOXES[7][($src[($shift + 1) & 7] >>  0).0 as u8 as usize]
          )
     };
 }
@@ -60,20 +60,6 @@ impl State {
         State { hash: [W(0); 8] }
     }
 
-    #[inline(always)]
-    fn op(src: &[W<u64>; 8], shift: usize) -> W<u64> {
-        W(
-            SBOXES[0][(src[(shift + 0) & 7] >> 56).0 as u8 as usize] ^
-            SBOXES[1][(src[(shift + 7) & 7] >> 48).0 as u8 as usize] ^
-            SBOXES[2][(src[(shift + 6) & 7] >> 40).0 as u8 as usize] ^
-            SBOXES[3][(src[(shift + 5) & 7] >> 32).0 as u8 as usize] ^
-            SBOXES[4][(src[(shift + 4) & 7] >> 24).0 as u8 as usize] ^
-            SBOXES[5][(src[(shift + 3) & 7] >> 16).0 as u8 as usize] ^
-            SBOXES[6][(src[(shift + 2) & 7] >>  8).0 as u8 as usize] ^
-            SBOXES[7][(src[(shift + 1) & 7] >>  0).0 as u8 as usize]
-         )
-    }
-
     fn process_block(&mut self, data: &[u8]) {
         let mut key = [[W(0u64); 8]; 2];
         let mut state = [[W(0u64); 8]; 2];
@@ -85,23 +71,23 @@ impl State {
         }
 
         for (&m, &rc) in [0usize, 1].iter().cycle().zip(&RC) {
-            key[m ^ 1][0] = Self::op(&key[m], 0) ^ W(rc);
-            key[m ^ 1][1] = Self::op(&key[m], 1);
-            key[m ^ 1][2] = Self::op(&key[m], 2);
-            key[m ^ 1][3] = Self::op(&key[m], 3);
-            key[m ^ 1][4] = Self::op(&key[m], 4);
-            key[m ^ 1][5] = Self::op(&key[m], 5);
-            key[m ^ 1][6] = Self::op(&key[m], 6);
-            key[m ^ 1][7] = Self::op(&key[m], 7);
+            key[m ^ 1][0] = op!(&key[m], 0) ^ W(rc);
+            key[m ^ 1][1] = op!(&key[m], 1);
+            key[m ^ 1][2] = op!(&key[m], 2);
+            key[m ^ 1][3] = op!(&key[m], 3);
+            key[m ^ 1][4] = op!(&key[m], 4);
+            key[m ^ 1][5] = op!(&key[m], 5);
+            key[m ^ 1][6] = op!(&key[m], 6);
+            key[m ^ 1][7] = op!(&key[m], 7);
 
-            state[m ^ 1][0] = Self::op(&state[m], 0) ^ key[m ^ 1][0];
-            state[m ^ 1][1] = Self::op(&state[m], 1) ^ key[m ^ 1][1];
-            state[m ^ 1][2] = Self::op(&state[m], 2) ^ key[m ^ 1][2];
-            state[m ^ 1][3] = Self::op(&state[m], 3) ^ key[m ^ 1][3];
-            state[m ^ 1][4] = Self::op(&state[m], 4) ^ key[m ^ 1][4];
-            state[m ^ 1][5] = Self::op(&state[m], 5) ^ key[m ^ 1][5];
-            state[m ^ 1][6] = Self::op(&state[m], 6) ^ key[m ^ 1][6];
-            state[m ^ 1][7] = Self::op(&state[m], 7) ^ key[m ^ 1][7];
+            state[m ^ 1][0] = op!(&state[m], 0) ^ key[m ^ 1][0];
+            state[m ^ 1][1] = op!(&state[m], 1) ^ key[m ^ 1][1];
+            state[m ^ 1][2] = op!(&state[m], 2) ^ key[m ^ 1][2];
+            state[m ^ 1][3] = op!(&state[m], 3) ^ key[m ^ 1][3];
+            state[m ^ 1][4] = op!(&state[m], 4) ^ key[m ^ 1][4];
+            state[m ^ 1][5] = op!(&state[m], 5) ^ key[m ^ 1][5];
+            state[m ^ 1][6] = op!(&state[m], 6) ^ key[m ^ 1][6];
+            state[m ^ 1][7] = op!(&state[m], 7) ^ key[m ^ 1][7];
         }
 
         for (hash, &state) in self.hash.iter_mut().zip(&state[0]) {

@@ -12,6 +12,10 @@ keywords = [
 license = "MIT"
 version = "0.1.2"
 
+[profile.bench]
+debug = true
+lto = true
+
 [dependencies]
 generic-array = "0.2.0"
 static-buffer = "0.1.0"
