@@ -2,11 +2,13 @@
 //!
 //! # General info
 //!
-//! | Name        | Digest size | Block size | Rounds | Structure            | Reference            |
-//! | ----------- | ----------: | ---------: | -----: | -------------------- | -------------------- |
-//! | WHIRLPOOL   |    192 bits |   512 bits |     10 | [Merkle–Damgård][md] | [Tiger website][web] |
+//! | Name        | Digest size | Block size | Rounds | Structure                                                              | Reference                |
+//! | ----------- | ----------: | ---------: | -----: | ---------------------------------------------------------------------- | ------------------------ |
+//! | WHIRLPOOL   |    192 bits |   512 bits |     10 | [Miyaguchi-Preneel][mp] hashing with [Merkle–Damgård][md] strengthning | [WHIRLPOOL website][web] |
 //!
+//! [web]: http://www.larc.usp.br/~pbarreto/WhirlpoolPage.html "The WHIRLPOOL Hash Function"
 //! [md]: https://en.wikipedia.org/wiki/Merkle%E2%80%93Damg%C3%A5rd_construction
+//! [mp]: https://en.wikipedia.org/wiki/One-way_compression_function#Miyaguchi.E2.80.93Preneel
 
 use core::num::Wrapping as W;
 
@@ -96,7 +98,9 @@ impl State {
     }
 }
 
-/// Some
+/// WHIRLPOOL implementation
+///
+/// For details check out [module documentation](index.html)
 #[derive(Clone)]
 pub struct Whirlpool {
     state: State,

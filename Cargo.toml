@@ -10,6 +10,14 @@ readme = "README.md"
 repository = "https://github.com/libOctavo/octavo"
 version = "0.1.1"
 
+[profile.release]
+opt-level = 3
+lto = true
+
+[profile.bench]
+opt-level = 3
+lto = true
+
 [dependencies]
 
 [dependencies.octavo-crypto]
