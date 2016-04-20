@@ -30,45 +30,74 @@ struct State {
     e: u32,
 }
 
+macro_rules! schedule {
+    ($schedule:ident[$i:expr] = $data:ident) => {
+        unsafe {
+            *$schedule.get_unchecked_mut($i) =
+                  (*$data.get_unchecked($i * 4 + 0) as u32) << 24
+                | (*$data.get_unchecked($i * 4 + 1) as u32) << 16
+                | (*$data.get_unchecked($i * 4 + 2) as u32) << 8
+                | (*$data.get_unchecked($i * 4 + 3) as u32);
+        }
+    };
+
+    ($schedule:ident[$i:expr]) => {
+        unsafe {
+            *$schedule.get_unchecked_mut($i & 0xf) = {
+                  *$schedule.get_unchecked(($i -  3) & 0xf)
+                ^ *$schedule.get_unchecked(($i -  8) & 0xf)
+                ^ *$schedule.get_unchecked(($i - 14) & 0xf)
+                ^ *$schedule.get_unchecked(($i - 16) & 0xf)
+            }.rotate_left(1);
+        }
+    }
+}
+
 macro_rules! process {
     () => ();
-    (proc $state:ident, $f:block, $c:expr, $word:expr) => {{
-        let tmp = $state.a
-                      .rotate_left(5)
-                      .wrapping_add($f)
-                      .wrapping_add($state.e)
-                      .wrapping_add($c)
-                      .wrapping_add($word);
-
-        $state.e = $state.d;
-        $state.d = $state.c;
-        $state.c = $state.b.rotate_left(30);
-        $state.b = $state.a;
-        $state.a = tmp;
+    (($a:expr, $b:expr, $c:expr, $d:expr, $e:expr), $f:block, $constant:expr, $schedule:ident, $i:expr) => {{
+        $e = $a
+             .rotate_left(5)
+             .wrapping_add($f)
+             .wrapping_add($e)
+             .wrapping_add($constant)
+             .wrapping_add(unsafe { *$schedule.get_unchecked($i & 0xf) });
+        $b = $b.rotate_left(30);
     }};
 
-    (ff($state:ident, $word:expr); $($rest:tt)*) => {
-        process!(proc $state, {
-            $state.d ^ ($state.b & ($state.c ^ $state.d))
-        }, 0x5a827999, $word);
+    (ff(($a:expr, $b:expr, $c:expr, $d:expr, $e:expr), $schedule:ident[$i:expr] , $data:ident); $($rest:tt)*) => {
+        schedule!($schedule[$i] = $data);
+        process!(($a, $b, $c, $d, $e), {
+            ($b & $c) | (!$b & $d)
+        }, 0x5a827999, $schedule, $i);
         process!($($rest)*);
     };
-    (gg($state:ident, $word:expr); $($rest:tt)*) => {
-        process!(proc $state, {
-            $state.b ^ $state.c ^ $state.d
-        }, 0x6ed9eba1, $word);
+    (ff(($a:expr, $b:expr, $c:expr, $d:expr, $e:expr), $schedule:ident[$i:expr]); $($rest:tt)*) => {
+        schedule!($schedule[$i]);
+        process!(($a, $b, $c, $d, $e), {
+            ($b & $c) | (!$b & $d)
+        }, 0x5a827999, $schedule, $i);
         process!($($rest)*);
     };
-    (hh($state:ident, $word:expr); $($rest:tt)*) => {
-        process!(proc $state, {
-            ($state.b & $state.c) | ($state.d & ($state.b | $state.c))
-        }, 0x8f1bbcdc, $word);
+    (gg(($a:expr, $b:expr, $c:expr, $d:expr, $e:expr), $schedule:ident[$i:expr]); $($rest:tt)*) => {
+        schedule!($schedule[$i]);
+        process!(($a, $b, $c, $d, $e), {
+            $b ^ $c ^ $d
+        }, 0x6ed9eba1, $schedule, $i);
         process!($($rest)*);
     };
-    (ii($state:ident, $word:expr); $($rest:tt)*) => {
-        process!(proc $state, {
-            $state.b ^ $state.c ^ $state.d
-        }, 0xca62c1d6, $word);
+    (hh(($a:expr, $b:expr, $c:expr, $d:expr, $e:expr), $schedule:ident[$i:expr]); $($rest:tt)*) => {
+        schedule!($schedule[$i]);
+        process!(($a, $b, $c, $d, $e), {
+            ($b & $c) ^ ($b & $d) ^ ($c & $d)
+        }, 0x8f1bbcdc, $schedule, $i);
+        process!($($rest)*);
+    };
+    (ii(($a:expr, $b:expr, $c:expr, $d:expr, $e:expr), $schedule:ident[$i:expr]); $($rest:tt)*) => {
+        schedule!($schedule[$i]);
+        process!(($a, $b, $c, $d, $e), {
+            $b ^ $c ^ $d
+        }, 0xca62c1d6, $schedule, $i);
         process!($($rest)*);
     };
 }
@@ -87,104 +116,96 @@ impl State {
     fn process_block(&mut self, data: &[u8]) {
         debug_assert!(data.len() == 64);
 
-        let mut words = [0u32; 80];
-
-        for (c, w) in data.chunks(4).zip(words.iter_mut()) {
-            *w = BigEndian::read_u32(c);
-        }
-        for i in 16..80 {
-            words[i] = (words[i - 3] ^ words[i - 8] ^ words[i - 14] ^ words[i - 16]).rotate_left(1);
-        }
-
+        let mut words = [0u32; 16];
         let mut state = self.clone();
 
         process! {
-            ff(state, words[0]);
-            ff(state, words[1]);
-            ff(state, words[2]);
-            ff(state, words[3]);
-            ff(state, words[4]);
-            ff(state, words[5]);
-            ff(state, words[6]);
-            ff(state, words[7]);
-            ff(state, words[8]);
-            ff(state, words[9]);
-            ff(state, words[10]);
-            ff(state, words[11]);
-            ff(state, words[12]);
-            ff(state, words[13]);
-            ff(state, words[14]);
-            ff(state, words[15]);
-            ff(state, words[16]);
-            ff(state, words[17]);
-            ff(state, words[18]);
-            ff(state, words[19]);
+            ff((state.a, state.b, state.c, state.d, state.e), words[0],  data);
+            ff((state.e, state.a, state.b, state.c, state.d), words[1],  data);
+            ff((state.d, state.e, state.a, state.b, state.c), words[2],  data);
+            ff((state.c, state.d, state.e, state.a, state.b), words[3],  data);
+            ff((state.b, state.c, state.d, state.e, state.a), words[4],  data);
+            ff((state.a, state.b, state.c, state.d, state.e), words[5],  data);
+            ff((state.e, state.a, state.b, state.c, state.d), words[6],  data);
+            ff((state.d, state.e, state.a, state.b, state.c), words[7],  data);
+            ff((state.c, state.d, state.e, state.a, state.b), words[8],  data);
+            ff((state.b, state.c, state.d, state.e, state.a), words[9],  data);
+            ff((state.a, state.b, state.c, state.d, state.e), words[10], data);
+            ff((state.e, state.a, state.b, state.c, state.d), words[11], data);
+            ff((state.d, state.e, state.a, state.b, state.c), words[12], data);
+            ff((state.c, state.d, state.e, state.a, state.b), words[13], data);
+            ff((state.b, state.c, state.d, state.e, state.a), words[14], data);
+            ff((state.a, state.b, state.c, state.d, state.e), words[15], data);
+            ff((state.e, state.a, state.b, state.c, state.d), words[16]);
+            ff((state.d, state.e, state.a, state.b, state.c), words[17]);
+            ff((state.c, state.d, state.e, state.a, state.b), words[18]);
+            ff((state.b, state.c, state.d, state.e, state.a), words[19]);
         }
         process! {
-            gg(state, words[20]);
-            gg(state, words[21]);
-            gg(state, words[22]);
-            gg(state, words[23]);
-            gg(state, words[24]);
-            gg(state, words[25]);
-            gg(state, words[26]);
-            gg(state, words[27]);
-            gg(state, words[28]);
-            gg(state, words[29]);
-            gg(state, words[30]);
-            gg(state, words[31]);
-            gg(state, words[32]);
-            gg(state, words[33]);
-            gg(state, words[34]);
-            gg(state, words[35]);
-            gg(state, words[36]);
-            gg(state, words[37]);
-            gg(state, words[38]);
-            gg(state, words[39]);
+            gg((state.a, state.b, state.c, state.d, state.e), words[20]);
+            gg((state.e, state.a, state.b, state.c, state.d), words[21]);
+            gg((state.d, state.e, state.a, state.b, state.c), words[22]);
+            gg((state.c, state.d, state.e, state.a, state.b), words[23]);
+            gg((state.b, state.c, state.d, state.e, state.a), words[24]);
+            gg((state.a, state.b, state.c, state.d, state.e), words[25]);
+            gg((state.e, state.a, state.b, state.c, state.d), words[26]);
+            gg((state.d, state.e, state.a, state.b, state.c), words[27]);
+            gg((state.c, state.d, state.e, state.a, state.b), words[28]);
+            gg((state.b, state.c, state.d, state.e, state.a), words[29]);
+            gg((state.a, state.b, state.c, state.d, state.e), words[30]);
+            gg((state.e, state.a, state.b, state.c, state.d), words[31]);
+            gg((state.d, state.e, state.a, state.b, state.c), words[32]);
+            gg((state.c, state.d, state.e, state.a, state.b), words[33]);
+            gg((state.b, state.c, state.d, state.e, state.a), words[34]);
+            gg((state.a, state.b, state.c, state.d, state.e), words[35]);
+            gg((state.e, state.a, state.b, state.c, state.d), words[36]);
+            gg((state.d, state.e, state.a, state.b, state.c), words[37]);
+            gg((state.c, state.d, state.e, state.a, state.b), words[38]);
+            gg((state.b, state.c, state.d, state.e, state.a), words[39]);
         }
         process! {
-            hh(state, words[40]);
-            hh(state, words[41]);
-            hh(state, words[42]);
-            hh(state, words[43]);
-            hh(state, words[44]);
-            hh(state, words[45]);
-            hh(state, words[46]);
-            hh(state, words[47]);
-            hh(state, words[48]);
-            hh(state, words[49]);
-            hh(state, words[50]);
-            hh(state, words[51]);
-            hh(state, words[52]);
-            hh(state, words[53]);
-            hh(state, words[54]);
-            hh(state, words[55]);
-            hh(state, words[56]);
-            hh(state, words[57]);
-            hh(state, words[58]);
-            hh(state, words[59]);
+            hh((state.a, state.b, state.c, state.d, state.e), words[40]);
+            hh((state.e, state.a, state.b, state.c, state.d), words[41]);
+            hh((state.d, state.e, state.a, state.b, state.c), words[42]);
+            hh((state.c, state.d, state.e, state.a, state.b), words[43]);
+            hh((state.b, state.c, state.d, state.e, state.a), words[44]);
+            hh((state.a, state.b, state.c, state.d, state.e), words[45]);
+            hh((state.e, state.a, state.b, state.c, state.d), words[46]);
+            hh((state.d, state.e, state.a, state.b, state.c), words[47]);
+            hh((state.c, state.d, state.e, state.a, state.b), words[48]);
+            hh((state.b, state.c, state.d, state.e, state.a), words[49]);
+            hh((state.a, state.b, state.c, state.d, state.e), words[50]);
+            hh((state.e, state.a, state.b, state.c, state.d), words[51]);
+            hh((state.d, state.e, state.a, state.b, state.c), words[52]);
+            hh((state.c, state.d, state.e, state.a, state.b), words[53]);
+            hh((state.b, state.c, state.d, state.e, state.a), words[54]);
+            hh((state.a, state.b, state.c, state.d, state.e), words[55]);
+            hh((state.e, state.a, state.b, state.c, state.d), words[56]);
+            hh((state.d, state.e, state.a, state.b, state.c), words[57]);
+            hh((state.c, state.d, state.e, state.a, state.b), words[58]);
+            hh((state.b, state.c, state.d, state.e, state.a), words[59]);
         }
         process! {
-            ii(state, words[60]);
-            ii(state, words[61]);
-            ii(state, words[62]);
-            ii(state, words[63]);
-            ii(state, words[64]);
-            ii(state, words[65]);
-            ii(state, words[66]);
-            ii(state, words[67]);
-            ii(state, words[68]);
-            ii(state, words[69]);
-            ii(state, words[70]);
-            ii(state, words[71]);
-            ii(state, words[72]);
-            ii(state, words[73]);
-            ii(state, words[74]);
-            ii(state, words[75]);
-            ii(state, words[76]);
-            ii(state, words[77]);
-            ii(state, words[78]);
-            ii(state, words[79]);
+            ii((state.a, state.b, state.c, state.d, state.e), words[60]);
+            ii((state.e, state.a, state.b, state.c, state.d), words[61]);
+            ii((state.d, state.e, state.a, state.b, state.c), words[62]);
+            ii((state.c, state.d, state.e, state.a, state.b), words[63]);
+            ii((state.b, state.c, state.d, state.e, state.a), words[64]);
+            ii((state.a, state.b, state.c, state.d, state.e), words[65]);
+            ii((state.e, state.a, state.b, state.c, state.d), words[66]);
+            ii((state.d, state.e, state.a, state.b, state.c), words[67]);
+            ii((state.c, state.d, state.e, state.a, state.b), words[68]);
+            ii((state.b, state.c, state.d, state.e, state.a), words[69]);
+            ii((state.a, state.b, state.c, state.d, state.e), words[70]);
+            ii((state.e, state.a, state.b, state.c, state.d), words[71]);
+            ii((state.d, state.e, state.a, state.b, state.c), words[72]);
+            ii((state.c, state.d, state.e, state.a, state.b), words[73]);
+            ii((state.b, state.c, state.d, state.e, state.a), words[74]);
+            ii((state.a, state.b, state.c, state.d, state.e), words[75]);
+            ii((state.e, state.a, state.b, state.c, state.d), words[76]);
+            ii((state.d, state.e, state.a, state.b, state.c), words[77]);
+            ii((state.c, state.d, state.e, state.a, state.b), words[78]);
+            ii((state.b, state.c, state.d, state.e, state.a), words[79]);
         }
 
         self.a = self.a.wrapping_add(state.a);
