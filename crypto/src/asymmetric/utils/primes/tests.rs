@@ -25,7 +25,7 @@ pub trait PrimeTest {
 
     fn test_loop(&mut self, num: &BigUint, times: usize) -> Type {
         for _ in 0..times {
-            if self.test(&num).is_composite() {
+            if self.test(num).is_composite() {
                 return Type::Composite;
             }
         }
@@ -88,7 +88,7 @@ impl<'a, T: Rng + 'a> MillerRabin<'a, T> {
 impl<'a, T: Rng + 'a> PrimeTest for MillerRabin<'a, T> {
     fn test(&mut self, num: &BigUint) -> Type {
         let a = self.0.next_u64().to_biguint().unwrap();
-        let (s, d) = Self::greatest_2_divisor(&num);
+        let (s, d) = Self::greatest_2_divisor(num);
 
         Self::witness(num, a, &d, s)
     }
