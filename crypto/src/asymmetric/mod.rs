@@ -2,4 +2,6 @@
 
 pub mod rsa;
 
+pub mod dh;
+
 mod utils;
