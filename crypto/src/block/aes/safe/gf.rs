@@ -229,22 +229,9 @@ impl<T: Copy> Join for Gf4<T> {
 }
 // }}}
 // Galois field GF(2^8) {{{
-#[derive(Copy, Clone, Debug)]
+#[derive(Default, Copy, Clone, Debug)]
 #[repr(C)]
 pub struct Gf8<T>(pub T, pub T, pub T, pub T, pub T, pub T, pub T, pub T);
-
-impl<T: Default> Default for Gf8<T> {
-    fn default() -> Self {
-        Gf8(Default::default(),
-            Default::default(),
-            Default::default(),
-            Default::default(),
-            Default::default(),
-            Default::default(),
-            Default::default(),
-            Default::default())
-    }
-}
 
 impl<T> Gf8<T>
     where T: BitAnd<Output = T> + BitXor<Output = T> + Copy
