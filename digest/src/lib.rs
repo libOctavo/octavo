@@ -35,8 +35,11 @@
 #![doc(html_logo_url = "https://raw.githubusercontent.com/libOctavo/octavo/master/docs/logo.png",
        html_root_url = "http://libOctavo.github.io/")]
 
+#![feature(repr_simd)]
+
 #![no_std]
 
+#![allow(inline_always, unknown_lints)]
 #![forbid(overflowing_literals, missing_docs)]
 
 extern crate generic_array;
@@ -87,21 +90,21 @@ pub trait Digest: Clone {
 pub mod prelude {
     pub use Digest;
 
-#[cfg(feature = "blake2")]
+    #[cfg(feature = "blake2")]
     pub use blake2;
-#[cfg(feature = "md5")]
+    #[cfg(feature = "md5")]
     pub use md5::Md5;
-#[cfg(feature = "ripemd")]
+    #[cfg(feature = "ripemd")]
     pub use ripemd::Ripemd160;
-#[cfg(feature = "sha1")]
+    #[cfg(feature = "sha1")]
     pub use sha1::Sha1;
-#[cfg(feature = "sha2")]
+    #[cfg(feature = "sha2")]
     pub use sha2;
-#[cfg(feature = "sha3")]
+    #[cfg(feature = "sha3")]
     pub use sha3;
-#[cfg(feature = "tiger")]
+    #[cfg(feature = "tiger")]
     pub use tiger;
-#[cfg(feature = "whirlpool")]
+    #[cfg(feature = "whirlpool")]
     pub use whirlpool::Whirlpool;
 }
 
@@ -121,3 +124,6 @@ pub mod sha3;
 pub mod tiger;
 #[cfg(feature = "whirlpool")]
 pub mod whirlpool;
+
+mod wrapping;
+mod simd;

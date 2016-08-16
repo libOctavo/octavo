@@ -10,11 +10,11 @@
 //! [web]: http://www.cs.technion.ac.il/~biham/Reports/Tiger/ "Tiger: A Fast New Hash Function(Designed in 1995)"
 //! [md]: https://en.wikipedia.org/wiki/Merkle%E2%80%93Damg%C3%A5rd_construction
 
-use core::num::Wrapping as W;
-
 use static_buffer::{FixedBuffer64, FixedBuf, StandardPadding};
 use byteorder::{ByteOrder, BigEndian};
 use typenum::consts::{U24, U64, U192};
+
+use wrapping::*;
 
 use Digest;
 
@@ -26,26 +26,47 @@ const ROUNDS: usize = 3;
 
 #[derive(Debug, Clone, Copy)]
 struct State {
-    a: W<u64>,
-    b: W<u64>,
-    c: W<u64>,
+    a: w64,
+    b: w64,
+    c: w64,
 }
 
 macro_rules! round {
     ($a:expr, $b:expr, $c:expr, $x:expr, $mul:expr) => {
         $c = $c ^ $x;
         $a = $a - W(
-            SBOXES[0][($c.0 >> (0*8)) as usize & 0xff] ^
-            SBOXES[1][($c.0 >> (2*8)) as usize & 0xff] ^
-            SBOXES[2][($c.0 >> (4*8)) as usize & 0xff] ^
-            SBOXES[3][($c.0 >> (6*8)) as usize & 0xff]);
+            SBOXES[0][($c.0 >>  0) as u8 as usize] ^
+            SBOXES[1][($c.0 >> 16) as u8 as usize] ^
+            SBOXES[2][($c.0 >> 32) as u8 as usize] ^
+            SBOXES[3][($c.0 >> 48) as u8 as usize]);
         $b = $b + W(
-            SBOXES[3][($c.0 >> (1*8)) as usize & 0xff] ^
-            SBOXES[2][($c.0 >> (3*8)) as usize & 0xff] ^
-            SBOXES[1][($c.0 >> (5*8)) as usize & 0xff] ^
-            SBOXES[0][($c.0 >> (7*8)) as usize & 0xff]);
+            SBOXES[3][($c.0 >>  8) as u8 as usize] ^
+            SBOXES[2][($c.0 >> 24) as u8 as usize] ^
+            SBOXES[1][($c.0 >> 40) as u8 as usize] ^
+            SBOXES[0][($c.0 >> 56) as u8 as usize]);
         $b = $b * W($mul);
     };
+}
+
+#[inline(always)]
+fn key_schedule(x: &mut [w64]) {
+    x[0] = x[0] - (x[7] ^ W(0xa5a5a5a5a5a5a5a5));
+    x[1] = x[1] ^ x[0];
+    x[2] = x[2] + x[1];
+    x[3] = x[3] - (x[2] ^ (!x[1] << 19));
+    x[4] = x[4] ^ x[3];
+    x[5] = x[5] + x[4];
+    x[6] = x[6] - (x[5] ^ (!x[4] >> 23));
+    x[7] = x[7] ^ x[6];
+
+    x[0] = x[0] + x[7];
+    x[1] = x[1] - (x[0] ^ (!x[7] << 19));
+    x[2] = x[2] ^ x[1];
+    x[3] = x[3] + x[2];
+    x[4] = x[4] - (x[3] ^ (!x[2] >> 23));
+    x[5] = x[5] ^ x[4];
+    x[6] = x[6] + x[5];
+    x[7] = x[7] - (x[6] ^ W(0x0123456789abcdef));
 }
 
 impl State {
@@ -57,6 +78,7 @@ impl State {
         }
     }
 
+    #[inline(always)]
     fn pass(&mut self, block: &[W<u64>], mul: u64) {
         round!(self.a, self.b, self.c, block[0], mul);
         round!(self.b, self.c, self.a, block[1], mul);
@@ -68,26 +90,7 @@ impl State {
         round!(self.b, self.c, self.a, block[7], mul);
     }
 
-    fn key_schedule(x: &mut [W<u64>]) {
-        x[0] = x[0] - (x[7] ^ W(0xa5a5a5a5a5a5a5a5));
-        x[1] = x[1] ^ x[0];
-        x[2] = x[2] + x[1];
-        x[3] = x[3] - (x[2] ^ (!x[1] << 19));
-        x[4] = x[4] ^ x[3];
-        x[5] = x[5] + x[4];
-        x[6] = x[6] - (x[5] ^ (!x[4] >> 23));
-        x[7] = x[7] ^ x[6];
-
-        x[0] = x[0] + x[7];
-        x[1] = x[1] - (x[0] ^ (!x[7] << 19));
-        x[2] = x[2] ^ x[1];
-        x[3] = x[3] + x[2];
-        x[4] = x[4] - (x[3] ^ (!x[2] >> 23));
-        x[5] = x[5] ^ x[4];
-        x[6] = x[6] + x[5];
-        x[7] = x[7] - (x[6] ^ W(0x0123456789abcdef));
-    }
-
+    #[inline(always)]
     fn rotate(&mut self) {
         let tmp = self.a;
         self.a = self.c;
@@ -95,6 +98,7 @@ impl State {
         self.b = tmp;
     }
 
+    #[inline(always)]
     fn compress(&mut self, block: &[u8]) {
         debug_assert!(block.len() == 64);
         let mut wblock = [W(0); 8];
@@ -106,7 +110,7 @@ impl State {
         let tmp = *self; // save abc
         for i in 0..ROUNDS {
             if i != 0 {
-                Self::key_schedule(&mut wblock);
+                key_schedule(&mut wblock);
             }
             let mul = match i {
                 0 => 5,
@@ -118,9 +122,9 @@ impl State {
         }
 
         // feedforward
-        self.a = self.a ^ tmp.a;
-        self.b = self.b - tmp.b;
-        self.c = self.c + tmp.c;
+        self.a ^= tmp.a;
+        self.b -= tmp.b;
+        self.c += tmp.c;
     }
 }
 
@@ -180,16 +184,16 @@ macro_rules! tiger_impl {
 }
 
 tiger_impl!(
-    /// Tiger implementation
-    ///
-    /// For more details check [module docs](index.html)
+/// Tiger implementation
+///
+/// For more details check [module docs](index.html)
     struct Tiger,  0x01);
 tiger_impl!(
-    /// Tiger2 implementation
-    ///
-    /// The only difference between original Tiger and Tiger2 is padding value which is `0b00000001`
-    /// (`0x01`) for Tiger and `0b10000000` (`0x80`, the same that is used by MD-4/5 and SHA-1/2)
-    /// for Tiger2.
-    ///
-    /// For more details check [module docs](index.html)
+/// Tiger2 implementation
+///
+/// The only difference between original Tiger and Tiger2 is padding value which is `0b00000001`
+/// (`0x01`) for Tiger and `0b10000000` (`0x80`, the same that is used by MD-4/5 and SHA-1/2)
+/// for Tiger2.
+///
+/// For more details check [module docs](index.html)
     struct Tiger2, 0x80);

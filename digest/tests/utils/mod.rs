@@ -4,11 +4,11 @@ use std::io::Read;
 
 use toml;
 
-mod tests;
+pub mod tests;
 
 #[derive(RustcDecodable)]
 pub struct Suite {
-    pub tests: Vec<tests::Test>
+    pub tests: Vec<tests::Test>,
 }
 
 pub fn load<P: AsRef<Path>>(path: P) -> Suite {

@@ -2,12 +2,13 @@ extern crate octavo_digest as digest;
 extern crate toml;
 extern crate rustc_serialize;
 
-#[macro_use]mod utils;
+#[macro_use]
+mod utils;
 
-// #[cfg(feature = "blake2")]
-// mod blake2;
-// #[cfg(feature = "md5")]
-// mod md5;
+#[cfg(feature = "blake2")]
+mod blake2;
+#[cfg(feature = "md5")]
+mod md5;
 // #[cfg(feature = "ripemd")]
 // mod ripemd;
 #[cfg(feature = "sha1")]

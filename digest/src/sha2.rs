@@ -25,13 +25,13 @@
 
 use core::ops::Div;
 use core::ptr;
-use core::num::Wrapping as W;
 
 use byteorder::{ByteOrder, BigEndian};
 use typenum::consts::{U8, U64, U128, U224, U256, U384, U512};
 use static_buffer::{FixedBuf, FixedBuffer64, FixedBuffer128, StandardPadding};
 
 use Digest;
+use wrapping::*;
 
 const SHA224_INIT: [W<u32>; 8] = [W(0xc1059ed8),
                                   W(0x367cd507),
@@ -237,6 +237,7 @@ macro_rules! impl_state {
     ($typ:ty, $consts:ident, $bsize:expr, $chunk:expr, $size:expr, $read:ident,
          $s1:expr, $s2:expr, $s3:expr, $s4:expr) => {
         impl State<$typ> {
+            #[inline(always)]
             fn process_block(&mut self, data: &[u8]) {
                 debug_assert!(data.len() == $bsize);
 
@@ -302,26 +303,28 @@ macro_rules! impl_state {
             }
 
             #[inline(always)]
+            #[allow(too_many_arguments)]
             fn round(t: W<$typ>, a: W<$typ>, b: W<$typ>, c: W<$typ>, d: &mut W<$typ>,
                      e: W<$typ>, f: W<$typ>, g: W<$typ>, h: &mut W<$typ>, i: usize) {
                 let t = t + *h +
-                    W(e.0.rotate_right($s3.0) ^ e.0.rotate_right($s3.1) ^ e.0.rotate_right($s3.2)) +
+                    (e.rotate_right($s3.0) ^ e.rotate_right($s3.1) ^ e.rotate_right($s3.2)) +
                     ((e & f) ^ (!e & g)) + $consts[i];
-                *h = W(a.0.rotate_right($s4.0) ^ a.0.rotate_right($s4.1) ^ a.0.rotate_right($s4.2)) +
+                *h = (a.rotate_right($s4.0) ^ a.rotate_right($s4.1) ^ a.rotate_right($s4.2)) +
                     ((a & b) ^ (a & c) ^ (b & c));
                 *d = *d + t;
                 *h = *h + t;
             }
 
             #[inline(always)]
+            #[allow(too_many_arguments)]
             fn round_with_msg_scheduling(a: W<$typ>, b: W<$typ>, c: W<$typ>,
                                          d: &mut W<$typ>, e: W<$typ>, f: W<$typ>,
                                          g: W<$typ>, h: &mut W<$typ>, i: usize,
                                          w: &mut [W<$typ>; 16]) {
                 let w0 = w[(i + 1) & 0xf];
                 let w1 = w[(i + 14) & 0xf];
-                let s0 = W(w0.0.rotate_right($s1.0) ^ w0.0.rotate_right($s1.1)) ^ (w0 >> $s1.2);
-                let s1 = W(w1.0.rotate_right($s2.0) ^ w1.0.rotate_right($s2.1)) ^ (w1 >> $s2.2);
+                let s0 = (w0.rotate_right($s1.0) ^ w0.rotate_right($s1.1)) ^ (w0 >> $s1.2);
+                let s1 = (w1.rotate_right($s2.0) ^ w1.rotate_right($s2.1)) ^ (w1 >> $s2.2);
                 let t = w[i & 0xf] + s0 + s1 + w[(i + 9) & 0xf];
                 w[i & 0xf] = t;
                 Self::round(t, a, b, c, d, e, f, g, h, i);
@@ -421,33 +424,33 @@ macro_rules! impl_sha {
 }
 
 impl_sha!(
-    /// SHA-224 implementation
-    ///
-    /// For more details check [module docs](index.html)
+/// SHA-224 implementation
+///
+/// For more details check [module docs](index.html)
     low  Sha224, SHA224_INIT, U224);
 impl_sha!(
-    /// SHA-256 implementation
-    ///
-    /// For more details check [module docs](index.html)
+/// SHA-256 implementation
+///
+/// For more details check [module docs](index.html)
     low  Sha256, SHA256_INIT, U256);
 impl_sha!(
-    /// SHA-384 implementation
-    ///
-    /// For more details check [module docs](index.html)
+/// SHA-384 implementation
+///
+/// For more details check [module docs](index.html)
     high Sha384, SHA384_INIT, U384);
 impl_sha!(
-    /// SHA-512 implementation
-    ///
-    /// For more details check [module docs](index.html)
+/// SHA-512 implementation
+///
+/// For more details check [module docs](index.html)
     high Sha512, SHA512_INIT, U512);
 
 impl_sha!(
-    /// SHA-512/224 implementation
-    ///
-    /// For more details check [module docs](index.html)
+/// SHA-512/224 implementation
+///
+/// For more details check [module docs](index.html)
     high Sha512224, SHA512_224_INIT, U224);
 impl_sha!(
-    /// SHA-512/256 implementation
-    ///
-    /// For more details check [module docs](index.html)
+/// SHA-512/256 implementation
+///
+/// For more details check [module docs](index.html)
     high Sha512256, SHA512_256_INIT, U256);
