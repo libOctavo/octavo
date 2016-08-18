@@ -13,9 +13,9 @@ pub struct Suite {
 
 pub fn load<P: AsRef<Path>>(path: P) -> Suite {
     let mut content = String::new();
-    File::open(path).and_then(|mut f| f.read_to_string(&mut content)).unwrap();
+    File::open(path).and_then(|mut f| f.read_to_string(&mut content)).expect("Cannot read file");
 
-    toml::decode_str(&content).unwrap()
+    toml::decode_str(&content).expect("Cannot parse file")
 }
 
 #[macro_export]

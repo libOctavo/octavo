@@ -22,7 +22,7 @@ opt-level = 3
 
 [dependencies]
 generic-array = "0.2.0"
-static-buffer = { path = "../../static-buffer" }
+static-buffer = "0.2.0"
 typenum = "1.2.0"
 
 [dependencies.byteorder]

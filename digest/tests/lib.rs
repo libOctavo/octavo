@@ -15,8 +15,8 @@ mod md5;
 mod sha1;
 #[cfg(feature = "sha2")]
 mod sha2;
-// #[cfg(feature = "sha3")]
-// mod sha3;
+#[cfg(feature = "sha3")]
+mod sha3;
 #[cfg(feature = "tiger")]
 mod tiger;
 #[cfg(feature = "whirlpool")]
