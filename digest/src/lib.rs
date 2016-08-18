@@ -35,8 +35,6 @@
 #![doc(html_logo_url = "https://raw.githubusercontent.com/libOctavo/octavo/master/docs/logo.png",
        html_root_url = "http://libOctavo.github.io/")]
 
-#![feature(repr_simd)]
-
 #![no_std]
 
 #![allow(inline_always, unknown_lints)]
