@@ -31,8 +31,8 @@ struct State {
 }
 
 macro_rules! process {
-    ($w:expr, $x:expr, $y:expr, $z:expr, $m:expr, $s:expr, $f:tt) => {
-        $w = ($w + ($f($x, $y, $z)) + $m).rotate_left($s) + $x
+    ($w:expr, $x:expr, $y:expr, $z:expr, $m:expr, $s:expr, $f:ident) => {
+        $w = ($w + $f($x, $y, $z) + $m).rotate_left($s) + $x
     }
 }
 
