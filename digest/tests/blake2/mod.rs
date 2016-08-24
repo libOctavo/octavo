@@ -55,3 +55,34 @@ mod blake2b {
         }
     }
 }
+
+mod blake2s {
+    use super::*;
+
+    use digest::blake2::Blake2s256;
+    use digest::Digest;
+
+    use std::str;
+    use rustc_serialize::hex::ToHex;
+
+    #[test]
+    fn reference_test_vectors() {
+        let suite = load("./tests/blake2/blake2s.toml");
+
+        for test in suite.tests {
+            let mut digest = Blake2s256::with_key(&*test.key);
+            digest.update(&*test.input);
+
+            let mut output = vec![0; 32];
+            digest.result(&mut output[..]);
+
+            assert!(&*test.output == &output[..],
+                    "Input: {:?} (str: \"{}\")\nKey:      {}\nExpected: {}\nGot:      {}",
+                    test.input,
+                    str::from_utf8(&*test.input).unwrap_or("<non-UTF8>"),
+                    test.key.to_hex(),
+                    test.output.to_hex(),
+                    output.to_hex());
+        }
+    }
+}
