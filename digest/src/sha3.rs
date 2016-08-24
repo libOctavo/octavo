@@ -167,7 +167,7 @@ impl State {
 
     #[inline]
     fn permutation(&mut self) {
-        let mut a = &mut self.hash;
+        let a = &mut self.hash;
         let mut c: [u64; 5] = [a[0] ^ a[5] ^ a[10] ^ a[15] ^ a[20],
                                a[1] ^ a[6] ^ a[11] ^ a[16] ^ a[21],
                                a[2] ^ a[7] ^ a[12] ^ a[17] ^ a[22],
@@ -230,10 +230,9 @@ macro_rules! sha3_impl {
                 state.compress(buf);
 
                 unsafe {
-                    ptr::copy_nonoverlapping(
-                        state.hash.as_ptr() as *const u8,
-                        ret.as_mut_ptr(),
-                        Self::output_bytes())
+                    ptr::copy_nonoverlapping(state.hash.as_ptr() as *const u8,
+                                             ret.as_mut_ptr(),
+                                             Self::output_bytes())
                 };
             }
         }
