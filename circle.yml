@@ -1,6 +1,7 @@
 machine:
   pre:
     - curl https://sh.rustup.rs -sSf | sh -s -- -y
+    - rm -F ~/.gitconfig
   environment:
     PATH: $HOME/.cargo/bin:$PATH
 
