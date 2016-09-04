@@ -48,7 +48,7 @@ macro_rules! round {
     };
 }
 
-#[inline(always)]
+#[inline]
 fn key_schedule(x: &mut [w64]) {
     x[0] = x[0] - (x[7] ^ W(0xa5a5a5a5a5a5a5a5));
     x[1] = x[1] ^ x[0];
@@ -78,7 +78,7 @@ impl State {
         }
     }
 
-    #[inline(always)]
+    #[inline]
     fn pass(&mut self, block: &[W<u64>], mul: u64) {
         round!(self.a, self.b, self.c, block[0], mul);
         round!(self.b, self.c, self.a, block[1], mul);
@@ -90,7 +90,7 @@ impl State {
         round!(self.b, self.c, self.a, block[7], mul);
     }
 
-    #[inline(always)]
+    #[inline]
     fn rotate(&mut self) {
         let tmp = self.a;
         self.a = self.c;
@@ -98,7 +98,7 @@ impl State {
         self.b = tmp;
     }
 
-    #[inline(always)]
+    #[inline]
     fn compress(&mut self, block: &[u8]) {
         debug_assert!(block.len() == 64);
         let mut wblock = [W(0); 8];
@@ -108,6 +108,7 @@ impl State {
         }
 
         let tmp = *self; // save abc
+
         for i in 0..ROUNDS {
             if i != 0 {
                 key_schedule(&mut wblock);

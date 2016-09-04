@@ -89,7 +89,7 @@ macro_rules! blake2_state {
                 State { h: state }
             }
 
-            #[inline(always)]
+            #[inline]
             fn compress(&mut self, input: &[u8], len: Length<$word>, last: bool) {
                 debug_assert!(input.len() % 16 == 0);
                 const R1: u32 = $r1;

@@ -36,19 +36,19 @@ macro_rules! process {
     }
 }
 
-#[inline(always)]
+#[inline]
 fn f(u: w32, v: w32, w: w32) -> w32 {
     (u & v) | (!u & w)
 }
-#[inline(always)]
+#[inline]
 fn g(u: w32, v: w32, w: w32) -> w32 {
     (u & w) | (v & !w)
 }
-#[inline(always)]
+#[inline]
 fn h(u: w32, v: w32, w: w32) -> w32 {
     u ^ v ^ w
 }
-#[inline(always)]
+#[inline]
 fn i(u: w32, v: w32, w: w32) -> w32 {
     v ^ (u | !w)
 }
@@ -63,7 +63,7 @@ impl State {
         }
     }
 
-    #[inline(always)]
+    #[inline]
     fn compress(&mut self, input: &[u8]) {
         let State { mut a, mut b, mut c, mut d } = *self;
 

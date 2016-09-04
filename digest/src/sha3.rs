@@ -64,128 +64,127 @@ const ROUND_CONSTS: [u64; 24] = [0x0000000000000001,
                                  0x0000000080000001,
                                  0x8000000080008008];
 
-#[inline(always)]
-fn round(rc: u64, a: &mut [u64; 25], c: &mut [u64; 5]) {
+#[inline]
+fn round(rc: u64, state: &mut [u64; 25], c: &mut [u64; 5]) {
     let d0 = c[4] ^ c[1].rotate_left(1);
     let d1 = c[0] ^ c[2].rotate_left(1);
     let d2 = c[1] ^ c[3].rotate_left(1);
     let d3 = c[2] ^ c[4].rotate_left(1);
     let d4 = c[3] ^ c[0].rotate_left(1);
 
-    let b0 = a[0] ^ d0;
-    let b10 = (a[1] ^ d1).rotate_left(1);
-    let b20 = (a[2] ^ d2).rotate_left(62);
-    let b5 = (a[3] ^ d3).rotate_left(28);
-    let b15 = (a[4] ^ d4).rotate_left(27);
-    let b16 = (a[5] ^ d0).rotate_left(36);
-    let b1 = (a[6] ^ d1).rotate_left(44);
-    let b11 = (a[7] ^ d2).rotate_left(6);
-    let b21 = (a[8] ^ d3).rotate_left(55);
-    let b6 = (a[9] ^ d4).rotate_left(20);
-    let b7 = (a[10] ^ d0).rotate_left(3);
-    let b17 = (a[11] ^ d1).rotate_left(10);
-    let b2 = (a[12] ^ d2).rotate_left(43);
-    let b12 = (a[13] ^ d3).rotate_left(25);
-    let b22 = (a[14] ^ d4).rotate_left(39);
-    let b23 = (a[15] ^ d0).rotate_left(41);
-    let b8 = (a[16] ^ d1).rotate_left(45);
-    let b18 = (a[17] ^ d2).rotate_left(15);
-    let b3 = (a[18] ^ d3).rotate_left(21);
-    let b13 = (a[19] ^ d4).rotate_left(8);
-    let b14 = (a[20] ^ d0).rotate_left(18);
-    let b24 = (a[21] ^ d1).rotate_left(2);
-    let b9 = (a[22] ^ d2).rotate_left(61);
-    let b19 = (a[23] ^ d3).rotate_left(56);
-    let b4 = (a[24] ^ d4).rotate_left(14);
+    let b0 = state[0] ^ d0;
+    let b10 = (state[1] ^ d1).rotate_left(1);
+    let b20 = (state[2] ^ d2).rotate_left(62);
+    let b5 = (state[3] ^ d3).rotate_left(28);
+    let b15 = (state[4] ^ d4).rotate_left(27);
+    let b16 = (state[5] ^ d0).rotate_left(36);
+    let b1 = (state[6] ^ d1).rotate_left(44);
+    let b11 = (state[7] ^ d2).rotate_left(6);
+    let b21 = (state[8] ^ d3).rotate_left(55);
+    let b6 = (state[9] ^ d4).rotate_left(20);
+    let b7 = (state[10] ^ d0).rotate_left(3);
+    let b17 = (state[11] ^ d1).rotate_left(10);
+    let b2 = (state[12] ^ d2).rotate_left(43);
+    let b12 = (state[13] ^ d3).rotate_left(25);
+    let b22 = (state[14] ^ d4).rotate_left(39);
+    let b23 = (state[15] ^ d0).rotate_left(41);
+    let b8 = (state[16] ^ d1).rotate_left(45);
+    let b18 = (state[17] ^ d2).rotate_left(15);
+    let b3 = (state[18] ^ d3).rotate_left(21);
+    let b13 = (state[19] ^ d4).rotate_left(8);
+    let b14 = (state[20] ^ d0).rotate_left(18);
+    let b24 = (state[21] ^ d1).rotate_left(2);
+    let b9 = (state[22] ^ d2).rotate_left(61);
+    let b19 = (state[23] ^ d3).rotate_left(56);
+    let b4 = (state[24] ^ d4).rotate_left(14);
 
-    a[0] = (b0 ^ ((!b1) & b2)) ^ rc;
-    c[0] = a[0];
-    a[1] = b1 ^ ((!b2) & b3);
-    c[1] = a[1];
-    a[2] = b2 ^ ((!b3) & b4);
-    c[2] = a[2];
-    a[3] = b3 ^ ((!b4) & b0);
-    c[3] = a[3];
-    a[4] = b4 ^ ((!b0) & b1);
-    c[4] = a[4];
+    state[0] = (b0 ^ ((!b1) & b2)) ^ rc;
+    c[0] = state[0];
+    state[1] = b1 ^ ((!b2) & b3);
+    c[1] = state[1];
+    state[2] = b2 ^ ((!b3) & b4);
+    c[2] = state[2];
+    state[3] = b3 ^ ((!b4) & b0);
+    c[3] = state[3];
+    state[4] = b4 ^ ((!b0) & b1);
+    c[4] = state[4];
 
-    a[5] = b5 ^ ((!b6) & b7);
-    c[0] ^= a[5];
-    a[6] = b6 ^ ((!b7) & b8);
-    c[1] ^= a[6];
-    a[7] = b7 ^ ((!b8) & b9);
-    c[2] ^= a[7];
-    a[8] = b8 ^ ((!b9) & b5);
-    c[3] ^= a[8];
-    a[9] = b9 ^ ((!b5) & b6);
-    c[4] ^= a[9];
+    state[5] = b5 ^ ((!b6) & b7);
+    c[0] ^= state[5];
+    state[6] = b6 ^ ((!b7) & b8);
+    c[1] ^= state[6];
+    state[7] = b7 ^ ((!b8) & b9);
+    c[2] ^= state[7];
+    state[8] = b8 ^ ((!b9) & b5);
+    c[3] ^= state[8];
+    state[9] = b9 ^ ((!b5) & b6);
+    c[4] ^= state[9];
 
-    a[10] = b10 ^ ((!b11) & b12);
-    c[0] ^= a[10];
-    a[11] = b11 ^ ((!b12) & b13);
-    c[1] ^= a[11];
-    a[12] = b12 ^ ((!b13) & b14);
-    c[2] ^= a[12];
-    a[13] = b13 ^ ((!b14) & b10);
-    c[3] ^= a[13];
-    a[14] = b14 ^ ((!b10) & b11);
-    c[4] ^= a[14];
+    state[10] = b10 ^ ((!b11) & b12);
+    c[0] ^= state[10];
+    state[11] = b11 ^ ((!b12) & b13);
+    c[1] ^= state[11];
+    state[12] = b12 ^ ((!b13) & b14);
+    c[2] ^= state[12];
+    state[13] = b13 ^ ((!b14) & b10);
+    c[3] ^= state[13];
+    state[14] = b14 ^ ((!b10) & b11);
+    c[4] ^= state[14];
 
-    a[15] = b15 ^ ((!b16) & b17);
-    c[0] ^= a[15];
-    a[16] = b16 ^ ((!b17) & b18);
-    c[1] ^= a[16];
-    a[17] = b17 ^ ((!b18) & b19);
-    c[2] ^= a[17];
-    a[18] = b18 ^ ((!b19) & b15);
-    c[3] ^= a[18];
-    a[19] = b19 ^ ((!b15) & b16);
-    c[4] ^= a[19];
+    state[15] = b15 ^ ((!b16) & b17);
+    c[0] ^= state[15];
+    state[16] = b16 ^ ((!b17) & b18);
+    c[1] ^= state[16];
+    state[17] = b17 ^ ((!b18) & b19);
+    c[2] ^= state[17];
+    state[18] = b18 ^ ((!b19) & b15);
+    c[3] ^= state[18];
+    state[19] = b19 ^ ((!b15) & b16);
+    c[4] ^= state[19];
 
-    a[20] = b20 ^ ((!b21) & b22);
-    c[0] ^= a[20];
-    a[21] = b21 ^ ((!b22) & b23);
-    c[1] ^= a[21];
-    a[22] = b22 ^ ((!b23) & b24);
-    c[2] ^= a[22];
-    a[23] = b23 ^ ((!b24) & b20);
-    c[3] ^= a[23];
-    a[24] = b24 ^ ((!b20) & b21);
-    c[4] ^= a[24];
+    state[20] = b20 ^ ((!b21) & b22);
+    c[0] ^= state[20];
+    state[21] = b21 ^ ((!b22) & b23);
+    c[1] ^= state[21];
+    state[22] = b22 ^ ((!b23) & b24);
+    c[2] ^= state[22];
+    state[23] = b23 ^ ((!b24) & b20);
+    c[3] ^= state[23];
+    state[24] = b24 ^ ((!b20) & b21);
+    c[4] ^= state[24];
+}
+
+#[inline]
+fn permutation(state: &mut [u64; 25]) {
+    let mut c: [u64; 5] = [state[0] ^ state[5] ^ state[10] ^ state[15] ^ state[20],
+                           state[1] ^ state[6] ^ state[11] ^ state[16] ^ state[21],
+                           state[2] ^ state[7] ^ state[12] ^ state[17] ^ state[22],
+                           state[3] ^ state[8] ^ state[13] ^ state[18] ^ state[23],
+                           state[4] ^ state[9] ^ state[14] ^ state[19] ^ state[24]];
+
+    for &rc in &ROUND_CONSTS {
+        round(rc, state, &mut c);
+    }
 }
 
 impl State {
     fn init(bits: usize) -> Self {
         let rate = 1600 - bits * 2;
-        assert!(rate <= 1600 && (rate % 64) == 0);
+        debug_assert!(rate <= 1600 && (rate % 64) == 0);
         State {
             hash: [0; 25],
             rest: 0,
-            block_size: rate / 8,
-        }
-    }
-
-    #[inline]
-    fn permutation(&mut self) {
-        let a = &mut self.hash;
-        let mut c: [u64; 5] = [a[0] ^ a[5] ^ a[10] ^ a[15] ^ a[20],
-                               a[1] ^ a[6] ^ a[11] ^ a[16] ^ a[21],
-                               a[2] ^ a[7] ^ a[12] ^ a[17] ^ a[22],
-                               a[3] ^ a[8] ^ a[13] ^ a[18] ^ a[23],
-                               a[4] ^ a[9] ^ a[14] ^ a[19] ^ a[24]];
-        for &rc in &ROUND_CONSTS {
-            round(rc, a, &mut c);
+            block_size: rate / 64,
         }
     }
 
     #[inline]
     fn compress(&mut self, data: &[u8]) {
-        let max = self.block_size / 8;
-        for (h, c) in self.hash[0..max].iter_mut().zip(data.chunks(8)) {
+        for (h, c) in self.hash[0..self.block_size].iter_mut().zip(data.chunks(8)) {
             *h ^= LittleEndian::read_u64(c)
         }
 
-        self.permutation();
+        permutation(&mut self.hash);
     }
 }
 
@@ -193,10 +192,10 @@ macro_rules! sha3_impl {
     ($(#[$attr:meta])* struct $name:ident -> $size:ty, $bsize:ty) => {
         #[derive(Clone)]
         $(#[$attr])*
-        pub struct $name {
-            state: State,
-            buffer: FixedBuffer<$bsize>,
-        }
+            pub struct $name {
+                state: State,
+                buffer: FixedBuffer<$bsize>,
+            }
 
         impl Default for $name {
             fn default() -> Self {
@@ -231,8 +230,8 @@ macro_rules! sha3_impl {
 
                 unsafe {
                     ptr::copy_nonoverlapping(state.hash.as_ptr() as *const u8,
-                                             ret.as_mut_ptr(),
-                                             Self::output_bytes())
+                    ret.as_mut_ptr(),
+                    Self::output_bytes())
                 };
             }
         }

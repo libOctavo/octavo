@@ -28,7 +28,7 @@ impl State {
         State { h: state }
     }
 
-    #[inline(always)]
+    #[inline]
     fn compress(&mut self, input: &[u8], len: Length<u32>, last: bool) {
         debug_assert!(input.len() % 16 == 0);
 

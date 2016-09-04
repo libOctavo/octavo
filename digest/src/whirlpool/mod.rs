@@ -36,7 +36,7 @@ const RC: [w64; ROUNDS] = [W(0x1823c6e887b8014f),
                            W(0xfbee7c66dd17479e),
                            W(0xca2dbf07ad5a8333)];
 
-#[inline(always)]
+#[inline]
 fn op(src: &[w64], shift: usize) -> w64 {
     W(SBOXES[0][(src[(shift) % 8] >> 56).0 as u8 as usize] ^
       SBOXES[1][(src[(shift + 7) % 8] >> 48).0 as u8 as usize] ^
@@ -58,7 +58,7 @@ impl State {
         State { hash: [W(0); 8] }
     }
 
-    #[inline(always)]
+    #[inline]
     fn compress(&mut self, data: &[u8]) {
         debug_assert!(data.len() == 64);
         let mut key = self.hash;

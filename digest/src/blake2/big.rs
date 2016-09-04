@@ -1,6 +1,14 @@
-use static_buffer::{FixedBuffer128, FixedBuf};
-use typenum::consts::U128;
+use core::ptr;
+use core::ops::Mul;
+use core::marker::PhantomData;
 
+use static_buffer::{FixedBuffer128, FixedBuf};
+use byteorder::{ByteOrder, LittleEndian};
+use generic_array::ArrayLength;
+use typenum::uint::Unsigned;
+use typenum::consts::{U8, U16, U20, U28, U32, U48, U64, U128};
+
+use Digest;
 use wrapping::*;
 
 const INIT: [w64; 8] = [W(0x6a09e667f3bcc908),
@@ -57,8 +65,8 @@ impl State {
         State { h: state }
     }
 
-    #[inline(always)]
-    fn compress(&mut self, input: &[u8], len: Length<u64>, last: bool) {
+    #[inline]
+    fn compress(&mut self, input: &[u8], len: Length, last: bool) {
         debug_assert!(input.len() == 128);
 
         let mut message = [W(0); 16];
@@ -103,13 +111,13 @@ struct Length(u64, u64);
 impl Length {
     fn increment(&mut self, val: usize) {
         self.0.wrapping_add(val as u64);
-        if self.0 < val {
+        if self.0 < val as u64 {
             self.1 += 1;
         }
     }
 }
 
-
+/// BLAKE2b generic implementation
 #[derive(Clone)]
 pub struct Blake2b<Size: Unsigned + Clone> {
     state: State,
@@ -118,21 +126,24 @@ pub struct Blake2b<Size: Unsigned + Clone> {
     _phantom: PhantomData<Size>,
 }
 
-impl<Size: Unsigned + Clone> Blake2b<Size> {
+impl<Size> Blake2b<Size>
+    where Size: ArrayLength<u8> + Mul<U8> + Clone,
+          <Size as Mul<U8>>::Output: ArrayLength<u8>
+{
     /// Initialize BLAKE2 hash function with custom key
     pub fn with_key<K: AsRef<[u8]>>(key: K) -> Self {
         let key = key.as_ref();
         assert!(key.len() < 64);
 
         let mut ret = Blake2b {
-            state: State::new(INIT, key.len() as u8, Size::to_u8()),
+            state: State::new(key.len() as u8, Size::to_u8()),
             len: Length(0, 0),
             buffer: FixedBuffer128::new(),
             _phantom: PhantomData,
         };
 
         if !key.is_empty() {
-            ret.buffer.update(key);
+            ret.update(key);
             ret.buffer.zero_until(128);
         }
 
@@ -140,7 +151,10 @@ impl<Size: Unsigned + Clone> Blake2b<Size> {
     }
 }
 
-impl<Size: Unsigned + Clone> Default for Blake2b<Size> {
+impl<Size> Default for Blake2b<Size>
+    where Size: ArrayLength<u8> + Mul<U8> + Clone,
+          <Size as Mul<U8>>::Output: ArrayLength<u8>
+{
     fn default() -> Self {
         Self::with_key(&[])
     }
@@ -152,6 +166,7 @@ impl<Size> Digest for Blake2b<Size>
 {
     type OutputBits = <Self::OutputBytes as Mul<U8>>::Output;
     type OutputBytes = Size;
+
     type BlockSize = U128;
 
     fn update<T: AsRef<[u8]>>(&mut self, input: T) {
