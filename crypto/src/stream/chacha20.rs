@@ -13,10 +13,10 @@ struct State([u32; STATE_WORDS]);
 
 macro_rules! quarter_round {
     ($a:expr, $b:expr, $c:expr, $d:expr) => {{
-        $a = $a.wrapping_add($b); $d = $d ^ $a; $d = $d.rotate_left(16);
-        $c = $c.wrapping_add($d); $b = $b ^ $c; $b = $b.rotate_left(12);
-        $a = $a.wrapping_add($b); $d = $d ^ $a; $d = $d.rotate_left( 8);
-        $c = $c.wrapping_add($d); $b = $b ^ $c; $b = $b.rotate_left( 7);
+        $a = $a.wrapping_add($b); $d ^= $a; $d = $d.rotate_left(16);
+        $c = $c.wrapping_add($d); $b ^= $c; $b = $b.rotate_left(12);
+        $a = $a.wrapping_add($b); $d ^= $a; $d = $d.rotate_left( 8);
+        $c = $c.wrapping_add($d); $b ^= $c; $b = $b.rotate_left( 7);
     }}
 }
 
@@ -68,7 +68,7 @@ impl State {
             output[i] = self.0[i].wrapping_add(state[i]);
         }
 
-        self.0[12] = self.0[12] + 1;
+        self.0[12] += 1;
     }
 }
 

@@ -69,6 +69,8 @@
 #![doc(html_logo_url = "https://raw.githubusercontent.com/libOctavo/octavo/master/docs/logo.png",
        html_root_url = "http://libOctavo.github.io/")]
 
+#![allow(many_single_char_names)]
+
 extern crate byteorder;
 extern crate generic_array;
 extern crate num_bigint as bigint;
