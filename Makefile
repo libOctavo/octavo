@@ -7,13 +7,13 @@ packages = digest crypto kdf mac
 all: $(packages) octavo
 
 octavo:
-	$(CARGO_CMD) $(TASK)
+	$(CARGO_CMD) $(TASK) --verbose
 
 $(packages):
 	$(CARGO_CMD) $(TASK) --verbose --manifest-path "$@/Cargo.toml"
 
 doc:
-	cargo --verbose doc
+	$(CARGO_CMD) doc --verbose
 
 doc-upload: doc
 	bash tools/doc-upload.sh
