@@ -7,11 +7,11 @@ rust:
   - nightly
 before_script:
   - pip install 'travis-cargo<0.2' --user && export PATH=$HOME/.local/bin:$PATH
-  - gem install pronto-clippy
 script:
   - cargo test --manifest-path "$crate/Cargo.toml"
 after_success:
   - test "$crate" = "." && travis-cargo --only stable doc && travis-cargo --only stable doc-upload
+  - rbenv install 2.3.1 && gem install pronto-clippy
   - test "$TRAVIS_RUSTC_VERSION" = "nightly" && pronto run -c origin/master -f github_pr github_status
 notifications:
   webhooks:
