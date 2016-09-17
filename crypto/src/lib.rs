@@ -4,18 +4,20 @@
 //! used for achieving confidentiality. Typically this is set of three algorithms: key generation,
 //! encryption function and decryption function.
 //!
-//! Mathematically it can be described as tuple `(P, C, K, E, D)`, where:
+//! Mathematically it can be described as tuple \\((\mathcal{P, C, K, E, D})\\), where:
 //!
-//! - `P` is a set called "plaintext space"
-//! - `C` is a set called "ciphertext space"
-//! - `K` is a set called "key space"
-//! - `E` is a set of functions `e :: k -> p -> c` called "encryption functions"
-//! - `D` is a set of functions `d :: k -> c -> p` called "decryption functions"
+//! - \\(\mathcal{P}\\) is a set called "plaintext space"
+//! - \\(\mathcal{C}\\) is a set called "ciphertext space"
+//! - \\(\mathcal{K}\\) is a set called "key space"
+//! - \\(\mathcal{E} = \left\\{E_k : k \in \mathcal{K}\right\\}\\) is a set of functions
+//!     \\(E_k : \mathcal{P} \to \mathcal{C}\\) called "encryption functions"
+//! - \\(\mathcal{D} = \left\\{E_k : k \in \mathcal{K}\right\\}\\) is a set of functions
+//!     \\(D_k : \mathcal{C} \to \mathcal{P}\\) called "decryption functions"
 //!
-//! For each `ke ∈ K` there is `kd ∈ K` such that `d(kd, e(ke, p)) = p`. If `kd = ke` then we call
-//! that "symmetric cipher" otherwise we call it "asymmetric cipher".
+//! For each \\(e \in K\\) there is \\(d \in K\\) such that \\(D_d(E_e(p))) = p\\).
+//! If \\(d = e\\) then we call that "symmetric cipher" otherwise we call it "asymmetric cipher".
 //!
-//! In practise we use "asymmetric ciphers" for which computing `kd` from `ke` is computationally
+//! In practise we use "asymmetric ciphers" for which computing \\(d\\) from \\(e\\) is computationally
 //! hard or impossible.
 //!
 //! # Kerckhoff's Principle
