@@ -12,4 +12,8 @@ octavo:
 $(packages):
 	$(CARGO_CMD) $(TASK) --manifest-path "$@/Cargo.toml"
 
+doc:
+	cargo doc
+	bash tools/doc-upload.sh
+
 .PHONY: all $(packages)

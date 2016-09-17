@@ -5,13 +5,10 @@ rust:
   - stable
   - beta
   - nightly
-before_script:
-  - pip install 'travis-cargo<0.2' --user && export PATH=$HOME/.local/bin:$PATH
 script:
   - cargo test --manifest-path "$crate/Cargo.toml"
 after_success:
-  - travis-cargo --only stable doc
-  - travis-cargo --only stable doc-upload
+  - test "$TRAVIS_RUST_VERSION" = "stable" && test "$crate" = "." && make doc
 notifications:
   webhooks:
     urls:
