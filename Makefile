@@ -1,7 +1,6 @@
 CARGO_CMD = cargo
 
 TASK ?= test
-CARGO_OPTS ?= --verbose
 
 packages = digest crypto kdf mac
 
