@@ -7,7 +7,7 @@ rust:
 before_script:
   - pip install 'travis-cargo<0.2' --user && export PATH=$HOME/.local/bin:$PATH
 script:
-  - make all TASK=test
+  - cargo test --manifest-path "$crate/Cargo.toml"
 after_success:
   - travis-cargo --only stable doc
   - travis-cargo --only stable doc-upload
@@ -22,3 +22,9 @@ notifications:
 env:
   global:
     secure: K8PmeJg4fvz7+9pdZrxR2QDPi8pILppySsp8a93yi/my8nuXOunSR9vljwdRZfwU/TyT5RDUz8TPcP8cZEsgHRafHid+Q4x7eJd7ufXGfMNT6T+oqmkR0uG8HZF6HyingilgrZnDwf5CT7A0X3yIuA5nrR+YigmJLmk7XvHBAHt3fpTOwD66D4pa0+a/tPBBOK/npxin6q6jaxsOdQWNNfX5vu64McI8JS4A96R+S49rUc5OXbMXUItNQEUZZ6i7T+Jp9xy4IA9l3XQHr1pgRSn9OrR7lK7+zr9L5o0VvU7CDrhawGhAuGHZ4tKmWQqfxIbWhI6oA2cJbZS+KC/jaL7p68M3PaXG+bBX+0p1RXPemJ/p5QKQ1mkns87GY8LkU2LEW0rn+MySsAtsr71ZRIoIQlFFxmXlIShsjwEMBkPBAaPzJCrdqeVft3DjWKkjvdPvAhK1Zo22lE1mN502IbZ2mHw/Q0K8mLuVPWjD9ZRpp+stLJwrHauo7u53S1gPuBhU0vbd7Y9lHmcRPdZw83XTCjoORMqutqtI3xpfCF0/ZCttv6nfIoh4umKl12K0E4fT7TGMAdW2r1l6lUtTyaWHBMCJEgad+OCCxPkXveznbaRjw9iJx1i/Wk+Jr9oZeBuSSnTk5MXtIfqkApKdumhVQGdhO9QZr+0vc11TiPI=
+  matrix:
+    - crate=digest
+    - crate=crypto
+    - crate=kdf
+    - crate=mac
+    - crate=.

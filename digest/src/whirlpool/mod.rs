@@ -36,8 +36,8 @@ const RC: [w64; ROUNDS] = [W(0x1823c6e887b8014f),
                            W(0xfbee7c66dd17479e),
                            W(0xca2dbf07ad5a8333)];
 
-#[inline]
-fn op(src: &[w64], shift: usize) -> w64 {
+#[inline(always)]
+fn op(src: [w64; 8], shift: usize) -> w64 {
     W(SBOXES[0][(src[(shift) % 8] >> 56).0 as u8 as usize] ^
       SBOXES[1][(src[(shift + 7) % 8] >> 48).0 as u8 as usize] ^
       SBOXES[2][(src[(shift + 6) % 8] >> 40).0 as u8 as usize] ^
@@ -58,7 +58,7 @@ impl State {
         State { hash: [W(0); 8] }
     }
 
-    #[inline]
+    #[inline(always)]
     fn compress(&mut self, data: &[u8]) {
         debug_assert!(data.len() == 64);
         let mut key = self.hash;
@@ -75,24 +75,24 @@ impl State {
         for &rc in &RC {
             let tmp = key;
 
-            key[0] = op(&tmp, 0) ^ rc;
-            key[1] = op(&tmp, 1);
-            key[2] = op(&tmp, 2);
-            key[3] = op(&tmp, 3);
-            key[4] = op(&tmp, 4);
-            key[5] = op(&tmp, 5);
-            key[6] = op(&tmp, 6);
-            key[7] = op(&tmp, 7);
+            key[0] = op(tmp, 0) ^ rc;
+            key[1] = op(tmp, 1);
+            key[2] = op(tmp, 2);
+            key[3] = op(tmp, 3);
+            key[4] = op(tmp, 4);
+            key[5] = op(tmp, 5);
+            key[6] = op(tmp, 6);
+            key[7] = op(tmp, 7);
 
             let tmp = state;
-            state[0] = op(&tmp, 0) ^ key[0];
-            state[1] = op(&tmp, 1) ^ key[1];
-            state[2] = op(&tmp, 2) ^ key[2];
-            state[3] = op(&tmp, 3) ^ key[3];
-            state[4] = op(&tmp, 4) ^ key[4];
-            state[5] = op(&tmp, 5) ^ key[5];
-            state[6] = op(&tmp, 6) ^ key[6];
-            state[7] = op(&tmp, 7) ^ key[7];
+            state[0] = op(tmp, 0) ^ key[0];
+            state[1] = op(tmp, 1) ^ key[1];
+            state[2] = op(tmp, 2) ^ key[2];
+            state[3] = op(tmp, 3) ^ key[3];
+            state[4] = op(tmp, 4) ^ key[4];
+            state[5] = op(tmp, 5) ^ key[5];
+            state[6] = op(tmp, 6) ^ key[6];
+            state[7] = op(tmp, 7) ^ key[7];
         }
 
         for (hash, &state) in self.hash.iter_mut().zip(&state) {
