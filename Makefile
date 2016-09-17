@@ -1,4 +1,4 @@
-CARGO_CMD = cargo --verbose
+CARGO_CMD = cargo
 
 TASK ?= test
 
@@ -10,7 +10,7 @@ octavo:
 	$(CARGO_CMD) $(TASK)
 
 $(packages):
-	$(CARGO_CMD) $(TASK) --manifest-path "$@/Cargo.toml"
+	$(CARGO_CMD) $(TASK) --verbose --manifest-path "$@/Cargo.toml"
 
 doc:
 	cargo --verbose doc
