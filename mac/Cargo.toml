@@ -1,15 +1,13 @@
 [package]
 authors = ["Łukasz Jan Niemier <lukasz@niemier.pl>"]
-homepage = "http://liboctavo.github.io/"
-documentation = "http://liboctavo.github.io/octavo/octavo_kdf"
-repository = "https://github.com/libOctavo/octavo"
-readme = "README.md"
-name = "octavo-mac"
 description = "Octavo - Message Authentication Codes. WARNING!!! Not suitable for production"
-keywords = [
-  "mac", "hmac", "authentication"
-]
+documentation = "http://liboctavo.github.io/octavo/octavo_kdf"
+homepage = "http://liboctavo.github.io/"
+keywords = ["mac", "hmac", "authentication"]
 license = "MIT"
+name = "octavo-mac"
+readme = "README.md"
+repository = "https://github.com/libOctavo/octavo"
 version = "0.1.1"
 
 [dependencies]
@@ -18,6 +16,10 @@ generic-array = "0.2.0"
 [dependencies.octavo-digest]
 path = "../digest"
 version = "0.1.0"
+
+[dev-dependencies]
+openssl = "0.8.2"
+quickcheck = "0.3.1"
 
 [features]
 unstable = []

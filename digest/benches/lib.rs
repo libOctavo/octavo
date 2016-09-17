@@ -22,11 +22,12 @@ macro_rules! bench_digest {
     };
 
     ($engine:path) => {
-        bench_digest!(_16_block_size,   $engine,   16);
-        bench_digest!(_64_block_size,   $engine,   64);
-        bench_digest!(_256_block_size,  $engine,  256);
-        bench_digest!(_1024_block_size, $engine, 1024);
-        bench_digest!(_8192_block_size, $engine, 8192);
+        bench_digest!(_16_block_size,   $engine,    16);
+        bench_digest!(_64_block_size,   $engine,    64);
+        bench_digest!(_256_block_size,  $engine,   256);
+        bench_digest!(_1k_block_size,   $engine,  1024);
+        bench_digest!(_8k_block_size,   $engine,  8192);
+        bench_digest!(_64k_block_size,  $engine, 65536);
     }
 }
 

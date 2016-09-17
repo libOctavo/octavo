@@ -77,8 +77,8 @@ impl State {
             *v = LittleEndian::read_u32(c);
         }
 
-        let mut left = self.state.clone();
-        let mut right = self.state.clone();
+        let mut left = self.state;
+        let mut right = self.state;
 
         process!(left; ff(0x00000000,
                           data[0 ] => 11, data[1 ] => 14, data[2 ] => 15, data[3 ] => 12,

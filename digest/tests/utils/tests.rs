@@ -6,7 +6,7 @@ use rustc_serialize as ser;
 use rustc_serialize::hex::{FromHex, ToHex};
 
 #[derive(Debug, PartialEq, Eq)]
-struct Data(Vec<u8>);
+pub struct Data(Vec<u8>);
 impl Deref for Data {
     type Target = [u8];
     fn deref(&self) -> &[u8] {
@@ -42,7 +42,8 @@ pub trait Testable: Sized {
     fn test(self, &Test);
 }
 
-impl<T> Testable for T where T: Digest + Sized
+impl<T> Testable for T
+    where T: Digest + Sized
 {
     fn test(mut self, test: &Test) {
         self.update(&*test.input);

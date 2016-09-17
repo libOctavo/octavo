@@ -20,157 +20,214 @@ use typenum::consts::{U16, U64, U128};
 use static_buffer::{FixedBuffer64, FixedBuf, StandardPadding};
 
 use Digest;
+use wrapping::*;
 
 #[derive(Copy, Clone, Debug)]
 struct State {
-    s0: u32,
-    s1: u32,
-    s2: u32,
-    s3: u32,
+    a: w32,
+    b: w32,
+    c: w32,
+    d: w32,
+}
+
+macro_rules! process {
+    ($w:expr, $x:expr, $y:expr, $z:expr, $m:expr, $s:expr, $f:ident) => {
+        $w = ($w + $f($x, $y, $z) + $m).rotate_left($s) + $x
+    }
+}
+
+#[inline]
+fn f(u: w32, v: w32, w: w32) -> w32 {
+    (u & v) | (!u & w)
+}
+#[inline]
+fn g(u: w32, v: w32, w: w32) -> w32 {
+    (u & w) | (v & !w)
+}
+#[inline]
+fn h(u: w32, v: w32, w: w32) -> w32 {
+    u ^ v ^ w
+}
+#[inline]
+fn i(u: w32, v: w32, w: w32) -> w32 {
+    v ^ (u | !w)
 }
 
 impl State {
     fn new() -> Self {
         State {
-            s0: 0x67452301,
-            s1: 0xefcdab89,
-            s2: 0x98badcfe,
-            s3: 0x10325476,
+            a: W(0x67452301),
+            b: W(0xefcdab89),
+            c: W(0x98badcfe),
+            d: W(0x10325476),
         }
     }
 
-    fn process_block(&mut self, input: &[u8]) {
-        fn f(u: u32, v: u32, w: u32) -> u32 {
-            (u & v) | (!u & w)
-        }
+    #[inline]
+    fn compress(&mut self, input: &[u8]) {
+        let State { mut a, mut b, mut c, mut d } = *self;
 
-        fn g(u: u32, v: u32, w: u32) -> u32 {
-            (u & w) | (v & !w)
-        }
-
-        fn h(u: u32, v: u32, w: u32) -> u32 {
-            u ^ v ^ w
-        }
-
-        fn i(u: u32, v: u32, w: u32) -> u32 {
-            v ^ (u | !w)
-        }
-
-        fn op_f(w: u32, x: u32, y: u32, z: u32, m: u32, s: u32) -> u32 {
-            w.wrapping_add(f(x, y, z)).wrapping_add(m).rotate_left(s).wrapping_add(x)
-        }
-
-        fn op_g(w: u32, x: u32, y: u32, z: u32, m: u32, s: u32) -> u32 {
-            w.wrapping_add(g(x, y, z)).wrapping_add(m).rotate_left(s).wrapping_add(x)
-        }
-
-        fn op_h(w: u32, x: u32, y: u32, z: u32, m: u32, s: u32) -> u32 {
-            w.wrapping_add(h(x, y, z)).wrapping_add(m).rotate_left(s).wrapping_add(x)
-        }
-
-        fn op_i(w: u32, x: u32, y: u32, z: u32, m: u32, s: u32) -> u32 {
-            w.wrapping_add(i(x, y, z)).wrapping_add(m).rotate_left(s).wrapping_add(x)
-        }
-
-        let mut a = self.s0;
-        let mut b = self.s1;
-        let mut c = self.s2;
-        let mut d = self.s3;
-
-        let mut data = [0u32; 16];
+        let mut data = [W(0); 16];
 
         for (v, c) in data.iter_mut().zip(input.chunks(4)) {
-            *v = LittleEndian::read_u32(c);
+            *v = W(LittleEndian::read_u32(c));
         }
 
         // round 1
-        for i in 0..4 {
-            let i = i * 4;
-            a = op_f(a, b, c, d, data[i].wrapping_add(C1[i]), 7);
-            d = op_f(d, a, b, c, data[i + 1].wrapping_add(C1[i + 1]), 12);
-            c = op_f(c, d, a, b, data[i + 2].wrapping_add(C1[i + 2]), 17);
-            b = op_f(b, c, d, a, data[i + 3].wrapping_add(C1[i + 3]), 22);
-        }
+        process!(a, b, c, d, data[0] + CONSTS[0][0], 7, f);
+        process!(d, a, b, c, data[1] + CONSTS[0][1], 12, f);
+        process!(c, d, a, b, data[2] + CONSTS[0][2], 17, f);
+        process!(b, c, d, a, data[3] + CONSTS[0][3], 22, f);
+
+        process!(a, b, c, d, data[4] + CONSTS[0][4], 7, f);
+        process!(d, a, b, c, data[5] + CONSTS[0][5], 12, f);
+        process!(c, d, a, b, data[6] + CONSTS[0][6], 17, f);
+        process!(b, c, d, a, data[7] + CONSTS[0][7], 22, f);
+
+        process!(a, b, c, d, data[8] + CONSTS[0][8], 7, f);
+        process!(d, a, b, c, data[9] + CONSTS[0][9], 12, f);
+        process!(c, d, a, b, data[10] + CONSTS[0][10], 17, f);
+        process!(b, c, d, a, data[11] + CONSTS[0][11], 22, f);
+
+        process!(a, b, c, d, data[12] + CONSTS[0][12], 7, f);
+        process!(d, a, b, c, data[13] + CONSTS[0][13], 12, f);
+        process!(c, d, a, b, data[14] + CONSTS[0][14], 17, f);
+        process!(b, c, d, a, data[15] + CONSTS[0][15], 22, f);
 
         // round 2
-        let mut t = 1;
-        for i in 0..4 {
-            let i = i * 4;
-            a = op_g(a, b, c, d, data[t & 0x0f].wrapping_add(C2[i]), 5);
-            d = op_g(d, a, b, c, data[(t + 5) & 0x0f].wrapping_add(C2[i + 1]), 9);
-            c = op_g(c,
-                     d,
-                     a,
-                     b,
-                     data[(t + 10) & 0x0f].wrapping_add(C2[i + 2]),
-                     14);
-            b = op_g(b,
-                     c,
-                     d,
-                     a,
-                     data[(t + 15) & 0x0f].wrapping_add(C2[i + 3]),
-                     20);
-            t += 20;
-        }
+        process!(a, b, c, d, data[1] + CONSTS[1][0], 5, g);
+        process!(d, a, b, c, data[6] + CONSTS[1][1], 9, g);
+        process!(c, d, a, b, data[11] + CONSTS[1][2], 14, g);
+        process!(b, c, d, a, data[0] + CONSTS[1][3], 20, g);
+
+        process!(a, b, c, d, data[5] + CONSTS[1][4], 5, g);
+        process!(d, a, b, c, data[10] + CONSTS[1][5], 9, g);
+        process!(c, d, a, b, data[15] + CONSTS[1][6], 14, g);
+        process!(b, c, d, a, data[4] + CONSTS[1][7], 20, g);
+
+        process!(a, b, c, d, data[9] + CONSTS[1][8], 5, g);
+        process!(d, a, b, c, data[14] + CONSTS[1][9], 9, g);
+        process!(c, d, a, b, data[3] + CONSTS[1][10], 14, g);
+        process!(b, c, d, a, data[8] + CONSTS[1][11], 20, g);
+
+        process!(a, b, c, d, data[13] + CONSTS[1][12], 5, g);
+        process!(d, a, b, c, data[2] + CONSTS[1][13], 9, g);
+        process!(c, d, a, b, data[7] + CONSTS[1][14], 14, g);
+        process!(b, c, d, a, data[12] + CONSTS[1][15], 20, g);
 
         // round 3
-        t = 5;
-        for i in 0..4 {
-            let i = i * 4;
-            a = op_h(a, b, c, d, data[t & 0x0f].wrapping_add(C3[i]), 4);
-            d = op_h(d, a, b, c, data[(t + 3) & 0x0f].wrapping_add(C3[i + 1]), 11);
-            c = op_h(c, d, a, b, data[(t + 6) & 0x0f].wrapping_add(C3[i + 2]), 16);
-            b = op_h(b, c, d, a, data[(t + 9) & 0x0f].wrapping_add(C3[i + 3]), 23);
-            t += 12;
-        }
+        process!(a, b, c, d, data[5] + CONSTS[2][0], 4, h);
+        process!(d, a, b, c, data[8] + CONSTS[2][1], 11, h);
+        process!(c, d, a, b, data[11] + CONSTS[2][2], 16, h);
+        process!(b, c, d, a, data[14] + CONSTS[2][3], 23, h);
+
+        process!(a, b, c, d, data[1] + CONSTS[2][4], 4, h);
+        process!(d, a, b, c, data[4] + CONSTS[2][5], 11, h);
+        process!(c, d, a, b, data[7] + CONSTS[2][6], 16, h);
+        process!(b, c, d, a, data[10] + CONSTS[2][7], 23, h);
+
+        process!(a, b, c, d, data[13] + CONSTS[2][8], 4, h);
+        process!(d, a, b, c, data[0] + CONSTS[2][9], 11, h);
+        process!(c, d, a, b, data[3] + CONSTS[2][10], 16, h);
+        process!(b, c, d, a, data[6] + CONSTS[2][11], 23, h);
+
+        process!(a, b, c, d, data[9] + CONSTS[2][12], 4, h);
+        process!(d, a, b, c, data[12] + CONSTS[2][13], 11, h);
+        process!(c, d, a, b, data[15] + CONSTS[2][14], 16, h);
+        process!(b, c, d, a, data[2] + CONSTS[2][15], 23, h);
 
         // round 4
-        t = 0;
-        for i in 0..4 {
-            let i = i * 4;
-            a = op_i(a, b, c, d, data[t & 0x0f].wrapping_add(C4[i]), 6);
-            d = op_i(d, a, b, c, data[(t + 7) & 0x0f].wrapping_add(C4[i + 1]), 10);
-            c = op_i(c,
-                     d,
-                     a,
-                     b,
-                     data[(t + 14) & 0x0f].wrapping_add(C4[i + 2]),
-                     15);
-            b = op_i(b,
-                     c,
-                     d,
-                     a,
-                     data[(t + 21) & 0x0f].wrapping_add(C4[i + 3]),
-                     21);
-            t += 28;
-        }
+        process!(a, b, c, d, data[0] + CONSTS[3][0], 6, i);
+        process!(d, a, b, c, data[7] + CONSTS[3][1], 10, i);
+        process!(c, d, a, b, data[14] + CONSTS[3][2], 15, i);
+        process!(b, c, d, a, data[5] + CONSTS[3][3], 21, i);
 
-        self.s0 = self.s0.wrapping_add(a);
-        self.s1 = self.s1.wrapping_add(b);
-        self.s2 = self.s2.wrapping_add(c);
-        self.s3 = self.s3.wrapping_add(d);
+        process!(a, b, c, d, data[12] + CONSTS[3][4], 6, i);
+        process!(d, a, b, c, data[3] + CONSTS[3][5], 10, i);
+        process!(c, d, a, b, data[10] + CONSTS[3][6], 15, i);
+        process!(b, c, d, a, data[1] + CONSTS[3][7], 21, i);
+
+        process!(a, b, c, d, data[8] + CONSTS[3][8], 6, i);
+        process!(d, a, b, c, data[15] + CONSTS[3][9], 10, i);
+        process!(c, d, a, b, data[6] + CONSTS[3][10], 15, i);
+        process!(b, c, d, a, data[13] + CONSTS[3][11], 21, i);
+
+        process!(a, b, c, d, data[4] + CONSTS[3][12], 6, i);
+        process!(d, a, b, c, data[11] + CONSTS[3][13], 10, i);
+        process!(c, d, a, b, data[2] + CONSTS[3][14], 15, i);
+        process!(b, c, d, a, data[9] + CONSTS[3][15], 21, i);
+
+        self.a += a;
+        self.b += b;
+        self.c += c;
+        self.d += d;
     }
 }
 
-// Round 1 constants
-static C1: [u32; 16] = [0xd76aa478, 0xe8c7b756, 0x242070db, 0xc1bdceee, 0xf57c0faf, 0x4787c62a,
-                        0xa8304613, 0xfd469501, 0x698098d8, 0x8b44f7af, 0xffff5bb1, 0x895cd7be,
-                        0x6b901122, 0xfd987193, 0xa679438e, 0x49b40821];
-
-// Round 2 constants
-static C2: [u32; 16] = [0xf61e2562, 0xc040b340, 0x265e5a51, 0xe9b6c7aa, 0xd62f105d, 0x02441453,
-                        0xd8a1e681, 0xe7d3fbc8, 0x21e1cde6, 0xc33707d6, 0xf4d50d87, 0x455a14ed,
-                        0xa9e3e905, 0xfcefa3f8, 0x676f02d9, 0x8d2a4c8a];
-
-// Round 3 constants
-static C3: [u32; 16] = [0xfffa3942, 0x8771f681, 0x6d9d6122, 0xfde5380c, 0xa4beea44, 0x4bdecfa9,
-                        0xf6bb4b60, 0xbebfbc70, 0x289b7ec6, 0xeaa127fa, 0xd4ef3085, 0x04881d05,
-                        0xd9d4d039, 0xe6db99e5, 0x1fa27cf8, 0xc4ac5665];
-
-// Round 4 constants
-static C4: [u32; 16] = [0xf4292244, 0x432aff97, 0xab9423a7, 0xfc93a039, 0x655b59c3, 0x8f0ccc92,
-                        0xffeff47d, 0x85845dd1, 0x6fa87e4f, 0xfe2ce6e0, 0xa3014314, 0x4e0811a1,
-                        0xf7537e82, 0xbd3af235, 0x2ad7d2bb, 0xeb86d391];
+static CONSTS: [[w32; 16]; 4] = [[W(0xd76aa478),
+                                  W(0xe8c7b756),
+                                  W(0x242070db),
+                                  W(0xc1bdceee),
+                                  W(0xf57c0faf),
+                                  W(0x4787c62a),
+                                  W(0xa8304613),
+                                  W(0xfd469501),
+                                  W(0x698098d8),
+                                  W(0x8b44f7af),
+                                  W(0xffff5bb1),
+                                  W(0x895cd7be),
+                                  W(0x6b901122),
+                                  W(0xfd987193),
+                                  W(0xa679438e),
+                                  W(0x49b40821)],
+                                 [W(0xf61e2562),
+                                  W(0xc040b340),
+                                  W(0x265e5a51),
+                                  W(0xe9b6c7aa),
+                                  W(0xd62f105d),
+                                  W(0x02441453),
+                                  W(0xd8a1e681),
+                                  W(0xe7d3fbc8),
+                                  W(0x21e1cde6),
+                                  W(0xc33707d6),
+                                  W(0xf4d50d87),
+                                  W(0x455a14ed),
+                                  W(0xa9e3e905),
+                                  W(0xfcefa3f8),
+                                  W(0x676f02d9),
+                                  W(0x8d2a4c8a)],
+                                 [W(0xfffa3942),
+                                  W(0x8771f681),
+                                  W(0x6d9d6122),
+                                  W(0xfde5380c),
+                                  W(0xa4beea44),
+                                  W(0x4bdecfa9),
+                                  W(0xf6bb4b60),
+                                  W(0xbebfbc70),
+                                  W(0x289b7ec6),
+                                  W(0xeaa127fa),
+                                  W(0xd4ef3085),
+                                  W(0x04881d05),
+                                  W(0xd9d4d039),
+                                  W(0xe6db99e5),
+                                  W(0x1fa27cf8),
+                                  W(0xc4ac5665)],
+                                 [W(0xf4292244),
+                                  W(0x432aff97),
+                                  W(0xab9423a7),
+                                  W(0xfc93a039),
+                                  W(0x655b59c3),
+                                  W(0x8f0ccc92),
+                                  W(0xffeff47d),
+                                  W(0x85845dd1),
+                                  W(0x6fa87e4f),
+                                  W(0xfe2ce6e0),
+                                  W(0xa3014314),
+                                  W(0x4e0811a1),
+                                  W(0xf7537e82),
+                                  W(0xbd3af235),
+                                  W(0x2ad7d2bb),
+                                  W(0xeb86d391)]];
 
 /// MD5 implementation
 ///
@@ -205,21 +262,21 @@ impl Digest for Md5 {
         self.length += input.len() as u64;
 
         let state = &mut self.state;
-        self.buffer.input(&input[..], |d| state.process_block(d));
+        self.buffer.input(&input[..], |d| state.compress(d));
     }
 
     fn result<T: AsMut<[u8]>>(mut self, mut out: T) {
         let state = &mut self.state;
 
-        self.buffer.standard_padding(8, |d| state.process_block(d));
+        self.buffer.standard_padding(8, |d| state.compress(d));
         LittleEndian::write_u64(self.buffer.next(8), self.length << 3);
-        state.process_block(self.buffer.full_buffer());
+        state.compress(self.buffer.full_buffer());
 
         let mut out = out.as_mut();
         assert!(out.len() >= Self::output_bytes());
-        LittleEndian::write_u32(&mut out[0..4], state.s0);
-        LittleEndian::write_u32(&mut out[4..8], state.s1);
-        LittleEndian::write_u32(&mut out[8..12], state.s2);
-        LittleEndian::write_u32(&mut out[12..16], state.s3);
+        LittleEndian::write_u32(&mut out[0..4], state.a.0);
+        LittleEndian::write_u32(&mut out[4..8], state.b.0);
+        LittleEndian::write_u32(&mut out[8..12], state.c.0);
+        LittleEndian::write_u32(&mut out[12..16], state.d.0);
     }
 }
