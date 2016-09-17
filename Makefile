@@ -1,4 +1,4 @@
-CARGO_CMD = cargo
+CARGO_CMD = cargo --verbose
 
 TASK ?= test
 
@@ -13,7 +13,9 @@ $(packages):
 	$(CARGO_CMD) $(TASK) --manifest-path "$@/Cargo.toml"
 
 doc:
-	cargo doc
+	cargo --verbose doc
+
+doc-upload: doc
 	bash tools/doc-upload.sh
 
-.PHONY: all $(packages)
+.PHONY: all $(packages) doc doc-upload
