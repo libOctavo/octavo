@@ -6,9 +6,9 @@ rust:
   - beta
   - nightly
 script:
-  - cargo test --manifest-path "$crate/Cargo.toml"
+  - make $crate
 after_success:
-  - test "$TRAVIS_RUST_VERSION" = "stable" && test "$crate" = "." && make doc
+  - test "$TRAVIS_RUST_VERSION" = "stable" && test "$crate" = "octavo" && make doc-upload
 notifications:
   webhooks:
     urls:
@@ -26,4 +26,4 @@ env:
     - crate=crypto
     - crate=kdf
     - crate=mac
-    - crate=.
+    - crate=octavo
