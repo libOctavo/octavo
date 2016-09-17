@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `octavo_digest` crate.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, octavo_digest">
+
+    <title>octavo_digest - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../main.css">
+    
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        <a href='../octavo_digest/index.html'><img src='https://raw.githubusercontent.com/libOctavo/octavo/master/docs/logo.png' alt='logo' width='100'></a>
+        <p class='location'></p><script>window.sidebarCurrent = {name: 'octavo_digest', ty: 'mod', relpath: '../'};</script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content mod">
+<h1 class='fqn'><span class='in-band'>Crate <a class='mod' href=''>octavo_digest</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a id='src-0' class='srclink' href='../src/octavo_digest/digest/src/lib.rs.html#1-127' title='goto source code'>[src]</a></span></h1>
+<div class='docblock'><p>Cryptographic hash functions primitives</p>
+
+<p>Via <a href="https://en.wikipedia.org/wiki/Cryptographic_hash_function">Wikipedia</a>:</p>
+
+<blockquote>
+<p>The ideal cryptographic hash function has four main properties:</p>
+
+<ul>
+<li>it is easy to compute the hash value for any given message</li>
+<li>it is infeasible to generate a message from its hash</li>
+<li>it is infeasible to modify a message without changing the hash</li>
+<li>it is infeasible to find two different messages with the same hash.</li>
+</ul>
+</blockquote>
+
+<h1 id='example' class='section-header'><a href='#example'>Example</a></h1>
+<p>Calculate SHA-512 sum:</p>
+
+<pre class='rust rust-example-rendered'>
+<span class='kw'>use</span> <span class='ident'>octavo_digest</span>::<span class='ident'>prelude</span>::<span class='op'>*</span>;
+
+<span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>result</span> <span class='op'>=</span> <span class='macro'>vec</span><span class='macro'>!</span>[<span class='number'>0</span>; <span class='ident'>sha2</span>::<span class='ident'>Sha512</span>::<span class='ident'>output_bytes</span>()];
+<span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>sha</span> <span class='op'>=</span> <span class='ident'>sha2</span>::<span class='ident'>Sha512</span>::<span class='ident'>default</span>();
+
+<span class='ident'>sha</span>.<span class='ident'>update</span>(<span class='ident'>data</span>);
+<span class='ident'>sha</span>.<span class='ident'>result</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>result</span>);
+
+<span class='kw'>for</span> <span class='ident'>byte</span> <span class='kw'>in</span> <span class='ident'>result</span> {
+    <span class='macro'>print</span><span class='macro'>!</span>(<span class='string'>&quot;{:2x}&quot;</span>, <span class='ident'>byte</span>);
+}
+<span class='macro'>println</span><span class='macro'>!</span>(<span class='string'>&quot; {}&quot;</span>, <span class='ident'>data</span>);</pre>
+</div><h2 id='modules' class='section-header'><a href="#modules">Modules</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class='mod' href='blake2/index.html'
+                                  title='octavo_digest::blake2'>blake2</a></td>
+                           <td class='docblock short'>
+                                <p>BLAKE2 family</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='mod' href='md5/index.html'
+                                  title='octavo_digest::md5'>md5</a></td>
+                           <td class='docblock short'>
+                                <p>MD5 (Message-Digest Algorithm version 5)</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='mod' href='prelude/index.html'
+                                  title='octavo_digest::prelude'>prelude</a></td>
+                           <td class='docblock short'>
+                                <p>Digest prelude</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='mod' href='ripemd/index.html'
+                                  title='octavo_digest::ripemd'>ripemd</a></td>
+                           <td class='docblock short'>
+                                <p>RIPEMD (RACE Integrity Primitives Evaluation Message Digest)</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='mod' href='sha1/index.html'
+                                  title='octavo_digest::sha1'>sha1</a></td>
+                           <td class='docblock short'>
+                                <p>SHA-1 (Secure Hash Algorithm)</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='mod' href='sha2/index.html'
+                                  title='octavo_digest::sha2'>sha2</a></td>
+                           <td class='docblock short'>
+                                <p>SHA-2 family (Secure Hash Algorithm)</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='mod' href='sha3/index.html'
+                                  title='octavo_digest::sha3'>sha3</a></td>
+                           <td class='docblock short'>
+                                <p>SHA-3 family (Secure Hash Algorithm)</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='mod' href='tiger/index.html'
+                                  title='octavo_digest::tiger'>tiger</a></td>
+                           <td class='docblock short'>
+                                <p>Tiger</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='mod' href='whirlpool/index.html'
+                                  title='octavo_digest::whirlpool'>whirlpool</a></td>
+                           <td class='docblock short'>
+                                <p>WHIRLPOOL</p>
+                           </td>
+                       </tr></table><h2 id='traits' class='section-header'><a href="#traits">Traits</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class='trait' href='trait.Digest.html'
+                                  title='octavo_digest::Digest'>Digest</a></td>
+                           <td class='docblock short'>
+                                <p>Hash function digest definition</p>
+                           </td>
+                       </tr></table></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "octavo_digest";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../jquery.js"></script>
+    <script src="../main.js"></script>
+    
+    <script defer src="../search-index.js"></script>
+</body>
+</html>

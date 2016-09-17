@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Blake2b","General BLAKE2b implementation"],["Blake2s","General BLAKE2s implementation"]],"type":[["Blake2b160",""],["Blake2b256",""],["Blake2b384",""],["Blake2b512",""],["Blake2s128",""],["Blake2s160",""],["Blake2s224",""],["Blake2s256",""]]});

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `blake2` mod in crate `octavo`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, blake2">
+
+    <title>octavo::digest::prelude::blake2 - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../../../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../../../../main.css">
+    
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        <a href='../../../../octavo/index.html'><img src='https://raw.githubusercontent.com/libOctavo/octavo/master/docs/logo.png' alt='logo' width='100'></a>
+        <p class='location'><a href='../../../index.html'>octavo</a>::<wbr><a href='../../index.html'>digest</a>::<wbr><a href='../index.html'>prelude</a></p><script>window.sidebarCurrent = {name: 'blake2', ty: 'mod', relpath: '../'};</script><script defer src="../sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content mod">
+<h1 class='fqn'><span class='in-band'>Module <a href='../../../index.html'>octavo</a>::<wbr><a href='../../index.html'>digest</a>::<wbr><a href='../index.html'>prelude</a>::<wbr><a class='mod' href=''>blake2</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a id='src-35' class='srclink' href='../../../../octavo_digest/blake2/index.html?gotosrc=35' title='goto source code'>[src]</a></span></h1>
+<div class='docblock'><p>BLAKE2 family</p>
+
+<h1 id='general-info' class='section-header'><a href='#general-info'>General info</a></h1>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th style="text-align: right">Digest size</th>
+<th style="text-align: right">Block size</th>
+<th style="text-align: right">Rounds</th>
+<th>Structure</th>
+<th>Reference</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>BLAKE2s-128</td>
+<td style="text-align: right">128 bits</td>
+<td style="text-align: right">512 bits</td>
+<td style="text-align: right">10</td>
+<td><a href="https://en.wikipedia.org/wiki/Merkle%E2%80%93Damg%C3%A5rd_construction">Merkle–Damgård</a></td>
+<td>[FIPS 180-4][fips180-4]</td>
+</tr>
+<tr>
+<td>BLAKE2s-160</td>
+<td style="text-align: right">160 bits</td>
+<td style="text-align: right">512 bits</td>
+<td style="text-align: right">10</td>
+<td><a href="https://en.wikipedia.org/wiki/Merkle%E2%80%93Damg%C3%A5rd_construction">Merkle–Damgård</a></td>
+<td>[FIPS 180-4][fips180-4]</td>
+</tr>
+<tr>
+<td>BLAKE2s-224</td>
+<td style="text-align: right">224 bits</td>
+<td style="text-align: right">512 bits</td>
+<td style="text-align: right">10</td>
+<td><a href="https://en.wikipedia.org/wiki/Merkle%E2%80%93Damg%C3%A5rd_construction">Merkle–Damgård</a></td>
+<td>[FIPS 180-4][fips180-4]</td>
+</tr>
+<tr>
+<td>BLAKE2s-256</td>
+<td style="text-align: right">256 bits</td>
+<td style="text-align: right">512 bits</td>
+<td style="text-align: right">10</td>
+<td><a href="https://en.wikipedia.org/wiki/Merkle%E2%80%93Damg%C3%A5rd_construction">Merkle–Damgård</a></td>
+<td>[FIPS 180-4][fips180-4]</td>
+</tr>
+<tr>
+<td>BLAKE2b-160</td>
+<td style="text-align: right">160 bits</td>
+<td style="text-align: right">1024 bits</td>
+<td style="text-align: right">12</td>
+<td><a href="https://en.wikipedia.org/wiki/Merkle%E2%80%93Damg%C3%A5rd_construction">Merkle–Damgård</a></td>
+<td>[FIPS 180-4][fips180-4]</td>
+</tr>
+<tr>
+<td>BLAKE2b-256</td>
+<td style="text-align: right">256 bits</td>
+<td style="text-align: right">1024 bits</td>
+<td style="text-align: right">12</td>
+<td><a href="https://en.wikipedia.org/wiki/Merkle%E2%80%93Damg%C3%A5rd_construction">Merkle–Damgård</a></td>
+<td>[FIPS 180-4][fips180-4]</td>
+</tr>
+<tr>
+<td>BLAKE2b-384</td>
+<td style="text-align: right">384 bits</td>
+<td style="text-align: right">1024 bits</td>
+<td style="text-align: right">12</td>
+<td><a href="https://en.wikipedia.org/wiki/Merkle%E2%80%93Damg%C3%A5rd_construction">Merkle–Damgård</a></td>
+<td>[FIPS 180-4][fips180-4]</td>
+</tr>
+<tr>
+<td>BLAKE2b-512</td>
+<td style="text-align: right">512 bits</td>
+<td style="text-align: right">1024 bits</td>
+<td style="text-align: right">12</td>
+<td><a href="https://en.wikipedia.org/wiki/Merkle%E2%80%93Damg%C3%A5rd_construction">Merkle–Damgård</a></td>
+<td>[FIPS 180-4][fips180-4]</td>
+</tr>
+</tbody>
+</table>
+</div><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.Blake2b.html'
+                                  title='octavo::digest::prelude::blake2::Blake2b'>Blake2b</a></td>
+                           <td class='docblock short'>
+                                <p>General BLAKE2b implementation</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.Blake2s.html'
+                                  title='octavo::digest::prelude::blake2::Blake2s'>Blake2s</a></td>
+                           <td class='docblock short'>
+                                <p>General BLAKE2s implementation</p>
+                           </td>
+                       </tr></table><h2 id='types' class='section-header'><a href="#types">Type Definitions</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class='type' href='type.Blake2b160.html'
+                                  title='octavo::digest::prelude::blake2::Blake2b160'>Blake2b160</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='type' href='type.Blake2b256.html'
+                                  title='octavo::digest::prelude::blake2::Blake2b256'>Blake2b256</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='type' href='type.Blake2b384.html'
+                                  title='octavo::digest::prelude::blake2::Blake2b384'>Blake2b384</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='type' href='type.Blake2b512.html'
+                                  title='octavo::digest::prelude::blake2::Blake2b512'>Blake2b512</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='type' href='type.Blake2s128.html'
+                                  title='octavo::digest::prelude::blake2::Blake2s128'>Blake2s128</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='type' href='type.Blake2s160.html'
+                                  title='octavo::digest::prelude::blake2::Blake2s160'>Blake2s160</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='type' href='type.Blake2s224.html'
+                                  title='octavo::digest::prelude::blake2::Blake2s224'>Blake2s224</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='type' href='type.Blake2s256.html'
+                                  title='octavo::digest::prelude::blake2::Blake2s256'>Blake2s256</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr></table></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../../../";
+        window.currentCrate = "octavo";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../../../../jquery.js"></script>
+    <script src="../../../../main.js"></script>
+    
+    <script defer src="../../../../search-index.js"></script>
+</body>
+</html>
