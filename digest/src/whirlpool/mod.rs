@@ -48,6 +48,34 @@ fn op(src: [w64; 8], shift: usize) -> w64 {
       SBOXES[7][(src[(shift + 1) % 8]).0 as u8 as usize])
 }
 
+#[inline]
+fn key_schedule(key: [w64; 8], rc: w64) -> [w64; 8] {
+    [
+        op(key, 0) ^ rc,
+        op(key, 1),
+        op(key, 2),
+        op(key, 3),
+        op(key, 4),
+        op(key, 5),
+        op(key, 6),
+        op(key, 7),
+    ]
+}
+
+#[inline]
+fn message_schedule(state: [w64; 8], key: [w64; 8]) -> [w64; 8] {
+    [
+        op(state, 0) ^ key[0],
+        op(state, 1) ^ key[1],
+        op(state, 2) ^ key[2],
+        op(state, 3) ^ key[3],
+        op(state, 4) ^ key[4],
+        op(state, 5) ^ key[5],
+        op(state, 6) ^ key[6],
+        op(state, 7) ^ key[7],
+    ]
+}
+
 #[derive(Debug, Clone, Copy)]
 struct State {
     hash: [w64; 8],
@@ -73,26 +101,8 @@ impl State {
         }
 
         for &rc in &RC {
-            let tmp = key;
-
-            key[0] = op(tmp, 0) ^ rc;
-            key[1] = op(tmp, 1);
-            key[2] = op(tmp, 2);
-            key[3] = op(tmp, 3);
-            key[4] = op(tmp, 4);
-            key[5] = op(tmp, 5);
-            key[6] = op(tmp, 6);
-            key[7] = op(tmp, 7);
-
-            let tmp = state;
-            state[0] = op(tmp, 0) ^ key[0];
-            state[1] = op(tmp, 1) ^ key[1];
-            state[2] = op(tmp, 2) ^ key[2];
-            state[3] = op(tmp, 3) ^ key[3];
-            state[4] = op(tmp, 4) ^ key[4];
-            state[5] = op(tmp, 5) ^ key[5];
-            state[6] = op(tmp, 6) ^ key[6];
-            state[7] = op(tmp, 7) ^ key[7];
+            key = key_schedule(key, rc);
+            state = message_schedule(state, key);
         }
 
         for (hash, &state) in self.hash.iter_mut().zip(&state) {
@@ -145,7 +155,8 @@ impl Digest for Whirlpool {
         {
             let state = &mut self.state;
 
-            self.buffer.standard_padding(8, |d| state.compress(d));
+            self.buffer.standard_padding(32, |d| state.compress(d));
+            self.buffer.zero_until(56);
             BigEndian::write_u64(self.buffer.next(8), self.length * 8);
             state.compress(self.buffer.full_buffer());
         }
