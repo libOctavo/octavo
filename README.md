@@ -17,6 +17,11 @@
 
 Highly modular & configurable hash & crypto library written in pure Rust.
 
+## Disclaimer
+
+Octavo is still under heavy development and not yet ready for use in production.
+Please do not use it for anything serious.
+
 ## Installation
 
 ```toml
@@ -38,8 +43,8 @@ You can help with this project in 3 ways:
 
 ## Full disclosure
 
-If you find security bug then contact me via mail <lukasz@niemier.pl> using
-mine [PGP key][pgp]
+If you find a security bug then contact me via mail <lukasz@niemier.pl> using
+my [PGP key][pgp]
 
 ## Licence
 
