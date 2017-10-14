@@ -24,8 +24,8 @@ Highly modular & configurable hash & crypto library written in pure Rust.
 octavo = { git = "https://github.com/libOctavo/octavo" }
 ```
 
-**WARNING!!!** Octavo is on very early stage of development. There is hell lot
-of issues and vulnerabilities to enormous kind of attacks! Do not use in
+**WARNING!!!** Octavo is in very early stage of development. There is a hell lot
+of issues and vulnerabilities to enormous kind of attacks! Do not use it in
 production code (yet)!
 
 ## Contributing
@@ -33,13 +33,13 @@ production code (yet)!
 You can help with this project in 3 ways:
 
 1. Help me code this up! Just fork, create branch, code & pull-request. Yay!
-2. Audit code or use it. If you find bug just fill the issue, it is great help also.
+2. Audit code or use it. If you find a bug just file an issue, it also is a great help.
 3. Support us at [Gratipay](https://gratipay.com/liboctavo/).
 
 ## Full disclosure
 
-If you find security bug then contact me via mail <lukasz@niemier.pl> using
-mine [PGP key][pgp]
+If you find security bugs, contact me via mail <lukasz@niemier.pl> using
+my [PGP key][pgp].
 
 ## Licence
 
