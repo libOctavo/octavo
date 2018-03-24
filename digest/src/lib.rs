@@ -39,6 +39,7 @@
 
 #![allow(inline_always, unknown_lints)]
 #![forbid(overflowing_literals, missing_docs)]
+#![feature(wrapping_int_impl)]
 
 extern crate generic_array;
 extern crate static_buffer;
